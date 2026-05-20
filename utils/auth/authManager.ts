@@ -15,7 +15,7 @@ export async function ensureAuthenticated(role: UserRole) {
     const state = JSON.parse(fs.readFileSync(authFile, 'utf-8'));
 
     const token = state.origins?.[0]?.localStorage?.find(
-        (item: any) => item.name === 'token',
+      (item: { name: string; value: string }) => item.name === 'token',
     )?.value;
 
     if (!token || isTokenExpired(token)) {

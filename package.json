@@ -14,6 +14,8 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@faker-js/faker": "^10.4.0",
     "@playwright/test": "^1.59.1",
     "@types/node": "^25.6.0",
     "@typescript-eslint/eslint-plugin": "^8.59.2",
@@ -22,12 +24,16 @@
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.3",
-    "prettier": "^3.8.3"
+    "prettier": "^3.8.3",
+    "typescript-eslint": "^8.59.3"
   },
   "lint-staged": {
     "*.{ts,js}": [
       "eslint --fix",
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
   }
 }
