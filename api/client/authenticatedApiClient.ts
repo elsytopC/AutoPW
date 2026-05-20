@@ -6,19 +6,19 @@ import { UserRole } from '../../utils/auth/auth.types';
 
 export class AuthenticatedApiClient {
   async create(role: UserRole): Promise<APIRequestContext> {
-    const credentials = authConfig[role];
-
-    if (!credentials.email || !credentials.password) {
-      throw new Error(`Missing credentials for ${role}`);
-    }
-
     let token: string;
 
     const authForProd = process.env.PROD_AUTH === 'true';
+    const credentials = authConfig[role];
+    const baseURL = process.env.API_BASE_URL;
 
     if (authForProd) {
+      if (!credentials.email || !credentials.password) {
+        throw new Error(`Missing credentials for ${role}`);
+      }
+
       const authContext = await request.newContext({
-        baseURL: process.env.API_BASE_URL,
+        baseURL,
       });
 
       const response = await authContext.post('/login', {
@@ -49,7 +49,7 @@ export class AuthenticatedApiClient {
     }
 
     return await request.newContext({
-      baseURL: process.env.API_BASE_URL,
+      baseURL,
 
       extraHTTPHeaders: {
         Authorization: `Bearer ${token}`,
