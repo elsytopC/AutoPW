@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  ui-ci:
     timeout-minutes: 60
     runs-on: ubuntu-latest
 
@@ -34,6 +34,57 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-ui
+          path: playwright-report/
+          retention-days: 7
+
+  api-ci:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    env:
+      API_BASE_URL: ${{ secrets.API_BASE_URL }}
+      ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+      PROD_AUTH: 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check required API secrets
+        id: api_secrets
+        run: |
+          if [ -n "${API_BASE_URL}" ] && [ -n "${ADMIN_EMAIL}" ] && [ -n "${ADMIN_PASSWORD}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Playwright Browsers
+        if: steps.api_secrets.outputs.ready == 'true'
+        run: npx playwright install --with-deps
+
+      - name: Run API tests
+        if: steps.api_secrets.outputs.ready == 'true'
+        run: npx playwright test --project=api tests/api
+
+      - name: Skip API tests (missing secrets)
+        if: steps.api_secrets.outputs.ready != 'true'
+        run: echo "Skipping API CI: set API_BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD secrets to enable this job."
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always() && steps.api_secrets.outputs.ready == 'true'
+        with:
+          name: playwright-report-api
           path: playwright-report/
           retention-days: 7
