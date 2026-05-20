@@ -40,6 +40,11 @@ export default defineConfig({
   /* Configure separate projects for API and UI layers */
   projects: [
     {
+      name: 'setup-auth-admin',
+      testMatch: ['**/tests/auth/admin.setup.ts'],
+    },
+
+    {
       name: 'api',
       testMatch: ['**/tests/api/**/*.spec.ts', '**/tests/mocks/**/*.spec.ts'],
     },
@@ -47,7 +52,11 @@ export default defineConfig({
     {
       name: 'ui-chromium',
       testMatch: ['**/tests/ui/**/*.spec.ts'],
-      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['setup-auth-admin'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: '.playwright/auth/admin.json',
+      },
     },
   ],
 
