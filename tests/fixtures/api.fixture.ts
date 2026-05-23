@@ -6,8 +6,6 @@ import { UsersApi } from '../../api/services/users.api';
 import { AuthApi } from '../../api/services/auth.api';
 import { AuthenticatedApiClient } from '../../api/client/authenticatedApiClient';
 
-import { UsersMock } from '../../mocks/users.mock';
-
 type ApiFixtures = {
   usersApi: UsersApi;
   authApi: AuthApi;
@@ -17,9 +15,7 @@ type ApiFixtures = {
 
 export const test = base.extend<ApiFixtures>({
   usersApi: async ({ adminApiContext }, use) => {
-
     await use(new UsersApi(adminApiContext));
-
   },
 
   authApi: async ({ adminApiContext }, use) => {
