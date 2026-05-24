@@ -1,8 +1,8 @@
 import { test, expect } from '../fixtures/api.fixture';
 import { UserFactory } from '../../factories/user.factory';
 
-test.describe('Users API', () => {
-  test('admin creates user', async ({ usersApi }) => {
+test.describe('Users API', { tag: ['@api'] }, () => {
+  test('admin creates user', { tag: ['@smoke'] }, async ({ usersApi }) => {
     const userData = UserFactory.create();
 
     const user = await usersApi.createUser(userData);
@@ -10,19 +10,19 @@ test.describe('Users API', () => {
     expect(user.id).toBeDefined();
   });
 
-  test('admin gets user', async ({ usersApi }) => {
+  test('admin gets user', { tag: ['@smoke'] }, async ({ usersApi }) => {
     const user = await usersApi.getUser(1);
 
     expect(user.id).toBe(1);
   });
 
-  test('admin gets users list', async ({ usersApi }) => {
+  test('admin gets users list', { tag: ['@regression'] }, async ({ usersApi }) => {
     const users = await usersApi.getUsers();
 
     expect(users.length).toBeGreaterThan(0);
   });
 
-  test('existingUser fixture creates user', async ({ existingUser }) => {
+  test('existingUser fixture creates user', { tag: ['@regression'] }, async ({ existingUser }) => {
     expect(existingUser.id).toBeDefined();
   });
 
@@ -36,7 +36,7 @@ test.describe('Users API', () => {
     expect(response.ok()).toBeTruthy();
   });
 
-  test('returns ApiError on 404', async ({ usersApi }) => {
+  test('returns ApiError on 404', { tag: ['@regression'] }, async ({ usersApi }) => {
     await expect(usersApi.getUser(999999)).rejects.toMatchObject({
       status: 404,
     });

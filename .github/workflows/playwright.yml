@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      grep:
+        description: 'Tag filter (e.g. @smoke, @regression, @api, @ui)'
+        required: false
+        default: ''
 
 jobs:
   ui-ci:
@@ -31,7 +37,14 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests
-        run: npx playwright test --project=ui-chromium
+        env:
+          GREP: ${{ inputs.grep }}
+        run: |
+          if [ -n "$GREP" ]; then
+            npx playwright test --project=ui-chromium --grep "$GREP"
+          else
+            npx playwright test --project=ui-chromium
+          fi
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
@@ -86,7 +99,14 @@ jobs:
 
       - name: Run API tests
         if: steps.api_secrets.outputs.ready == 'true'
-        run: npx playwright test --project=api tests/api
+        env:
+          GREP: ${{ inputs.grep }}
+        run: |
+          if [ -n "$GREP" ]; then
+            npx playwright test --project=api --grep "$GREP"
+          else
+            npx playwright test --project=api
+          fi
 
       - name: Skip API tests (missing secrets)
         if: steps.api_secrets.outputs.ready != 'true'

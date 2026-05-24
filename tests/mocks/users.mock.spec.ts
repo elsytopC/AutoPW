@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { UsersMock } from '../../mocks/users.mock';
 
-test.describe('Users mock', () => {
-  test('mocked create user returns id', async () => {
+test.describe('Users mock', { tag: ['@api'] }, () => {
+  test('mocked create user returns id', { tag: ['@smoke'] }, async () => {
     const user = await UsersMock.createUser({
       firstName: 'John',
       lastName: 'Doe',
@@ -15,7 +15,7 @@ test.describe('Users mock', () => {
     expect(user.firstName).toBe('John');
   });
 
-  test('mocked get user returns user', async () => {
+  test('mocked get user returns user', { tag: ['@smoke'] }, async () => {
     const response = await UsersMock.mockGetUser(1);
     const user = response.body as { id: number };
 
@@ -23,7 +23,7 @@ test.describe('Users mock', () => {
     expect(response.status).toBe(200);
   });
 
-  test('mocked users list returns array', async () => {
+  test('mocked users list returns array', { tag: ['@regression'] }, async () => {
     const users = await UsersMock.getUsers();
 
     expect(Array.isArray(users)).toBeTruthy();
