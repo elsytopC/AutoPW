@@ -22,7 +22,7 @@ export const test = base.extend<ApiFixtures>({
     await use(new AuthApi(adminApiContext));
   },
 
-  adminApiContext: async ({}, use) => {
+  adminApiContext: async (_, use) => {
     const client = new AuthenticatedApiClient();
 
     const context = await client.create('admin');
