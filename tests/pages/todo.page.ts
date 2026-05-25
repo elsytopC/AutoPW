@@ -18,7 +18,7 @@ export class TodoPage extends BasePage {
   }
 
   async goto(): Promise<void> {
-    await this.navigate('/');
+    await this.navigate('/todomvc');
   }
 
   async addTodo(text: string): Promise<void> {

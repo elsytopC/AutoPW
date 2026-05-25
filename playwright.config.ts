@@ -34,7 +34,7 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    baseURL: 'https://demo.playwright.dev/todomvc',
+    baseURL: 'https://demo.playwright.dev',
   },
 
   /* Configure separate projects for API and UI layers */
