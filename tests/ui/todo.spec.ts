@@ -1,87 +1,133 @@
-import { test, expect } from '@playwright/test';
-import { TodoPage } from '../pages/todo.page';
+import { faker } from '@faker-js/faker';
+import { test, expect } from '../fixtures/ui.fixture';
 
 test.describe('TodoMVC', { tag: ['@ui'] }, () => {
-  let todoPage: TodoPage;
+  test('add single todo', { tag: ['@smoke'] }, async ({ todoPage }) => {
+    const title = faker.lorem.words(3);
 
-  test.beforeEach(async ({ page }) => {
-    todoPage = new TodoPage(page);
-    await todoPage.goto();
+    await test.step('Add a new todo', async () => {
+      await todoPage.addTodo(title);
+    });
+
+    await test.step('Verify todo appears in the list', async () => {
+      const items = await todoPage.getItemTexts();
+      expect(items).toContain(title);
+    });
   });
 
-  test('add single todo', { tag: ['@smoke'] }, async () => {
-    await todoPage.addTodo('Buy groceries');
+  test('add multiple todos', { tag: ['@smoke'] }, async ({ todoPage }) => {
+    const first = faker.lorem.words(2);
+    const second = faker.lorem.words(2);
 
-    const items = await todoPage.getItemTexts();
+    await test.step('Add two todos', async () => {
+      await todoPage.addTodo(first);
+      await todoPage.addTodo(second);
+    });
 
-    expect(items).toContain('Buy groceries');
+    await test.step('Verify both todos are listed', async () => {
+      const items = await todoPage.getItemTexts();
+      expect(items).toHaveLength(2);
+    });
   });
 
-  test('add multiple todos', { tag: ['@smoke'] }, async () => {
-    await todoPage.addTodo('First task');
-    await todoPage.addTodo('Second task');
+  test('complete a todo', { tag: ['@smoke'] }, async ({ todoPage }) => {
+    const title = faker.lorem.words(2);
 
-    const items = await todoPage.getItemTexts();
+    await test.step('Add a todo', async () => {
+      await todoPage.addTodo(title);
+    });
 
-    expect(items).toHaveLength(2);
+    await test.step('Mark todo as completed', async () => {
+      await todoPage.completeTodo(title);
+    });
+
+    await test.step('Verify active count is zero', async () => {
+      expect(await todoPage.getActiveCount()).toBe(0);
+    });
   });
 
-  test('complete a todo', { tag: ['@smoke'] }, async () => {
-    await todoPage.addTodo('Write tests');
-    await todoPage.completeTodo('Write tests');
+  test('active count decreases after completing', { tag: ['@regression'] }, async ({ todoPage }) => {
+    const taskA = faker.lorem.words(2);
+    const taskB = faker.lorem.words(2);
 
-    const count = await todoPage.getActiveCount();
+    await test.step('Add two todos', async () => {
+      await todoPage.addTodo(taskA);
+      await todoPage.addTodo(taskB);
+    });
 
-    expect(count).toBe(0);
+    await test.step('Verify initial active count is 2', async () => {
+      expect(await todoPage.getActiveCount()).toBe(2);
+    });
+
+    await test.step('Complete first todo', async () => {
+      await todoPage.completeTodo(taskA);
+    });
+
+    await test.step('Verify active count decreased to 1', async () => {
+      expect(await todoPage.getActiveCount()).toBe(1);
+    });
   });
 
-  test('active count decreases after completing', { tag: ['@regression'] }, async () => {
-    await todoPage.addTodo('Task A');
-    await todoPage.addTodo('Task B');
+  test('filter active todos', { tag: ['@regression'] }, async ({ todoPage }) => {
+    const activeTitle = faker.lorem.words(2);
+    const doneTitle = faker.lorem.words(2);
 
-    expect(await todoPage.getActiveCount()).toBe(2);
+    await test.step('Add and complete one of two todos', async () => {
+      await todoPage.addTodo(activeTitle);
+      await todoPage.addTodo(doneTitle);
+      await todoPage.completeTodo(doneTitle);
+    });
 
-    await todoPage.completeTodo('Task A');
+    await test.step('Apply Active filter', async () => {
+      await todoPage.filterBy('Active');
+    });
 
-    expect(await todoPage.getActiveCount()).toBe(1);
+    await test.step('Verify only active todo is visible', async () => {
+      const items = await todoPage.getItemTexts();
+      expect(items).toContain(activeTitle);
+      expect(items).not.toContain(doneTitle);
+    });
   });
 
-  test('filter active todos', { tag: ['@regression'] }, async () => {
-    await todoPage.addTodo('Active task');
-    await todoPage.addTodo('Done task');
-    await todoPage.completeTodo('Done task');
+  test('filter completed todos', { tag: ['@regression'] }, async ({ todoPage }) => {
+    const activeTitle = faker.lorem.words(2);
+    const doneTitle = faker.lorem.words(2);
 
-    await todoPage.filterBy('Active');
+    await test.step('Add and complete one of two todos', async () => {
+      await todoPage.addTodo(activeTitle);
+      await todoPage.addTodo(doneTitle);
+      await todoPage.completeTodo(doneTitle);
+    });
 
-    const items = await todoPage.getItemTexts();
+    await test.step('Apply Completed filter', async () => {
+      await todoPage.filterBy('Completed');
+    });
 
-    expect(items).toContain('Active task');
-    expect(items).not.toContain('Done task');
+    await test.step('Verify only completed todo is visible', async () => {
+      const items = await todoPage.getItemTexts();
+      expect(items).toContain(doneTitle);
+      expect(items).not.toContain(activeTitle);
+    });
   });
 
-  test('filter completed todos', { tag: ['@regression'] }, async () => {
-    await todoPage.addTodo('Active task');
-    await todoPage.addTodo('Done task');
-    await todoPage.completeTodo('Done task');
+  test('clear completed todos', { tag: ['@regression'] }, async ({ todoPage }) => {
+    const keepTitle = faker.lorem.words(2);
+    const removeTitle = faker.lorem.words(2);
 
-    await todoPage.filterBy('Completed');
+    await test.step('Add one active and one completed todo', async () => {
+      await todoPage.addTodo(keepTitle);
+      await todoPage.addTodo(removeTitle);
+      await todoPage.completeTodo(removeTitle);
+    });
 
-    const items = await todoPage.getItemTexts();
+    await test.step('Clear completed todos', async () => {
+      await todoPage.clearCompleted();
+    });
 
-    expect(items).toContain('Done task');
-    expect(items).not.toContain('Active task');
-  });
-
-  test('clear completed todos', { tag: ['@regression'] }, async () => {
-    await todoPage.addTodo('Keep me');
-    await todoPage.addTodo('Remove me');
-    await todoPage.completeTodo('Remove me');
-
-    await todoPage.clearCompleted();
-
-    const items = await todoPage.getItemTexts();
-
-    expect(items).toContain('Keep me');
-    expect(items).not.toContain('Remove me');
+    await test.step('Verify only active todo remains', async () => {
+      const items = await todoPage.getItemTexts();
+      expect(items).toContain(keepTitle);
+      expect(items).not.toContain(removeTitle);
+    });
   });
 });
