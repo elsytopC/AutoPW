@@ -55,6 +55,8 @@ export default defineConfig({
       dependencies: ['setup-auth-admin'],
       use: {
         ...devices['Desktop Chrome'],
+        // Default session for UI tests. Use adminAuth / userAuth from
+        // tests/fixtures/auth.fixture.ts to override per-test role explicitly.
         storageState: '.playwright/auth/admin.json',
       },
     },
