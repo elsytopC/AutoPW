@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { request } from '@playwright/test';
+import { env } from '../../config/env';
 import { isTokenExpired } from './tokenUtils';
 import { authConfig } from './auth.config';
 import { UserRole } from './auth.types';
@@ -26,16 +27,16 @@ export async function ensureAuthenticated(role: UserRole) {
 }
 
 async function generateAuth(role: UserRole, authFile: string) {
-  const appBaseURL = process.env.BASE_URL || process.env.UI_BASE_URL || 'https://example.com';
-  const authForProd = process.env.PROD_AUTH === 'true';
-  const apiBaseURL = process.env.API_BASE_URL;
+  const appBaseURL = env.uiBaseUrl;
+  const authForProd = env.prodAuth;
+  const apiBaseURL = env.apiBaseUrl || undefined;
   const credentials = authConfig[role];
   let token: string;
 
   if (authForProd && apiBaseURL && credentials.email && credentials.password) {
-    const context = await request.newContext();
+    const context = await request.newContext({ baseURL: apiBaseURL });
 
-    const response = await context.post(`${apiBaseURL}/login`, {
+    const response = await context.post('/login', {
       data: {
         email: credentials.email,
         password: credentials.password,

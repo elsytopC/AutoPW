@@ -1,16 +1,16 @@
 import { APIRequestContext, request } from '@playwright/test';
 
+import { env } from '../../config/env';
 import { authConfig } from '../../utils/auth/auth.config';
-
 import { UserRole } from '../../utils/auth/auth.types';
 
 export class AuthenticatedApiClient {
   async create(role: UserRole): Promise<APIRequestContext> {
     let token: string;
 
-    const authForProd = process.env.PROD_AUTH === 'true';
+    const authForProd = env.prodAuth;
     const credentials = authConfig[role];
-    const baseURL = process.env.API_BASE_URL;
+    const baseURL = env.apiBaseUrl || undefined;
 
     if (authForProd) {
       if (!credentials.email || !credentials.password) {
