@@ -1,0 +1,17 @@
+---
+description: Применяй эти правила при написании автотестов на Playwright + TypeScript
+globs:
+  - "**/tests/**/*.ts"
+  - "**/pages/**/*.ts"
+alwaysApply: false
+---
+
+# Playwright + TypeScript — Page Object Model
+
+- Мы используем паттерн Page Object Model. Все локаторы хранятся строго в классах папки `pages/`.
+- Для поиска элементов ВСЕГДА используй встроенные локаторы Playwright (например, `page.getByRole`, `page.getByTestId`). Избегай XPath и сырых CSS-селекторов.
+- Все тесты должны использовать кастомные фикстуры из `tests/fixtures/` вместо стандартного `import { test } from '@playwright/test'`:
+  - API-тесты: `import { test, expect } from '../fixtures/api.fixture';`
+  - UI-тесты с авторизацией: `import { adminAuth, userAuth } from '../fixtures/auth.fixture';`
+- Новые фикстуры добавляй в `tests/fixtures/`, не создавай дублирующие файлы в корне проекта.
+- Обязательно добавляй `test.step('Название шага', async () => { ... })` для логирования шагов в отчетах.
