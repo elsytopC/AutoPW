@@ -1,4 +1,4 @@
-import { env } from '../../config/env';
+import { env } from '@config/env';
 import { UserRole } from './auth.types';
 
 type Credentials = {

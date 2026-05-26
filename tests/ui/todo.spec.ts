@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { test, expect } from '../fixtures/ui.fixture';
+import { test, expect } from '@fixtures/ui.fixture';
 
 test.describe('TodoMVC', { tag: ['@ui'] }, () => {
   test('add single todo', { tag: ['@smoke'] }, async ({ todoPage }) => {

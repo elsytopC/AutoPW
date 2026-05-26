@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { request } from '@playwright/test';
-import { env } from '../../config/env';
+import { env } from '@config/env';
 import { isTokenExpired } from './tokenUtils';
 import { authConfig } from './auth.config';
 import { UserRole } from './auth.types';
@@ -17,7 +17,7 @@ export async function ensureAuthenticated(role: UserRole) {
   const state = JSON.parse(fs.readFileSync(authFile, 'utf-8'));
 
   const token = state.origins?.[0]?.localStorage?.find(
-      (item: { name: string; value: string }) => item.name === 'token',
+    (item: { name: string; value: string }) => item.name === 'token',
   )?.value;
 
   if (!token || isTokenExpired(token)) {
@@ -44,7 +44,9 @@ async function generateAuth(role: UserRole, authFile: string) {
     });
 
     if (!response.ok()) {
-      throw new Error(`Failed to generate auth state for ${role}. Status: ${response.status()}`);
+      throw new Error(
+        `Failed to generate auth state for ${role}. Status: ${response.status()}`,
+      );
     }
 
     const responseBody = await response.json();
@@ -78,9 +80,9 @@ function ensureAuthDirectory(): void {
 }
 
 function createFakeJwt(role: UserRole): string {
-  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString(
-    'base64url',
-  );
+  const header = Buffer.from(
+    JSON.stringify({ alg: 'HS256', typ: 'JWT' }),
+  ).toString('base64url');
   const payload = Buffer.from(
     JSON.stringify({
       role,

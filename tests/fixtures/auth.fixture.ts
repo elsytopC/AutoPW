@@ -1,5 +1,5 @@
 import { test as base } from '@playwright/test';
-import { TodoPage } from '../pages/todo.page';
+import { TodoPage } from '@pages/todo.page';
 
 type AuthFixtures = {
   todoPage: TodoPage;

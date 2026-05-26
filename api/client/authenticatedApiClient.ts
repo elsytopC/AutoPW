@@ -1,8 +1,8 @@
 import { APIRequestContext, request } from '@playwright/test';
 
-import { env } from '../../config/env';
-import { authConfig } from '../../utils/auth/auth.config';
-import { UserRole } from '../../utils/auth/auth.types';
+import { env } from '@config/env';
+import { authConfig } from '@utils/auth/auth.config';
+import { UserRole } from '@utils/auth/auth.types';
 
 export class AuthenticatedApiClient {
   async create(role: UserRole): Promise<APIRequestContext> {

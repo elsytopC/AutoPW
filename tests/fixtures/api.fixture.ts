@@ -1,10 +1,10 @@
 import { test as base, APIRequestContext } from '@playwright/test';
 
-import { UserFactory } from '../../factories/user.factory';
-import { UserResponse } from '../../api/models/user.model';
-import { UsersApi } from '../../api/services/users.api';
-import { AuthApi } from '../../api/services/auth.api';
-import { AuthenticatedApiClient } from '../../api/client/authenticatedApiClient';
+import { UserFactory } from '@factories/user.factory';
+import { UserResponse } from '@api/models/user.model';
+import { UsersApi } from '@api/services/users.api';
+import { AuthApi } from '@api/services/auth.api';
+import { AuthenticatedApiClient } from '@api/client/authenticatedApiClient';
 
 type ApiFixtures = {
   usersApi: UsersApi;

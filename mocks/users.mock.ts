@@ -1,4 +1,4 @@
-import { CreateUserRequest, UserResponse } from '../api/models/user.model';
+import { CreateUserRequest, UserResponse } from '@api/models/user.model';
 
 export class UsersMock {
   static async createUser(data: CreateUserRequest): Promise<UserResponse> {

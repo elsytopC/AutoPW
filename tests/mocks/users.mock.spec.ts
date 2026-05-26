@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { UsersMock } from '../../mocks/users.mock';
+import { UsersMock } from '@mocks/users.mock';
 
 test.describe('Users mock', { tag: ['@api'] }, () => {
   test('mocked create user returns id', { tag: ['@smoke'] }, async () => {
@@ -23,11 +23,15 @@ test.describe('Users mock', { tag: ['@api'] }, () => {
     expect(response.status).toBe(200);
   });
 
-  test('mocked users list returns array', { tag: ['@regression'] }, async () => {
-    const users = await UsersMock.getUsers();
+  test(
+    'mocked users list returns array',
+    { tag: ['@regression'] },
+    async () => {
+      const users = await UsersMock.getUsers();
 
-    expect(Array.isArray(users)).toBeTruthy();
+      expect(Array.isArray(users)).toBeTruthy();
 
-    expect(users.length).toBeGreaterThan(0);
-  });
+      expect(users.length).toBeGreaterThan(0);
+    },
+  );
 });

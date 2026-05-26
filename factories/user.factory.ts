@@ -1,4 +1,4 @@
-import { CreateUserRequest } from '../api/models/user.model';
+import { CreateUserRequest } from '@api/models/user.model';
 import { faker } from '@faker-js/faker';
 
 export class UserFactory {

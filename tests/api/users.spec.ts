@@ -1,5 +1,5 @@
-import { test, expect } from '../fixtures/api.fixture';
-import { UserFactory } from '../../factories/user.factory';
+import { test, expect } from '@fixtures/api.fixture';
+import { UserFactory } from '@factories/user.factory';
 
 test.describe('Users API', { tag: ['@api'] }, () => {
   test('admin creates user', { tag: ['@smoke'] }, async ({ usersApi }) => {
@@ -16,15 +16,23 @@ test.describe('Users API', { tag: ['@api'] }, () => {
     expect(user.id).toBe(1);
   });
 
-  test('admin gets users list', { tag: ['@regression'] }, async ({ usersApi }) => {
-    const users = await usersApi.getUsers();
+  test(
+    'admin gets users list',
+    { tag: ['@regression'] },
+    async ({ usersApi }) => {
+      const users = await usersApi.getUsers();
 
-    expect(users.length).toBeGreaterThan(0);
-  });
+      expect(users.length).toBeGreaterThan(0);
+    },
+  );
 
-  test('existingUser fixture creates user', { tag: ['@regression'] }, async ({ existingUser }) => {
-    expect(existingUser.id).toBeDefined();
-  });
+  test(
+    'existingUser fixture creates user',
+    { tag: ['@regression'] },
+    async ({ existingUser }) => {
+      expect(existingUser.id).toBeDefined();
+    },
+  );
 
   // TODO:
   // Enable after contract-level auth mock server is implemented.
@@ -36,9 +44,13 @@ test.describe('Users API', { tag: ['@api'] }, () => {
     expect(response.ok()).toBeTruthy();
   });
 
-  test('returns ApiError on 404', { tag: ['@regression'] }, async ({ usersApi }) => {
-    await expect(usersApi.getUser(999999)).rejects.toMatchObject({
-      status: 404,
-    });
-  });
+  test(
+    'returns ApiError on 404',
+    { tag: ['@regression'] },
+    async ({ usersApi }) => {
+      await expect(usersApi.getUser(999999)).rejects.toMatchObject({
+        status: 404,
+      });
+    },
+  );
 });
