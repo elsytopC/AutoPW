@@ -46,88 +46,104 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
     });
   });
 
-  test('active count decreases after completing', { tag: ['@regression'] }, async ({ todoPage }) => {
-    const taskA = faker.lorem.words(2);
-    const taskB = faker.lorem.words(2);
+  test(
+    'active count decreases after completing',
+    { tag: ['@regression'] },
+    async ({ todoPage }) => {
+      const taskA = faker.lorem.words(2);
+      const taskB = faker.lorem.words(2);
 
-    await test.step('Add two todos', async () => {
-      await todoPage.addTodo(taskA);
-      await todoPage.addTodo(taskB);
-    });
+      await test.step('Add two todos', async () => {
+        await todoPage.addTodo(taskA);
+        await todoPage.addTodo(taskB);
+      });
 
-    await test.step('Verify initial active count is 2', async () => {
-      expect(await todoPage.getActiveCount()).toBe(2);
-    });
+      await test.step('Verify initial active count is 2', async () => {
+        expect(await todoPage.getActiveCount()).toBe(2);
+      });
 
-    await test.step('Complete first todo', async () => {
-      await todoPage.completeTodo(taskA);
-    });
+      await test.step('Complete first todo', async () => {
+        await todoPage.completeTodo(taskA);
+      });
 
-    await test.step('Verify active count decreased to 1', async () => {
-      expect(await todoPage.getActiveCount()).toBe(1);
-    });
-  });
+      await test.step('Verify active count decreased to 1', async () => {
+        expect(await todoPage.getActiveCount()).toBe(1);
+      });
+    },
+  );
 
-  test('filter active todos', { tag: ['@regression'] }, async ({ todoPage }) => {
-    const activeTitle = faker.lorem.words(2);
-    const doneTitle = faker.lorem.words(2);
+  test(
+    'filter active todos',
+    { tag: ['@regression'] },
+    async ({ todoPage }) => {
+      const activeTitle = faker.lorem.words(2);
+      const doneTitle = faker.lorem.words(2);
 
-    await test.step('Add and complete one of two todos', async () => {
-      await todoPage.addTodo(activeTitle);
-      await todoPage.addTodo(doneTitle);
-      await todoPage.completeTodo(doneTitle);
-    });
+      await test.step('Add and complete one of two todos', async () => {
+        await todoPage.addTodo(activeTitle);
+        await todoPage.addTodo(doneTitle);
+        await todoPage.completeTodo(doneTitle);
+      });
 
-    await test.step('Apply Active filter', async () => {
-      await todoPage.filterBy('Active');
-    });
+      await test.step('Apply Active filter', async () => {
+        await todoPage.filterBy('Active');
+      });
 
-    await test.step('Verify only active todo is visible', async () => {
-      const items = await todoPage.getItemTexts();
-      expect(items).toContain(activeTitle);
-      expect(items).not.toContain(doneTitle);
-    });
-  });
+      await test.step('Verify only active todo is visible', async () => {
+        const items = await todoPage.getItemTexts();
+        expect(items).toContain(activeTitle);
+        expect(items).not.toContain(doneTitle);
+      });
+    },
+  );
 
-  test('filter completed todos', { tag: ['@regression'] }, async ({ todoPage }) => {
-    const activeTitle = faker.lorem.words(2);
-    const doneTitle = faker.lorem.words(2);
+  test(
+    'filter completed todos',
+    { tag: ['@regression'] },
+    async ({ todoPage }) => {
+      const activeTitle = faker.lorem.words(2);
+      const doneTitle = faker.lorem.words(2);
 
-    await test.step('Add and complete one of two todos', async () => {
-      await todoPage.addTodo(activeTitle);
-      await todoPage.addTodo(doneTitle);
-      await todoPage.completeTodo(doneTitle);
-    });
+      await test.step('Add and complete one of two todos', async () => {
+        await todoPage.addTodo(activeTitle);
+        await todoPage.addTodo(doneTitle);
+        await todoPage.completeTodo(doneTitle);
+      });
 
-    await test.step('Apply Completed filter', async () => {
-      await todoPage.filterBy('Completed');
-    });
+      await test.step('Apply Completed filter', async () => {
+        await todoPage.filterBy('Completed');
+      });
 
-    await test.step('Verify only completed todo is visible', async () => {
-      const items = await todoPage.getItemTexts();
-      expect(items).toContain(doneTitle);
-      expect(items).not.toContain(activeTitle);
-    });
-  });
+      await test.step('Verify only completed todo is visible', async () => {
+        const items = await todoPage.getItemTexts();
+        expect(items).toContain(doneTitle);
+        expect(items).not.toContain(activeTitle);
+      });
+    },
+  );
 
-  test('clear completed todos', { tag: ['@regression'] }, async ({ todoPage }) => {
-    const keepTitle = faker.lorem.words(2);
-    const removeTitle = faker.lorem.words(2);
+  test(
+    'clear completed todos',
+    { tag: ['@regression'] },
+    async ({ todoPage }) => {
+      const keepTitle = faker.lorem.words(2);
+      const removeTitle = faker.lorem.words(2);
 
-    await test.step('Add one active and one completed todo', async () => {
-      await todoPage.addTodo(keepTitle);
-      await todoPage.addTodo(removeTitle);
-      await todoPage.completeTodo(removeTitle);
-    });
+      await test.step('Add one active and one completed todo', async () => {
+        await todoPage.addTodo(keepTitle);
+        await todoPage.addTodo(removeTitle);
+        await todoPage.completeTodo(removeTitle);
+      });
 
-    await test.step('Clear completed todos', async () => {
-      await todoPage.clearCompleted();
-    });
+      await test.step('Clear completed todos', async () => {
+        await todoPage.clearCompleted();
+      });
 
-    await test.step('Verify only active todo remains', async () => {
-      const items = await todoPage.getItemTexts();
-      expect(items).toContain(keepTitle);
-      expect(items).not.toContain(removeTitle);
-    });
-  });
+      await test.step('Verify only active todo remains', async () => {
+        const items = await todoPage.getItemTexts();
+        expect(items).toContain(keepTitle);
+        expect(items).not.toContain(removeTitle);
+      });
+    },
+  );
 });
