@@ -1,140 +1,205 @@
-# QA Framework (Playwright + TypeScript)
+# QA Framework — Playwright + TypeScript
 
-Lightweight SDET automation framework for UI and API testing with a focus on:
+Lightweight SDET automation framework for UI and API testing built on top of `@playwright/test`.
 
-- clear test architecture;
-- typed API abstractions;
-- isolated test data and fixtures;
-- predictable CI behavior without overengineering.
+**Demo target app:** [TodoMVC](https://demo.playwright.dev/todomvc) (Playwright official demo)  
+**API target:** configurable via `API_BASE_URL` env variable
+
+---
 
 ## What Is Included
 
-- **UI tests** with `@playwright/test` in the `ui-chromium` project.
-- **API tests** built on `APIRequestContext` and service classes (`BaseApi`, `UsersApi`, `AuthApi`).
-- **UI auth-state bootstrap** via setup project that generates `storageState`.
-- **Mock layer** for isolated tests without network dependency (`UsersMock`).
-- **Code quality** with TypeScript, ESLint flat config, Prettier, Husky, and lint-staged.
+- **UI tests** with Page Object Model, typed page actions, and faker-generated test data
+- **API tests** built on a typed service layer (`BaseApi`, `UsersApi`, `AuthApi`)
+- **Auth fixtures** with role-based browser context (`adminAuth`, `userAuth`)
+- **Mock layer** for isolated tests without real network (`UsersMock`)
+- **Tag-based test selection** (`@smoke`, `@regression`, `@api`, `@ui`)
+- **CI** with separate `ui-ci` / `api-ci` jobs and JUnit reporting
+- **Code quality** — ESLint flat config, Prettier, Husky pre-commit + pre-push hooks
+
+---
 
 ## Project Structure
 
 ```text
 api/
-  client/authenticatedApiClient.ts
-  core/baseApi.ts
-  errors/api.error.ts
-  models/*.model.ts
-  services/*.api.ts
+  client/authenticatedApiClient.ts  ← creates APIRequestContext per role
+  core/baseApi.ts                   ← generic HTTP methods + error handling
+  errors/api.error.ts               ← typed ApiError
+  models/                           ← auth.model.ts, user.model.ts
+  services/                         ← auth.api.ts, users.api.ts
+config/
+  env.ts                            ← single source of all env variables
 factories/
-  user.factory.ts
+  user.factory.ts                   ← faker-based test data builders
 mocks/
-  users.mock.ts
+  users.mock.ts                     ← static mock responses (no network)
 tests/
-  api/users.spec.ts
-  mocks/users.mock.spec.ts
-  ui/example.spec.ts
-  auth/*.setup.ts
-  fixtures/*.fixture.ts
+  api/users.spec.ts                 ← API test suite
+  auth/admin.setup.ts               ← storageState generation for admin role
+  auth/user.setup.ts                ← storageState generation for user role
+  fixtures/
+    api.fixture.ts                  ← usersApi, authApi, adminApiContext, existingUser
+    ui.fixture.ts                   ← todoPage (pre-navigated)
+    auth.fixture.ts                 ← adminAuth, userAuth (role-based page context)
+  mocks/users.mock.spec.ts          ← isolated mock-layer tests
+  pages/
+    base.page.ts                    ← abstract BasePage with shared helpers
+    todo.page.ts                    ← TodoPage : BasePage
+  ui/todo.spec.ts                   ← UI test suite (TodoMVC)
 utils/auth/
-  authManager.ts
-  auth.config.ts
-  auth.types.ts
-  tokenUtils.ts
+  authManager.ts                    ← storageState creation / token refresh
+  auth.config.ts                    ← credentials per role from env
+  auth.types.ts                     ← UserRole type
+  tokenUtils.ts                     ← JWT expiry check
 playwright.config.ts
+tsconfig.json                       ← path aliases (@api, @config, @fixtures, …)
 .github/workflows/playwright.yml
 ```
 
-## API Layer Design
+---
 
-- `BaseApi` centralizes HTTP operations (`get/post/patch/put/delete`) and response/error handling.
-- Domain services (`UsersApi`, `AuthApi`) expose business-level API actions.
-- `ApiError` provides unified error payload (status, body, message context).
-- Fixtures wire services into tests through a single API context (`tests/fixtures/api.fixture.ts`).
+## Architecture
 
-This keeps API tests consistent and reduces request/validation duplication.
+### API Layer
 
-## Auth and UI storageState
+```
+BaseApi
+  └── UsersApi   (createUser, getUser, getUsers, deleteUser)
+  └── AuthApi    (login)
+```
 
-- Setup test `tests/auth/admin.setup.ts` calls `ensureAuthenticated('admin')`.
-- `authManager` creates `.playwright/auth/admin.json`.
-- `ui-chromium` consumes this file via `storageState` before UI specs run.
+`BaseApi` centralizes HTTP operations and maps non-2xx responses to `ApiError`.  
+`AuthenticatedApiClient` creates a pre-authenticated `APIRequestContext` per role.  
+All API fixtures are wired in `tests/fixtures/api.fixture.ts`.
 
-### Auth Modes
+### UI Layer
 
-- `PROD_AUTH=true`  
-  Performs real authentication via `API_BASE_URL/login` using `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
-- `PROD_AUTH=false`  
-  Uses a fallback JWT generation flow for stable local/CI execution without external auth.
+```
+BasePage
+  └── TodoPage   (addTodo, completeTodo, filterBy, clearCompleted, …)
+```
 
-## Environment Configuration
+Page objects encapsulate all locators and actions. Tests never reference `locator` / `getByRole` directly. `ui.fixture.ts` injects a pre-navigated `TodoPage` instance.
 
-The framework loads environment variables from `.env` via `dotenv`.
+### Auth Architecture
 
-Key variables:
+Two independent auth layers:
 
-- `API_BASE_URL`
-- `PROD_AUTH`
-- `ADMIN_EMAIL`
-- `ADMIN_PASSWORD`
-- `USER_EMAIL`
-- `USER_PASSWORD`
-- Optional for UI state origin: `BASE_URL` or `UI_BASE_URL`
+| Layer | What it does |
+|---|---|
+| `setup-auth-admin` project | generates `.playwright/auth/admin.json` before UI specs run |
+| `auth.fixture.ts` | overrides browser context per-test for explicit role switching |
+
+Auth mode is controlled by `PROD_AUTH`:
+- `PROD_AUTH=true` — performs real login via `API_BASE_URL/login`
+- `PROD_AUTH=false` (default) — generates a fake JWT for local/CI use
+
+### Environment Config
+
+All env variables flow through `config/env.ts`:
+
+```typescript
+env.prodAuth          // PROD_AUTH === 'true'
+env.apiBaseUrl        // API_BASE_URL
+env.uiBaseUrl         // BASE_URL ?? UI_BASE_URL ?? 'https://demo.playwright.dev'
+env.credentials.admin // ADMIN_EMAIL, ADMIN_PASSWORD
+env.credentials.user  // USER_EMAIL, USER_PASSWORD
+```
+
+---
+
+## Test Tags
+
+Every test carries `@smoke` or `@regression` plus `@api` or `@ui`.
+
+| Tag | Meaning |
+|---|---|
+| `@smoke` | Critical path, fast feedback |
+| `@regression` | Full coverage |
+| `@api` | API layer tests |
+| `@ui` | Browser tests |
+
+Run by tag locally:
+
+```bash
+npx playwright test --grep "@smoke"
+npx playwright test --grep "@api"
+npx playwright test --project=ui-chromium --grep "@smoke"
+```
+
+---
 
 ## Local Usage
 
-Install dependencies:
-
 ```bash
+# Install dependencies (also sets up Husky hooks)
 npm ci
-```
 
-Run all tests:
-
-```bash
+# Run all tests
 npm test
-```
 
-Run UI only:
-
-```bash
+# Run UI tests only
 npx playwright test --project=ui-chromium
-```
 
-Run API only:
-
-```bash
+# Run API tests only
 npx playwright test --project=api
-```
 
-Run lint:
-
-```bash
+# Lint
 npm run lint
-```
 
-Run formatter:
-
-```bash
+# Format
 npm run format
+
+# Type check
+npx tsc --noEmit
 ```
+
+---
 
 ## CI (GitHub Actions)
 
-Workflow file: `.github/workflows/playwright.yml`
+Workflow: `.github/workflows/playwright.yml`
 
-- `ui-ci`  
-  Always runs `ui-chromium` and uploads `playwright-report-ui`.
+### Jobs
 
-- `api-ci`  
-  Runs in controlled mode:
-  - if secrets `API_BASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` are set, API tests are executed;
-  - if secrets are missing, the job is skipped gracefully with an informative message.
+**`ui-ci`** — always runs on push / PR to `main`:
+1. Run lint (`npm run lint`)
+2. Install Playwright browsers
+3. Run `ui-chromium` project
+4. Upload `playwright-report-ui` and `junit-report-ui` artifacts
 
-When API tests run, the artifact is uploaded as `playwright-report-api`.
+**`api-ci`** — runs conditionally:
+- If `API_BASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` secrets are set → runs API tests
+- If secrets are missing → skips gracefully with an informative message
 
-## Current State and Next Evolution
+### Reporters
 
-The framework already provides a solid API/UI foundation. Practical next steps:
+| Environment | Reporters |
+|---|---|
+| Local | `list`, `html` |
+| CI | `list`, `html`, `junit` (`test-results/junit.xml`) |
 
-- evolve mock tests toward stronger contract-level behavior;
-- add test tags (`@smoke`, `@regression`, `@api`, `@ui`) for selective CI runs;
-- expand the UI layer with page objects when real product UI flows are available.
+Screenshots are captured on failure. Traces are captured on first retry.
+
+### Manual / Selective Run
+
+Trigger `workflow_dispatch` from the Actions tab and supply a `grep` input:
+
+```
+@smoke           → smoke tests only
+@regression      → full regression
+@api             → API tests only
+@ui              → UI tests only
+(empty)          → all tests
+```
+
+---
+
+## Code Quality Gates
+
+| Gate | When | What |
+|---|---|---|
+| `pre-commit` (Husky) | every `git commit` | `lint-staged`: ESLint --fix + Prettier on staged `.ts/.js` files |
+| `pre-push` (Husky) | every `git push` | `tsc --noEmit` — full type check |
+| CI lint step | every push to `main` | `npm run lint` |
