@@ -140,8 +140,12 @@ npm ci
 # Run all tests
 npm test
 
-# Run UI tests only
+# Run UI tests (chromium by default)
 npx playwright test --project=ui-chromium
+
+# Run UI tests in other browsers
+npx playwright test --project=ui-firefox
+npx playwright test --project=ui-webkit
 
 # Run API tests only
 npx playwright test --project=api
@@ -167,8 +171,10 @@ Workflow: `.github/workflows/playwright.yml`
 **`ui-ci`** — always runs on push / PR to `main`:
 1. Run lint (`npm run lint`)
 2. Install Playwright browsers
-3. Run `ui-chromium` project
+3. Run `ui-chromium` project (cross-browser `ui-firefox` / `ui-webkit` available via manual dispatch)
 4. Upload `playwright-report-ui` and `junit-report-ui` artifacts
+
+> On push/PR only `ui-chromium` runs to keep feedback fast. Trigger `workflow_dispatch` and pick the `project` input to run `ui-firefox` or `ui-webkit`.
 
 **`api-ci`** — runs conditionally:
 - If `API_BASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` secrets are set → runs API tests

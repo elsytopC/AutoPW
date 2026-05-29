@@ -11,6 +11,15 @@ on:
         description: 'Tag filter (e.g. @smoke, @regression, @api, @ui)'
         required: false
         default: ''
+      project:
+        description: 'UI browser project to run'
+        required: false
+        default: 'ui-chromium'
+        type: choice
+        options:
+          - ui-chromium
+          - ui-firefox
+          - ui-webkit
 
 jobs:
   ui-ci:
@@ -39,11 +48,13 @@ jobs:
       - name: Run Playwright tests
         env:
           GREP: ${{ inputs.grep }}
+          PROJECT: ${{ inputs.project }}
         run: |
+          PROJECT="${PROJECT:-ui-chromium}"
           if [ -n "$GREP" ]; then
-            npx playwright test --project=ui-chromium --grep "$GREP"
+            npx playwright test --project="$PROJECT" --grep "$GREP"
           else
-            npx playwright test --project=ui-chromium
+            npx playwright test --project="$PROJECT"
           fi
 
       - name: Upload Playwright report

@@ -13,6 +13,17 @@ import { defineConfig, devices } from '@playwright/test';
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 /**
+ * Shared config for every UI browser project: auth session + setup dependency.
+ * Default session is admin; override per-test via adminAuth / userAuth fixtures.
+ */
+const uiProjectDefaults = {
+  testMatch: ['**/tests/ui/**/*.spec.ts'],
+  dependencies: ['setup-auth-admin'],
+};
+
+const uiStorageState = '.playwright/auth/admin.json';
+
+/**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
@@ -51,13 +62,28 @@ export default defineConfig({
 
     {
       name: 'ui-chromium',
-      testMatch: ['**/tests/ui/**/*.spec.ts'],
-      dependencies: ['setup-auth-admin'],
+      ...uiProjectDefaults,
       use: {
         ...devices['Desktop Chrome'],
-        // Default session for UI tests. Use adminAuth / userAuth from
-        // tests/fixtures/auth.fixture.ts to override per-test role explicitly.
-        storageState: '.playwright/auth/admin.json',
+        storageState: uiStorageState,
+      },
+    },
+
+    {
+      name: 'ui-firefox',
+      ...uiProjectDefaults,
+      use: {
+        ...devices['Desktop Firefox'],
+        storageState: uiStorageState,
+      },
+    },
+
+    {
+      name: 'ui-webkit',
+      ...uiProjectDefaults,
+      use: {
+        ...devices['Desktop Safari'],
+        storageState: uiStorageState,
       },
     },
   ],
