@@ -14,7 +14,9 @@ export class TodoPage extends BasePage {
     this.input = page.getByPlaceholder('What needs to be done?');
     this.todoItems = page.getByTestId('todo-item');
     this.todoCount = page.locator('.todo-count');
-    this.clearCompletedButton = page.getByRole('button', { name: 'Clear completed' });
+    this.clearCompletedButton = page.getByRole('button', {
+      name: 'Clear completed',
+    });
   }
 
   async goto(): Promise<void> {
@@ -54,8 +56,16 @@ export class TodoPage extends BasePage {
     await this.clearCompletedButton.click();
   }
 
-  async getItems(): Promise<Locator> {
+  get items(): Locator {
     return this.todoItems;
+  }
+
+  get counter(): Locator {
+    return this.todoCount;
+  }
+
+  itemByText(text: string): Locator {
+    return this.todoItems.filter({ hasText: text });
   }
 
   async getItemTexts(): Promise<string[]> {
@@ -70,6 +80,9 @@ export class TodoPage extends BasePage {
 
   async isCompleted(text: string): Promise<boolean> {
     const item = this.todoItems.filter({ hasText: text });
-    return item.locator('.completed').isVisible().catch(() => false);
+    return item
+      .locator('.completed')
+      .isVisible()
+      .catch(() => false);
   }
 }
