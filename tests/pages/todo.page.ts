@@ -35,19 +35,6 @@ export class TodoPage extends BasePage {
       .check();
   }
 
-  async deleteTodo(text: string): Promise<void> {
-    const item = this.todoItems.filter({ hasText: text });
-    await item.hover();
-    await item.getByRole('button', { name: 'Delete' }).click();
-  }
-
-  async editTodo(oldText: string, newText: string): Promise<void> {
-    await this.todoItems.filter({ hasText: oldText }).dblclick();
-    const editInput = this.page.getByRole('textbox', { name: 'Edit' });
-    await editInput.fill(newText);
-    await editInput.press('Enter');
-  }
-
   async filterBy(filter: TodoFilter): Promise<void> {
     await this.page.getByRole('link', { name: filter }).click();
   }
@@ -75,14 +62,6 @@ export class TodoPage extends BasePage {
   async getActiveCount(): Promise<number> {
     const text = await this.todoCount.innerText();
     const match = text.match(/(\d+)/);
-    return match ? parseInt(match[1]) : 0;
-  }
-
-  async isCompleted(text: string): Promise<boolean> {
-    const item = this.todoItems.filter({ hasText: text });
-    return item
-      .locator('.completed')
-      .isVisible()
-      .catch(() => false);
+    return match ? parseInt(match[1], 10) : 0;
   }
 }

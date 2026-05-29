@@ -1,8 +1,8 @@
 import fs from 'fs';
-import { request } from '@playwright/test';
 import { env } from '@config/env';
 import { isTokenExpired } from './tokenUtils';
 import { authConfig } from './auth.config';
+import { requestAuthToken } from './login';
 import { UserRole } from './auth.types';
 
 export async function ensureAuthenticated(role: UserRole) {
@@ -34,25 +34,10 @@ async function generateAuth(role: UserRole, authFile: string) {
   let token: string;
 
   if (authForProd && apiBaseURL && credentials.email && credentials.password) {
-    const context = await request.newContext({ baseURL: apiBaseURL });
-
-    const response = await context.post('/login', {
-      data: {
-        email: credentials.email,
-        password: credentials.password,
-      },
+    token = await requestAuthToken(apiBaseURL, {
+      email: credentials.email,
+      password: credentials.password,
     });
-
-    if (!response.ok()) {
-      throw new Error(
-        `Failed to generate auth state for ${role}. Status: ${response.status()}`,
-      );
-    }
-
-    const responseBody = await response.json();
-    token = responseBody.token;
-
-    await context.dispose();
   } else {
     token = createFakeJwt(role);
   }
