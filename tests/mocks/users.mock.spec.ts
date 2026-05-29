@@ -1,37 +1,61 @@
-import { test, expect } from '@playwright/test';
-import { UsersMock } from '@mocks/users.mock';
+import { test, expect } from '@fixtures/mock.fixture';
+import { UserFactory } from '@factories/user.factory';
 
-test.describe('Users mock', { tag: ['@api'] }, () => {
-  test('mocked create user returns id', { tag: ['@smoke'] }, async () => {
-    const user = await UsersMock.createUser({
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john@test.com',
-      password: '123456',
-    });
+test.describe('Users API against mock server', { tag: ['@api'] }, () => {
+  test(
+    'creates user and returns generated id',
+    { tag: ['@smoke'] },
+    async ({ mockUsersApi }) => {
+      const data = UserFactory.create();
 
-    expect(user.id).toBeDefined();
+      const user = await mockUsersApi.createUser(data);
 
-    expect(user.firstName).toBe('John');
-  });
-
-  test('mocked get user returns user', { tag: ['@smoke'] }, async () => {
-    const response = await UsersMock.mockGetUser(1);
-    const user = response.body as { id: number };
-
-    expect(user.id).toBe(1);
-    expect(response.status).toBe(200);
-  });
+      expect(user.id).toBeGreaterThan(0);
+      expect(user.email).toBe(data.email);
+    },
+  );
 
   test(
-    'mocked users list returns array',
-    { tag: ['@regression'] },
-    async () => {
-      const users = await UsersMock.getUsers();
+    'fetches a seeded user',
+    { tag: ['@smoke'] },
+    async ({ mockUsersApi }) => {
+      const user = await mockUsersApi.getUser(1);
 
-      expect(Array.isArray(users)).toBeTruthy();
+      expect(user.id).toBe(1);
+    },
+  );
+
+  test(
+    'returns a non-empty users list',
+    { tag: ['@regression'] },
+    async ({ mockUsersApi }) => {
+      const users = await mockUsersApi.getUsers();
 
       expect(users.length).toBeGreaterThan(0);
+    },
+  );
+
+  test(
+    'created user is retrievable afterwards',
+    { tag: ['@regression'] },
+    async ({ mockUsersApi }) => {
+      const created = await mockUsersApi.createUser(UserFactory.create());
+
+      const fetched = await mockUsersApi.getUser(created.id);
+
+      expect(fetched.id).toBe(created.id);
+      expect(fetched.email).toBe(created.email);
+    },
+  );
+
+  test(
+    'throws ApiError with status 404 for unknown user',
+    { tag: ['@regression'] },
+    async ({ mockUsersApi }) => {
+      await expect(mockUsersApi.getUser(999999)).rejects.toMatchObject({
+        name: 'ApiError',
+        status: 404,
+      });
     },
   );
 });

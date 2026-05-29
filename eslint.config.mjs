@@ -17,6 +17,7 @@ export default [
 
     rules: {
       'no-console': 'off',
+      'no-empty-pattern': ['error', { allowObjectPatternsAsParameters: true }],
     },
   },
 ];

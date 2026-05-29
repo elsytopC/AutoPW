@@ -12,7 +12,7 @@ Lightweight SDET automation framework for UI and API testing built on top of `@p
 - **UI tests** with Page Object Model, typed page actions, and faker-generated test data
 - **API tests** built on a typed service layer (`BaseApi`, `UsersApi`, `AuthApi`)
 - **Auth fixtures** with role-based browser context (`adminAuth`, `userAuth`)
-- **Mock layer** for isolated tests without real network (`UsersMock`)
+- **Contract-level mock server** — in-process HTTP server (`MockApiServer`) that the real `UsersApi` runs against
 - **Tag-based test selection** (`@smoke`, `@regression`, `@api`, `@ui`)
 - **CI** with separate `ui-ci` / `api-ci` jobs and JUnit reporting
 - **Code quality** — ESLint flat config, Prettier, Husky pre-commit + pre-push hooks
@@ -33,7 +33,7 @@ config/
 factories/
   user.factory.ts                   ← faker-based test data builders
 mocks/
-  users.mock.ts                     ← static mock responses (no network)
+  mockServer.ts                     ← in-process HTTP server emulating the Users API
 tests/
   api/users.spec.ts                 ← API test suite
   auth/admin.setup.ts               ← storageState generation for admin role
@@ -42,7 +42,8 @@ tests/
     api.fixture.ts                  ← usersApi, authApi, adminApiContext, existingUser
     ui.fixture.ts                   ← todoPage (pre-navigated)
     auth.fixture.ts                 ← adminAuth, userAuth (role-based page context)
-  mocks/users.mock.spec.ts          ← isolated mock-layer tests
+    mock.fixture.ts                 ← mockServer, mockUsersApi (real client vs mock server)
+  mocks/users.mock.spec.ts          ← contract tests: UsersApi against MockApiServer
   pages/
     base.page.ts                    ← abstract BasePage with shared helpers
     todo.page.ts                    ← TodoPage : BasePage
