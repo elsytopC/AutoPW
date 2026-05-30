@@ -6,22 +6,22 @@ import { env } from './env';
  * logs a concise banner describing how this run is configured.
  */
 async function globalSetup(): Promise<void> {
-  const problems: string[] = [];
+  const configErrors: string[] = [];
 
   if (env.prodAuth) {
     if (!env.apiBaseUrl) {
-      problems.push('API_BASE_URL is required when PROD_AUTH=true');
+      configErrors.push('API_BASE_URL is required when PROD_AUTH=true');
     }
     if (!env.credentials.admin.email || !env.credentials.admin.password) {
-      problems.push(
+      configErrors.push(
         'ADMIN_EMAIL and ADMIN_PASSWORD are required when PROD_AUTH=true',
       );
     }
   }
 
-  if (problems.length > 0) {
+  if (configErrors.length > 0) {
     throw new Error(
-      `Invalid test configuration:\n  - ${problems.join('\n  - ')}`,
+      `Invalid test configuration:\n  - ${configErrors.join('\n  - ')}`,
     );
   }
 
