@@ -42,6 +42,9 @@ jobs:
       - name: Run lint
         run: npm run lint
 
+      - name: Run mock contract tests
+        run: npx playwright test --project=mock
+
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 

@@ -56,8 +56,15 @@ export default defineConfig({
     },
 
     {
+      // Real API tests — require a reachable backend and credentials.
       name: 'api',
-      testMatch: ['**/tests/api/**/*.spec.ts', '**/tests/mocks/**/*.spec.ts'],
+      testMatch: ['**/tests/api/**/*.spec.ts'],
+    },
+
+    {
+      // Contract tests against the in-process mock server — no network/secrets.
+      name: 'mock',
+      testMatch: ['**/tests/mocks/**/*.spec.ts'],
     },
 
     {

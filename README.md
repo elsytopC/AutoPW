@@ -147,8 +147,11 @@ npx playwright test --project=ui-chromium
 npx playwright test --project=ui-firefox
 npx playwright test --project=ui-webkit
 
-# Run API tests only
+# Run API tests only (needs a real backend)
 npx playwright test --project=api
+
+# Run contract tests against the in-process mock server (no backend needed)
+npx playwright test --project=mock
 
 # Lint
 npm run lint
@@ -170,13 +173,14 @@ Workflow: `.github/workflows/playwright.yml`
 
 **`ui-ci`** — always runs on push / PR to `main`:
 1. Run lint (`npm run lint`)
-2. Install Playwright browsers
-3. Run `ui-chromium` project (cross-browser `ui-firefox` / `ui-webkit` available via manual dispatch)
-4. Upload `playwright-report-ui` and `junit-report-ui` artifacts
+2. Run `mock` contract tests (no backend/secrets required)
+3. Install Playwright browsers
+4. Run `ui-chromium` project (cross-browser `ui-firefox` / `ui-webkit` available via manual dispatch)
+5. Upload `playwright-report-ui` and `junit-report-ui` artifacts
 
 > On push/PR only `ui-chromium` runs to keep feedback fast. Trigger `workflow_dispatch` and pick the `project` input to run `ui-firefox` or `ui-webkit`.
 
-**`api-ci`** — runs conditionally:
+**`api-ci`** — runs the real `api` project conditionally:
 - If `API_BASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` secrets are set → runs API tests
 - If secrets are missing → skips gracefully with an informative message
 
