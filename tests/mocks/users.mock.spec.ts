@@ -1,5 +1,6 @@
 import { test, expect } from '@fixtures/mock.fixture';
 import { UserFactory } from '@factories/user.factory';
+import { userResponseSchema } from '@api/models/user.model';
 
 test.describe('Users API against mock server', { tag: ['@api'] }, () => {
   test(
@@ -12,6 +13,19 @@ test.describe('Users API against mock server', { tag: ['@api'] }, () => {
 
       expect(user.id).toBeGreaterThan(0);
       expect(user.email).toBe(data.email);
+    },
+  );
+
+  test(
+    'response payload satisfies the user schema contract',
+    { tag: ['@regression'] },
+    async ({ mockUsersApi }) => {
+      const user = await mockUsersApi.createUser(UserFactory.create());
+
+      expect(userResponseSchema.safeParse(user).success).toBe(true);
+      expect(
+        userResponseSchema.safeParse({ ...user, id: 'not-a-number' }).success,
+      ).toBe(false);
     },
   );
 
