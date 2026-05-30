@@ -23,6 +23,7 @@ on:
           - ui-chromium
           - ui-firefox
           - ui-webkit
+          - ui-visual
 
 jobs:
   ui-ci:

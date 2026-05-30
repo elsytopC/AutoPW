@@ -127,6 +127,7 @@ Every test carries `@smoke` or `@regression` plus `@api` or `@ui`.
 | `@regression` | Full coverage |
 | `@api` | API layer tests |
 | `@ui` | Browser tests |
+| `@visual` | Screenshot baseline tests |
 
 Run by tag locally:
 
@@ -135,6 +136,20 @@ npx playwright test --grep "@smoke"
 npx playwright test --grep "@api"
 npx playwright test --project=ui-chromium --grep "@smoke"
 ```
+
+---
+
+## Visual Regression
+
+The `ui-visual` project captures screenshot baselines of the TodoMVC app
+(targeting the `.todoapp` container with animations frozen and a small
+pixel-diff tolerance).
+
+> **Baselines are platform-specific.** Committed baselines are generated on the
+> host where you run `--update-snapshots`. The project is intentionally **kept
+> out of the default CI run** to avoid false failures from OS/browser font
+> rendering differences. To run it in CI, generate matching (Linux) baselines
+> there first via `--update-snapshots`, then commit them.
 
 ---
 
@@ -159,6 +174,12 @@ npx playwright test --project=api
 
 # Run contract tests against the in-process mock server (no backend needed)
 npx playwright test --project=mock
+
+# Run visual regression tests against committed baselines
+npx playwright test --project=ui-visual
+
+# Regenerate visual baselines after an intended UI change
+npx playwright test --project=ui-visual --update-snapshots
 
 # Lint
 npm run lint

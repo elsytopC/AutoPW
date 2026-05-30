@@ -43,6 +43,13 @@ export default defineConfig({
   reporter: process.env.CI
     ? [['list'], ['html'], ['junit', { outputFile: 'test-results/junit.xml' }]]
     : [['list'], ['html']],
+  /* Visual comparison defaults: tolerate sub-pixel AA noise, freeze animations */
+  expect: {
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.02,
+      animations: 'disabled',
+    },
+  },
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
@@ -94,6 +101,16 @@ export default defineConfig({
       use: {
         ...devices['Desktop Safari'],
         storageState: uiStorageState,
+      },
+    },
+
+    {
+      // Visual regression — baselines are platform-specific, so this project is
+      // kept out of the default CI run and triggered deliberately via dispatch.
+      name: 'ui-visual',
+      testMatch: ['**/tests/visual/**/*.spec.ts'],
+      use: {
+        ...devices['Desktop Chrome'],
       },
     },
   ],
