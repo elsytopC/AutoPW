@@ -64,7 +64,15 @@ export class MockApiServer {
       }
     }
 
+    if (payload.email && !this.isValidEmail(payload.email)) {
+      errors.email = 'email is invalid';
+    }
+
     return errors;
+  }
+
+  private isValidEmail(email: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 
   private seedUser(data: CreateUserRequest): UserResponse {

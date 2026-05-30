@@ -99,6 +99,22 @@ test.describe('Users API against mock server', { tag: ['@api'] }, () => {
   );
 
   test(
+    'rejects malformed email with a format error',
+    { tag: ['@regression'] },
+    async ({ mockUsersApi }) => {
+      const response = await mockUsersApi.tryCreateUser({
+        ...UserFactory.create(),
+        email: 'not-an-email',
+      });
+
+      expect(response.status()).toBe(400);
+
+      const body = await response.json();
+      expect(body.errors.email).toBe('email is invalid');
+    },
+  );
+
+  test(
     'returns 404 response for unknown user without throwing',
     { tag: ['@regression'] },
     async ({ mockUsersApi }) => {
