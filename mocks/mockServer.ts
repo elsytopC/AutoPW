@@ -46,6 +46,27 @@ export class MockApiServer {
     this.server = undefined;
   }
 
+  private validateUserPayload(
+    payload: Partial<CreateUserRequest>,
+  ): Record<string, string> {
+    const requiredFields: (keyof CreateUserRequest)[] = [
+      'firstName',
+      'lastName',
+      'email',
+      'password',
+    ];
+
+    const errors: Record<string, string> = {};
+
+    for (const field of requiredFields) {
+      if (!payload[field]) {
+        errors[field] = `${field} is required`;
+      }
+    }
+
+    return errors;
+  }
+
   private seedUser(data: CreateUserRequest): UserResponse {
     const id = this.nextId++;
     const user: UserResponse = {
@@ -67,14 +88,10 @@ export class MockApiServer {
     if (method === 'POST' && url === '/users') {
       this.readBody(req, (body) => {
         const payload = body as Partial<CreateUserRequest>;
+        const errors = this.validateUserPayload(payload);
 
-        if (
-          !payload.firstName ||
-          !payload.lastName ||
-          !payload.email ||
-          !payload.password
-        ) {
-          this.send(res, 400, { message: 'Invalid user payload' });
+        if (Object.keys(errors).length > 0) {
+          this.send(res, 400, { message: 'Invalid user payload', errors });
           return;
         }
 

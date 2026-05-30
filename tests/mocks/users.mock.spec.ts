@@ -60,7 +60,7 @@ test.describe('Users API against mock server', { tag: ['@api'] }, () => {
   );
 
   test(
-    'rejects user creation with missing fields',
+    'rejects user creation with per-field validation errors',
     { tag: ['@regression'] },
     async ({ mockUsersApi }) => {
       const response = await mockUsersApi.tryCreateUser({
@@ -71,6 +71,12 @@ test.describe('Users API against mock server', { tag: ['@api'] }, () => {
 
       const body = await response.json();
       expect(body.message).toBe('Invalid user payload');
+      expect(body.errors).toMatchObject({
+        firstName: 'firstName is required',
+        lastName: 'lastName is required',
+        password: 'password is required',
+      });
+      expect(body.errors.email).toBeUndefined();
     },
   );
 
