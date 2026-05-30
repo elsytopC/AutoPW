@@ -145,11 +145,24 @@ The `ui-visual` project captures screenshot baselines of the TodoMVC app
 (targeting the `.todoapp` container with animations frozen and a small
 pixel-diff tolerance).
 
-> **Baselines are platform-specific.** Committed baselines are generated on the
-> host where you run `--update-snapshots`. The project is intentionally **kept
-> out of the default CI run** to avoid false failures from OS/browser font
-> rendering differences. To run it in CI, generate matching (Linux) baselines
-> there first via `--update-snapshots`, then commit them.
+**Baselines are platform-specific** — the filename encodes the OS (e.g.
+`...-darwin.png`, `...-linux.png`), since font/AA rendering differs per
+platform. Both local (darwin) and CI (linux) baselines live side by side.
+
+### Generating Linux baselines for CI
+
+Local `--update-snapshots` only produces a baseline for *your* OS. To get the
+Linux baselines that CI compares against, run the **Update Visual Baselines**
+workflow (`.github/workflows/visual-baselines.yml`) from the Actions tab. It
+generates baselines on an ubuntu runner — the same environment as CI — and
+commits them back to the branch.
+
+### How CI uses them
+
+The `visual-ci` job runs `ui-visual` automatically **once Linux baselines
+exist** in the repo. Until then it skips gracefully, so the build never goes
+red just because baselines haven't been bootstrapped yet. After an intended UI
+change, re-run the **Update Visual Baselines** workflow to refresh them.
 
 ---
 

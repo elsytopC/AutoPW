@@ -84,6 +84,54 @@ jobs:
           path: test-results/junit.xml
           retention-days: 7
 
+  visual-ci:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Linux baselines are produced by the "Update Visual Baselines" workflow.
+      # Until they exist, skip gracefully instead of failing the build.
+      - name: Check for Linux baselines
+        id: baselines
+        run: |
+          if find tests/visual -name '*-linux.png' | grep -q .; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Playwright (chromium)
+        if: steps.baselines.outputs.ready == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run visual regression
+        if: steps.baselines.outputs.ready == 'true'
+        run: npx playwright test --project=ui-visual
+
+      - name: Skip visual (no Linux baselines yet)
+        if: steps.baselines.outputs.ready != 'true'
+        run: echo "No Linux baselines found. Run the 'Update Visual Baselines' workflow to generate them."
+
+      - name: Upload visual report
+        uses: actions/upload-artifact@v4
+        if: always() && steps.baselines.outputs.ready == 'true'
+        with:
+          name: playwright-report-visual
+          path: playwright-report/
+          retention-days: 7
+
   api-ci:
     timeout-minutes: 60
     runs-on: ubuntu-latest
