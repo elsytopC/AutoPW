@@ -66,7 +66,19 @@ export class MockApiServer {
 
     if (method === 'POST' && url === '/users') {
       this.readBody(req, (body) => {
-        const created = this.seedUser(body as CreateUserRequest);
+        const payload = body as Partial<CreateUserRequest>;
+
+        if (
+          !payload.firstName ||
+          !payload.lastName ||
+          !payload.email ||
+          !payload.password
+        ) {
+          this.send(res, 400, { message: 'Invalid user payload' });
+          return;
+        }
+
+        const created = this.seedUser(payload as CreateUserRequest);
         this.send(res, 201, created);
       });
       return;

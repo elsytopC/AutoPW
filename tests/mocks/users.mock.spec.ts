@@ -58,4 +58,30 @@ test.describe('Users API against mock server', { tag: ['@api'] }, () => {
       });
     },
   );
+
+  test(
+    'rejects user creation with missing fields',
+    { tag: ['@regression'] },
+    async ({ mockUsersApi }) => {
+      const response = await mockUsersApi.tryCreateUser({
+        email: 'only@test.com',
+      });
+
+      expect(response.status()).toBe(400);
+
+      const body = await response.json();
+      expect(body.message).toBe('Invalid user payload');
+    },
+  );
+
+  test(
+    'returns 404 response for unknown user without throwing',
+    { tag: ['@regression'] },
+    async ({ mockUsersApi }) => {
+      const response = await mockUsersApi.tryGetUser(999999);
+
+      expect(response.status()).toBe(404);
+      expect(response.ok()).toBe(false);
+    },
+  );
 });

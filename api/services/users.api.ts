@@ -1,3 +1,4 @@
+import { APIResponse } from '@playwright/test';
 import { BaseApi } from '../core/baseApi';
 import { CreateUserRequest, UserResponse } from '../models/user.model';
 
@@ -8,6 +9,18 @@ export class UsersApi extends BaseApi {
 
   async getUser(id: number): Promise<UserResponse> {
     return this.get<UserResponse>(`/users/${id}`);
+  }
+
+  /**
+   * Negative-path variants: return the raw response instead of throwing, so
+   * tests can assert on error status codes and bodies directly.
+   */
+  async tryCreateUser(data: Partial<CreateUserRequest>): Promise<APIResponse> {
+    return this.client.post('/users', { data });
+  }
+
+  async tryGetUser(id: number): Promise<APIResponse> {
+    return this.client.get(`/users/${id}`);
   }
 
   async getUsers(): Promise<UserResponse[]> {

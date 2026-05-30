@@ -64,55 +64,6 @@ export class BaseApi {
     await this.assertOk(response, `DELETE ${url} failed`);
   }
 
-  // RAW methods for negative tests
-
-  protected async getRaw(
-    url: string,
-    options?: ApiRequestOptions,
-  ): Promise<APIResponse> {
-    return await this.client.get(url, options);
-  }
-
-  protected async postRaw(
-    url: string,
-    data?: unknown,
-    options?: ApiRequestOptions,
-  ): Promise<APIResponse> {
-    return await this.client.post(url, {
-      data,
-      ...options,
-    });
-  }
-
-  protected async patchRaw(
-    url: string,
-    data?: unknown,
-    options?: ApiRequestOptions,
-  ): Promise<APIResponse> {
-    return await this.client.patch(url, {
-      data,
-      ...options,
-    });
-  }
-
-  protected async putRaw(
-    url: string,
-    data?: unknown,
-    options?: ApiRequestOptions,
-  ): Promise<APIResponse> {
-    return await this.client.put(url, {
-      data,
-      ...options,
-    });
-  }
-
-  protected async deleteRaw(
-    url: string,
-    options?: ApiRequestOptions,
-  ): Promise<APIResponse> {
-    return await this.client.delete(url, options);
-  }
-
   private async parseResponse<T>(
     response: APIResponse,
     errorMessage: string,
