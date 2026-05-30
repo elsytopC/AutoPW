@@ -180,6 +180,17 @@ Workflow: `.github/workflows/playwright.yml`
 
 > On push/PR only `ui-chromium` runs to keep feedback fast. Trigger `workflow_dispatch` and pick the `project` input to run `ui-firefox` or `ui-webkit`.
 
+### Tag strategy per trigger
+
+The suite is scoped automatically by event so feedback stays fast where it matters:
+
+| Trigger | Tag filter | Intent |
+|---|---|---|
+| `pull_request` | `@smoke` | Fast critical-path feedback on every PR |
+| `push` to `main` | none (full) | Full regression after merge |
+| `schedule` (nightly 03:00 UTC) | none (full) | Catch drift / flakiness daily |
+| `workflow_dispatch` | manual `grep` input | On-demand selective runs |
+
 **`api-ci`** — runs the real `api` project conditionally:
 - If `API_BASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` secrets are set → runs API tests
 - If secrets are missing → skips gracefully with an informative message
