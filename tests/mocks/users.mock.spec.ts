@@ -81,6 +81,24 @@ test.describe('Users API against mock server', { tag: ['@api'] }, () => {
   );
 
   test(
+    'reports every required field for an empty payload',
+    { tag: ['@regression'] },
+    async ({ mockUsersApi }) => {
+      const response = await mockUsersApi.tryCreateUser({});
+
+      expect(response.status()).toBe(400);
+
+      const body = await response.json();
+      expect(body.errors).toMatchObject({
+        firstName: 'firstName is required',
+        lastName: 'lastName is required',
+        email: 'email is required',
+        password: 'password is required',
+      });
+    },
+  );
+
+  test(
     'returns 404 response for unknown user without throwing',
     { tag: ['@regression'] },
     async ({ mockUsersApi }) => {
