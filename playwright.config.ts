@@ -28,6 +28,9 @@ const uiStorageState = '.playwright/auth/admin.json';
  */
 export default defineConfig({
   testDir: './tests',
+  /* Validate config / clean up generated artifacts around the whole run */
+  globalSetup: './config/global-setup.ts',
+  globalTeardown: './config/global-teardown.ts',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */

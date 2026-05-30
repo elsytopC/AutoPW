@@ -108,6 +108,13 @@ env.credentials.admin // ADMIN_EMAIL, ADMIN_PASSWORD
 env.credentials.user  // USER_EMAIL, USER_PASSWORD
 ```
 
+### Global Setup / Teardown
+
+| Hook | File | Responsibility |
+|---|---|---|
+| `globalSetup` | `config/global-setup.ts` | Validate config (fail fast on inconsistent `PROD_AUTH` setup) and print a run banner |
+| `globalTeardown` | `config/global-teardown.ts` | Remove generated `.playwright/auth` state so stale tokens don't leak across runs |
+
 ---
 
 ## Test Tags
