@@ -34,16 +34,6 @@ test.describe('Users API', { tag: ['@api'] }, () => {
     },
   );
 
-  // TODO:
-  // Enable after contract-level auth mock server is implemented.
-  test.skip('adminApiContext contains auth header', async ({
-    adminApiContext,
-  }) => {
-    const response = await adminApiContext.get('/users');
-
-    expect(response.ok()).toBeTruthy();
-  });
-
   test(
     'returns ApiError on 404',
     { tag: ['@regression'] },
