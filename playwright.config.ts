@@ -41,8 +41,17 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI
-    ? [['list'], ['html'], ['junit', { outputFile: 'test-results/junit.xml' }]]
-    : [['list'], ['html']],
+    ? [
+        ['list'],
+        ['html'],
+        ['junit', { outputFile: 'test-results/junit.xml' }],
+        ['allure-playwright', { resultsDir: 'allure-results' }],
+      ]
+    : [
+        ['list'],
+        ['html'],
+        ['allure-playwright', { resultsDir: 'allure-results' }],
+      ],
   /* Visual comparison defaults: tolerate sub-pixel AA noise, freeze animations */
   expect: {
     toHaveScreenshot: {

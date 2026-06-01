@@ -220,7 +220,35 @@ npm run format
 
 # Type check
 npx tsc --noEmit
+
+# Generate and open the Allure report (requires Java 8+ on PATH)
+npm run allure:report
 ```
+
+---
+
+## Allure Reporting
+
+[Allure](https://allurereport.org/) gives a richer report than the built-in
+HTML one: grouped steps, attachments, severity labels, and — most usefully —
+**retry history per test** so flaky tests are easy to spot.
+
+The `allure-playwright` reporter writes raw results to `allure-results/` on
+every run. Turn them into a browsable report:
+
+```bash
+npm run allure:generate   # build allure-report/ from allure-results/
+npm run allure:open       # open the generated report
+npm run allure:report     # generate + open in one step
+```
+
+> Allure's CLI is a Java app, so local report generation needs Java 8+ on your
+> PATH. Test execution itself does **not** need Java — only `generate`/`open`.
+
+In CI the `ui-ci` job sets up Java, generates the report from the combined
+results (mock + UI + a11y) and uploads it as the `allure-report-ui` artifact.
+Cross-run trend graphs additionally require persisting Allure's `history/`
+folder between runs (not enabled yet — a deliberate next step if needed).
 
 ---
 
@@ -235,7 +263,8 @@ Workflow: `.github/workflows/playwright.yml`
 2. Run `mock` contract tests (no backend/secrets required)
 3. Install Playwright browsers
 4. Run `ui-chromium` project (cross-browser `ui-firefox` / `ui-webkit` available via manual dispatch)
-5. Upload `playwright-report-ui` and `junit-report-ui` artifacts
+5. Run `ui-a11y` accessibility checks
+6. Generate the Allure report and upload `allure-report-ui`, `playwright-report-ui`, `junit-report-ui` artifacts
 
 > On push/PR only `ui-chromium` runs to keep feedback fast. Trigger `workflow_dispatch` and pick the `project` input to run `ui-firefox` or `ui-webkit`.
 
@@ -258,8 +287,8 @@ The suite is scoped automatically by event so feedback stays fast where it matte
 
 | Environment | Reporters |
 |---|---|
-| Local | `list`, `html` |
-| CI | `list`, `html`, `junit` (`test-results/junit.xml`) |
+| Local | `list`, `html`, `allure-playwright` |
+| CI | `list`, `html`, `junit` (`test-results/junit.xml`), `allure-playwright` |
 
 Screenshots are captured on failure. Traces are captured on first retry.
 
