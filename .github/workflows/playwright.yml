@@ -52,6 +52,9 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
+      - name: Run accessibility checks
+        run: npx playwright test --project=ui-a11y
+
       # Tag strategy:
       #   pull_request        -> @smoke only (fast feedback)
       #   push / schedule      -> full regression (no tag filter)

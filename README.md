@@ -128,6 +128,7 @@ Every test carries `@smoke` or `@regression` plus `@api` or `@ui`.
 | `@api` | API layer tests |
 | `@ui` | Browser tests |
 | `@visual` | Screenshot baseline tests |
+| `@a11y` | Accessibility (axe-core) tests |
 
 Run by tag locally:
 
@@ -136,6 +137,23 @@ npx playwright test --grep "@smoke"
 npx playwright test --grep "@api"
 npx playwright test --project=ui-chromium --grep "@smoke"
 ```
+
+---
+
+## Accessibility
+
+The `ui-a11y` project runs [`axe-core`](https://github.com/dequelabs/axe-core)
+scans (WCAG 2.0/2.1 level A & AA) against the app via the `makeAxeBuilder`
+fixture. Results are platform-independent, so this project runs in regular CI.
+
+```bash
+npx playwright test --project=ui-a11y
+```
+
+On failure the full violation report is attached to the Playwright HTML report
+for triage. Known issues in the third-party TodoMVC demo (e.g. `color-contrast`)
+are explicitly disabled with a documented justification, so the scan still
+guards against any *other* accessibility regression.
 
 ---
 

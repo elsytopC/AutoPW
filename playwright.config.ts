@@ -113,6 +113,15 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
       },
     },
+
+    {
+      // Accessibility (axe-core) — platform-independent, runs in regular CI.
+      name: 'ui-a11y',
+      testMatch: ['**/tests/a11y/**/*.spec.ts'],
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
   ],
 
   /* Run your local dev server before starting the tests */
