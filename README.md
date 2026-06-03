@@ -140,6 +140,40 @@ npx playwright test --project=ui-chromium --grep "@smoke"
 
 ---
 
+## RealWorld (Conduit) Live API
+
+The `conduit-api` project exercises the framework end-to-end against a real,
+stateful REST backend — the [RealWorld](https://realworld-docs.netlify.app/)
+"Conduit" API (`https://api.realworld.show/api`). It demonstrates the full
+stack on non-trivial logic: JWT-style auth, CRUD with server-derived state, and
+contract validation.
+
+Layout (`api/conduit/`): zod `models/`, a token-auth `client/`, and
+`services/` (`ConduitAuthApi`, `ArticlesApi`). Tests live in
+`tests/api/conduit/` and use `tests/fixtures/conduit.fixture.ts`.
+
+Key design points:
+
+- **Auth header is `Token <jwt>`** (not `Bearer`) — a dedicated client, the
+  existing reqres-based auth is untouched.
+- **Fresh throwaway user per run** (`ConduitUserFactory`) + a teardown that
+  deletes every article that user authored, so the shared backend stays clean.
+- **Unique titles** — slugs are derived from the title and must be globally
+  unique, so the factory seeds each title with a random token.
+- **Serial + retries** — the public backend rate-limits bursts, so the project
+  runs with `fullyParallel: false` and `retries: 2`.
+
+```bash
+npx playwright test --project=conduit-api
+# Point at a different backend:
+CONDUIT_API_URL=https://api.realworld.show/api npx playwright test --project=conduit-api
+```
+
+In CI the `conduit-ci` job runs **only nightly and on manual dispatch** — the
+public backend's instability must never block push/PR feedback.
+
+---
+
 ## Accessibility
 
 The `ui-a11y` project runs [`axe-core`](https://github.com/dequelabs/axe-core)
@@ -205,6 +239,9 @@ npx playwright test --project=api
 
 # Run contract tests against the in-process mock server (no backend needed)
 npx playwright test --project=mock
+
+# Run RealWorld (Conduit) live-API tests against a public backend
+npx playwright test --project=conduit-api
 
 # Run visual regression tests against committed baselines
 npx playwright test --project=ui-visual
@@ -282,6 +319,10 @@ The suite is scoped automatically by event so feedback stays fast where it matte
 **`api-ci`** — runs the real `api` project conditionally:
 - If `API_BASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` secrets are set → runs API tests
 - If secrets are missing → skips gracefully with an informative message
+
+**`conduit-ci`** — runs the `conduit-api` project against the public RealWorld
+backend. Triggered **only on schedule (nightly) and manual dispatch** so the
+external backend's instability never blocks push/PR feedback.
 
 ### Reporters
 

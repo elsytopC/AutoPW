@@ -77,7 +77,17 @@ export default defineConfig({
     {
       // Real API tests — require a reachable backend and credentials.
       name: 'api',
-      testMatch: ['**/tests/api/**/*.spec.ts'],
+      testMatch: ['**/tests/api/*.spec.ts'],
+    },
+
+    {
+      // RealWorld (Conduit) live API — public backend, no secrets needed.
+      // The shared demo backend rate-limits bursts, so run this suite serially
+      // and retry transient failures.
+      name: 'conduit-api',
+      testMatch: ['**/tests/api/conduit/**/*.spec.ts'],
+      fullyParallel: false,
+      retries: 2,
     },
 
     {

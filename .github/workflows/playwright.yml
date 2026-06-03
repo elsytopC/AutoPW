@@ -211,3 +211,36 @@ jobs:
           name: playwright-report-api
           path: playwright-report/
           retention-days: 7
+
+  conduit-ci:
+    # RealWorld is a public demo backend that can be slow or rate-limited, so
+    # this job runs only nightly and on demand — its instability must never
+    # block push/PR feedback.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # API-only project — no browser binaries required.
+      - name: Run Conduit API tests
+        run: npx playwright test --project=conduit-api
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-conduit
+          path: playwright-report/
+          retention-days: 7

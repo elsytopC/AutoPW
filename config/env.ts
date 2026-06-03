@@ -3,6 +3,9 @@ export const env = {
 
   apiBaseUrl: process.env.API_BASE_URL ?? '',
 
+  conduitApiUrl:
+    process.env.CONDUIT_API_URL ?? 'https://api.realworld.show/api',
+
   uiBaseUrl:
     process.env.BASE_URL ??
     process.env.UI_BASE_URL ??
