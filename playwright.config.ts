@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import { defineConfig, devices } from '@playwright/test';
+import { env } from './config/env';
 
 /**
  * Read environment variables from file.
@@ -140,6 +141,19 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
       },
+    },
+
+    {
+      // RealWorld (Conduit) UI — live SPA against demo.realworld.show.
+      // Serial + retries: same external-backend constraints as conduit-api.
+      name: 'conduit-ui',
+      testMatch: ['**/tests/ui/conduit/**/*.spec.ts'],
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: env.conduitUiUrl,
+      },
+      fullyParallel: false,
+      retries: 2,
     },
   ],
 

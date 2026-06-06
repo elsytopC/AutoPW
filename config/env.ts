@@ -6,6 +6,8 @@ export const env = {
   conduitApiUrl:
     process.env.CONDUIT_API_URL ?? 'https://api.realworld.show/api',
 
+  conduitUiUrl: process.env.CONDUIT_UI_URL ?? 'https://demo.realworld.show',
+
   uiBaseUrl:
     process.env.BASE_URL ??
     process.env.UI_BASE_URL ??

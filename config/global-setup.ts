@@ -31,6 +31,7 @@ async function globalSetup(): Promise<void> {
       `  Auth mode : ${env.prodAuth ? 'production (real login)' : 'mock JWT'}`,
       `  UI base   : ${env.uiBaseUrl}`,
       `  API base  : ${env.apiBaseUrl || '(not set)'}`,
+      `  Conduit   : ${env.conduitUiUrl} → ${env.conduitApiUrl}`,
       '────────────────────────────',
     ].join('\n'),
   );

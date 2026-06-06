@@ -233,9 +233,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # API-only project — no browser binaries required.
+      - name: Install Playwright (chromium)
+        run: npx playwright install --with-deps chromium
+
       - name: Run Conduit API tests
         run: npx playwright test --project=conduit-api
+
+      - name: Run Conduit UI tests
+        run: npx playwright test --project=conduit-ui
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4

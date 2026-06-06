@@ -172,6 +172,28 @@ CONDUIT_API_URL=https://api.realworld.show/api npx playwright test --project=con
 In CI the `conduit-ci` job runs **only nightly and on manual dispatch** — the
 public backend's instability must never block push/PR feedback.
 
+### UI layer (Phase 2)
+
+The `conduit-ui` project drives the live Angular SPA at `demo.realworld.show`.
+Page Objects live under `tests/pages/conduit/`; specs under `tests/ui/conduit/`.
+
+| Page Object | Route | Responsibility |
+|---|---|---|
+| `ConduitHomePage` | `/` | Feed, logged-in/out nav assertions |
+| `ConduitLoginPage` | `/login` | Email + password sign-in |
+| `ConduitRegisterPage` | `/register` | New account form |
+| `ConduitEditorPage` | `/editor` | Compose and publish an article |
+| `ConduitArticlePage` | `/article/{slug}` | Read title, body, tags |
+
+**API + UI combo:** `utils/auth/conduit.session.ts` provides
+`authenticateConduitUser(page, user)` — injects the JWT into
+`localStorage.jwtToken` *before* navigation so tests can seed data via API and
+verify it in the browser without walking through the login form.
+
+```bash
+npx playwright test --project=conduit-ui
+```
+
 ---
 
 ## Accessibility
@@ -242,6 +264,9 @@ npx playwright test --project=mock
 
 # Run RealWorld (Conduit) live-API tests against a public backend
 npx playwright test --project=conduit-api
+
+# Run RealWorld (Conduit) UI tests against the live SPA
+npx playwright test --project=conduit-ui
 
 # Run visual regression tests against committed baselines
 npx playwright test --project=ui-visual
@@ -320,9 +345,9 @@ The suite is scoped automatically by event so feedback stays fast where it matte
 - If `API_BASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` secrets are set → runs API tests
 - If secrets are missing → skips gracefully with an informative message
 
-**`conduit-ci`** — runs the `conduit-api` project against the public RealWorld
-backend. Triggered **only on schedule (nightly) and manual dispatch** so the
-external backend's instability never blocks push/PR feedback.
+**`conduit-ci`** — runs `conduit-api` and `conduit-ui` against the public
+RealWorld backend + SPA. Triggered **only on schedule (nightly) and manual
+dispatch** so external instability never blocks push/PR feedback.
 
 ### Reporters
 
