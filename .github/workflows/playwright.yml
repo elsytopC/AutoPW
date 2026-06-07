@@ -29,6 +29,9 @@ jobs:
   ui-ci:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    # Needs write access to push the Allure report to the gh-pages branch.
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -39,12 +42,6 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-
-      - name: Setup Java (for Allure report generation)
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
 
       - name: Install dependencies
         run: npm ci
@@ -77,17 +74,44 @@ jobs:
             npx playwright test --project="$PROJECT"
           fi
 
-      - name: Generate Allure report
+      # Pull the previous report (with its history/) from the gh-pages branch.
+      # continue-on-error: on the very first run gh-pages does not exist yet.
+      - name: Fetch previous Allure history
         if: always()
-        run: npx allure generate allure-results --clean -o allure-report
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      # Generates the report and merges the previous history so trend charts
+      # accumulate across runs. keep_reports caps how many runs we retain.
+      - name: Build Allure report with history
+        if: always()
+        uses: simple-elf/allure-report-action@v1.12
+        with:
+          allure_results: allure-results
+          allure_history: allure-history
+          gh_pages: gh-pages
+          keep_reports: 30
 
       - name: Upload Allure report
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: allure-report-ui
-          path: allure-report/
+          path: allure-history/
           retention-days: 7
+
+      # Publish only on push to main so trends track the main branch over time
+      # (PR runs would pollute history, and fork PRs cannot push anyway).
+      - name: Publish Allure report to GitHub Pages
+        if: always() && github.event_name == 'push'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4

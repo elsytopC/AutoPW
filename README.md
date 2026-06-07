@@ -307,10 +307,21 @@ npm run allure:report     # generate + open in one step
 > Allure's CLI is a Java app, so local report generation needs Java 8+ on your
 > PATH. Test execution itself does **not** need Java — only `generate`/`open`.
 
-In CI the `ui-ci` job sets up Java, generates the report from the combined
-results (mock + UI + a11y) and uploads it as the `allure-report-ui` artifact.
-Cross-run trend graphs additionally require persisting Allure's `history/`
-folder between runs (not enabled yet — a deliberate next step if needed).
+### Trends in CI (GitHub Pages)
+
+In CI the `ui-ci` job builds the report from the combined results (mock + UI +
+a11y) with `simple-elf/allure-report-action`, which bundles the Allure CLI (no
+Java setup needed) and **merges the previous run's `history/`** so trend charts
+accumulate over time. The report is uploaded as the `allure-report-ui` artifact
+and, **on push to `main`**, published to the `gh-pages` branch via
+`peaceiris/actions-gh-pages`.
+
+This gives a live dashboard at `https://<owner>.github.io/<repo>/` with
+trend graphs (pass rate, retries/flakiness, duration) across the last 30 runs.
+
+> One-time setup: enable GitHub Pages for the repo with source = `gh-pages`
+> branch (Settings → Pages). PR runs intentionally don't publish — only merges
+> to `main` update the trend history.
 
 ---
 
