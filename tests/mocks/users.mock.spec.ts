@@ -1,10 +1,11 @@
 import { test, expect } from '@fixtures/mock.fixture';
 import { UserFactory } from '@factories/user.factory';
 import { userResponseSchema } from '@api/models/user.model';
+import { qase } from 'playwright-qase-reporter';
 
 test.describe('Users API against mock server', { tag: ['@api'] }, () => {
   test(
-    'creates user and returns generated id',
+    qase(19, 'creates user and returns generated id'),
     { tag: ['@smoke'] },
     async ({ mockUsersApi }) => {
       const data = UserFactory.create();
@@ -17,7 +18,7 @@ test.describe('Users API against mock server', { tag: ['@api'] }, () => {
   );
 
   test(
-    'response payload satisfies the user schema contract',
+    qase(20, 'response payload satisfies the user schema contract'),
     { tag: ['@regression'] },
     async ({ mockUsersApi }) => {
       const user = await mockUsersApi.createUser(UserFactory.create());
@@ -30,7 +31,7 @@ test.describe('Users API against mock server', { tag: ['@api'] }, () => {
   );
 
   test(
-    'fetches a seeded user',
+    qase(21, 'fetches a seeded user'),
     { tag: ['@smoke'] },
     async ({ mockUsersApi }) => {
       const user = await mockUsersApi.getUser(1);
@@ -40,7 +41,7 @@ test.describe('Users API against mock server', { tag: ['@api'] }, () => {
   );
 
   test(
-    'returns a non-empty users list',
+    qase(22, 'returns a non-empty users list'),
     { tag: ['@regression'] },
     async ({ mockUsersApi }) => {
       const users = await mockUsersApi.getUsers();
@@ -50,7 +51,7 @@ test.describe('Users API against mock server', { tag: ['@api'] }, () => {
   );
 
   test(
-    'created user is retrievable afterwards',
+    qase(23, 'created user is retrievable afterwards'),
     { tag: ['@regression'] },
     async ({ mockUsersApi }) => {
       const created = await mockUsersApi.createUser(UserFactory.create());
@@ -63,7 +64,7 @@ test.describe('Users API against mock server', { tag: ['@api'] }, () => {
   );
 
   test(
-    'throws ApiError with status 404 for unknown user',
+    qase(24, 'throws ApiError with status 404 for unknown user'),
     { tag: ['@regression'] },
     async ({ mockUsersApi }) => {
       await expect(mockUsersApi.getUser(999999)).rejects.toMatchObject({
@@ -74,7 +75,7 @@ test.describe('Users API against mock server', { tag: ['@api'] }, () => {
   );
 
   test(
-    'rejects user creation with per-field validation errors',
+    qase(25, 'rejects user creation with per-field validation errors'),
     { tag: ['@regression'] },
     async ({ mockUsersApi }) => {
       const response = await mockUsersApi.tryCreateUser({
@@ -95,7 +96,7 @@ test.describe('Users API against mock server', { tag: ['@api'] }, () => {
   );
 
   test(
-    'reports every required field for an empty payload',
+    qase(26, 'reports every required field for an empty payload'),
     { tag: ['@regression'] },
     async ({ mockUsersApi }) => {
       const response = await mockUsersApi.tryCreateUser({});
@@ -113,7 +114,7 @@ test.describe('Users API against mock server', { tag: ['@api'] }, () => {
   );
 
   test(
-    'rejects malformed email with a format error',
+    qase(27, 'rejects malformed email with a format error'),
     { tag: ['@regression'] },
     async ({ mockUsersApi }) => {
       const response = await mockUsersApi.tryCreateUser({
@@ -129,7 +130,7 @@ test.describe('Users API against mock server', { tag: ['@api'] }, () => {
   );
 
   test(
-    'returns 404 response for unknown user without throwing',
+    qase(28, 'returns 404 response for unknown user without throwing'),
     { tag: ['@regression'] },
     async ({ mockUsersApi }) => {
       const response = await mockUsersApi.tryGetUser(999999);

@@ -1,9 +1,10 @@
 import { test, expect } from '@fixtures/conduit.fixture';
 import { ConduitArticleFactory } from '@factories/conduit.factory';
+import { qase } from 'playwright-qase-reporter';
 
 test.describe('Conduit articles', { tag: ['@api'] }, () => {
   test(
-    'creates and reads back an article',
+    qase(31, 'creates and reads back an article'),
     { tag: ['@smoke'] },
     async ({ articlesApi, conduitUser }) => {
       const input = ConduitArticleFactory.create();
@@ -22,7 +23,7 @@ test.describe('Conduit articles', { tag: ['@api'] }, () => {
   );
 
   test(
-    'lists the article under its author',
+    qase(32, 'lists the article under its author'),
     { tag: ['@regression'] },
     async ({ articlesApi, conduitUser }) => {
       const created = await articlesApi.create(ConduitArticleFactory.create());
@@ -37,7 +38,7 @@ test.describe('Conduit articles', { tag: ['@api'] }, () => {
   );
 
   test(
-    'updating the title regenerates the slug',
+    qase(33, 'updating the title regenerates the slug'),
     { tag: ['@regression'] },
     async ({ articlesApi }) => {
       const created = await articlesApi.create(ConduitArticleFactory.create());
@@ -58,7 +59,7 @@ test.describe('Conduit articles', { tag: ['@api'] }, () => {
   );
 
   test(
-    'deletes an article',
+    qase(34, 'deletes an article'),
     { tag: ['@regression'] },
     async ({ articlesApi }) => {
       const created = await articlesApi.create(ConduitArticleFactory.create());
@@ -71,7 +72,7 @@ test.describe('Conduit articles', { tag: ['@api'] }, () => {
   );
 
   test(
-    'rejects article creation without auth (401)',
+    qase(35, 'rejects article creation without auth (401)'),
     { tag: ['@regression'] },
     async ({ anonArticlesApi }) => {
       const response = await anonArticlesApi.tryCreate(
@@ -83,7 +84,7 @@ test.describe('Conduit articles', { tag: ['@api'] }, () => {
   );
 
   test(
-    'rejects an invalid article with field errors (422)',
+    qase(36, 'rejects an invalid article with field errors (422)'),
     { tag: ['@regression'] },
     async ({ articlesApi }) => {
       const response = await articlesApi.tryCreate({ title: '' });

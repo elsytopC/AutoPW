@@ -1,53 +1,66 @@
 import { faker } from '@faker-js/faker';
 import { test, expect } from '@fixtures/ui.fixture';
+import { qase } from 'playwright-qase-reporter';
 
 test.describe('TodoMVC', { tag: ['@ui'] }, () => {
-  test('add single todo', { tag: ['@smoke'] }, async ({ todoPage }) => {
-    const title = faker.lorem.words(3);
+  test(
+    qase(1, 'add single todo'),
+    { tag: ['@smoke'] },
+    async ({ todoPage }) => {
+      const title = faker.lorem.words(3);
 
-    await test.step('Add a new todo', async () => {
-      await todoPage.addTodo(title);
-    });
+      await test.step('Add a new todo', async () => {
+        await todoPage.addTodo(title);
+      });
 
-    await test.step('Verify todo appears in the list', async () => {
-      const items = await todoPage.getItemTexts();
-      expect(items).toContain(title);
-    });
-  });
-
-  test('add multiple todos', { tag: ['@smoke'] }, async ({ todoPage }) => {
-    const first = faker.lorem.words(2);
-    const second = faker.lorem.words(2);
-
-    await test.step('Add two todos', async () => {
-      await todoPage.addTodo(first);
-      await todoPage.addTodo(second);
-    });
-
-    await test.step('Verify both todos are listed', async () => {
-      const items = await todoPage.getItemTexts();
-      expect(items).toHaveLength(2);
-    });
-  });
-
-  test('complete a todo', { tag: ['@smoke'] }, async ({ todoPage }) => {
-    const title = faker.lorem.words(2);
-
-    await test.step('Add a todo', async () => {
-      await todoPage.addTodo(title);
-    });
-
-    await test.step('Mark todo as completed', async () => {
-      await todoPage.completeTodo(title);
-    });
-
-    await test.step('Verify active count is zero', async () => {
-      expect(await todoPage.getActiveCount()).toBe(0);
-    });
-  });
+      await test.step('Verify todo appears in the list', async () => {
+        const items = await todoPage.getItemTexts();
+        expect(items).toContain(title);
+      });
+    },
+  );
 
   test(
-    'active count decreases after completing',
+    qase(2, 'add multiple todos'),
+    { tag: ['@smoke'] },
+    async ({ todoPage }) => {
+      const first = faker.lorem.words(2);
+      const second = faker.lorem.words(2);
+
+      await test.step('Add two todos', async () => {
+        await todoPage.addTodo(first);
+        await todoPage.addTodo(second);
+      });
+
+      await test.step('Verify both todos are listed', async () => {
+        const items = await todoPage.getItemTexts();
+        expect(items).toHaveLength(2);
+      });
+    },
+  );
+
+  test(
+    qase(3, 'complete a todo'),
+    { tag: ['@smoke'] },
+    async ({ todoPage }) => {
+      const title = faker.lorem.words(2);
+
+      await test.step('Add a todo', async () => {
+        await todoPage.addTodo(title);
+      });
+
+      await test.step('Mark todo as completed', async () => {
+        await todoPage.completeTodo(title);
+      });
+
+      await test.step('Verify active count is zero', async () => {
+        expect(await todoPage.getActiveCount()).toBe(0);
+      });
+    },
+  );
+
+  test(
+    qase(4, 'active count decreases after completing'),
     { tag: ['@regression'] },
     async ({ todoPage }) => {
       const taskA = faker.lorem.words(2);
@@ -73,7 +86,7 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
   );
 
   test(
-    'filter active todos',
+    qase(5, 'filter active todos'),
     { tag: ['@regression'] },
     async ({ todoPage }) => {
       const activeTitle = faker.lorem.words(2);
@@ -98,7 +111,7 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
   );
 
   test(
-    'filter completed todos',
+    qase(6, 'filter completed todos'),
     { tag: ['@regression'] },
     async ({ todoPage }) => {
       const activeTitle = faker.lorem.words(2);
@@ -123,7 +136,7 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
   );
 
   test(
-    'clear completed todos',
+    qase(7, 'clear completed todos'),
     { tag: ['@regression'] },
     async ({ todoPage }) => {
       const keepTitle = faker.lorem.words(2);
@@ -148,7 +161,7 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
   );
 
   test(
-    'todo state is consistent across views',
+    qase(8, 'todo state is consistent across views'),
     { tag: ['@regression'] },
     async ({ todoPage }) => {
       const title = faker.lorem.words(2);
@@ -168,7 +181,7 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
   );
 
   test(
-    'app stays functional when third-party requests are blocked',
+    qase(9, 'app stays functional when third-party requests are blocked'),
     { tag: ['@regression'] },
     async ({ page, todoPage }) => {
       // Network interception: abort non-essential third-party assets to keep

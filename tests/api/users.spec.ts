@@ -1,23 +1,32 @@
 import { test, expect } from '@fixtures/api.fixture';
 import { UserFactory } from '@factories/user.factory';
+import { qase } from 'playwright-qase-reporter';
 
 test.describe('Users API', { tag: ['@api'] }, () => {
-  test('admin creates user', { tag: ['@smoke'] }, async ({ usersApi }) => {
-    const userData = UserFactory.create();
+  test(
+    qase(14, 'admin creates user'),
+    { tag: ['@smoke'] },
+    async ({ usersApi }) => {
+      const userData = UserFactory.create();
 
-    const user = await usersApi.createUser(userData);
+      const user = await usersApi.createUser(userData);
 
-    expect(user.id).toBeDefined();
-  });
-
-  test('admin gets user', { tag: ['@smoke'] }, async ({ usersApi }) => {
-    const user = await usersApi.getUser(1);
-
-    expect(user.id).toBe(1);
-  });
+      expect(user.id).toBeDefined();
+    },
+  );
 
   test(
-    'admin gets users list',
+    qase(15, 'admin gets user'),
+    { tag: ['@smoke'] },
+    async ({ usersApi }) => {
+      const user = await usersApi.getUser(1);
+
+      expect(user.id).toBe(1);
+    },
+  );
+
+  test(
+    qase(16, 'admin gets users list'),
     { tag: ['@regression'] },
     async ({ usersApi }) => {
       const users = await usersApi.getUsers();
@@ -27,7 +36,7 @@ test.describe('Users API', { tag: ['@api'] }, () => {
   );
 
   test(
-    'existingUser fixture creates user',
+    qase(17, 'existingUser fixture creates user'),
     { tag: ['@regression'] },
     async ({ existingUser }) => {
       expect(existingUser.id).toBeDefined();
@@ -35,7 +44,7 @@ test.describe('Users API', { tag: ['@api'] }, () => {
   );
 
   test(
-    'returns ApiError on 404',
+    qase(18, 'returns ApiError on 404'),
     { tag: ['@regression'] },
     async ({ usersApi }) => {
       await expect(usersApi.getUser(999999)).rejects.toMatchObject({

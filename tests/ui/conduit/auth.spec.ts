@@ -3,10 +3,11 @@ import { ConduitUserFactory } from '@factories/conduit.factory';
 import { createConduitContext } from '@api/conduit/client/conduitClient';
 import { ConduitAuthApi } from '@api/conduit/services/auth.api';
 import { clearConduitSession } from '@utils/auth/conduit.session';
+import { qase } from 'playwright-qase-reporter';
 
 test.describe('Conduit auth (UI)', { tag: ['@ui', '@conduit'] }, () => {
   test(
-    'registers a new user and lands on the home feed',
+    qase(29, 'registers a new user and lands on the home feed'),
     { tag: ['@smoke'] },
     async ({ conduitRegister, conduitHome, page }) => {
       const userData = ConduitUserFactory.create();
@@ -21,7 +22,7 @@ test.describe('Conduit auth (UI)', { tag: ['@ui', '@conduit'] }, () => {
   );
 
   test(
-    'logs in with existing credentials',
+    qase(30, 'logs in with existing credentials'),
     { tag: ['@regression'] },
     async ({ conduitLogin, conduitHome, page }) => {
       const userData = ConduitUserFactory.create();

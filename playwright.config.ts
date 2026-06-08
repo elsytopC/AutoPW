@@ -47,11 +47,15 @@ export default defineConfig({
         ['html'],
         ['junit', { outputFile: 'test-results/junit.xml' }],
         ['allure-playwright', { resultsDir: 'allure-results' }],
+        // mode is read from qase.config.json; defaults to "off" unless
+        // QASE_MODE=testops is set in the environment.
+        ['playwright-qase-reporter'],
       ]
     : [
         ['list'],
         ['html'],
         ['allure-playwright', { resultsDir: 'allure-results' }],
+        ['playwright-qase-reporter'],
       ],
   /* Visual comparison defaults: tolerate sub-pixel AA noise, freeze animations */
   expect: {

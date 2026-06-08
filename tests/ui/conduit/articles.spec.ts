@@ -9,13 +9,14 @@ import {
 } from '@factories/conduit.factory';
 import { authenticateConduitUser } from '@utils/auth/conduit.session';
 import { ConduitArticlePage } from '@pages/conduit/article.page';
+import { qase } from 'playwright-qase-reporter';
 
 test.describe(
   'Conduit articles (API + UI)',
   { tag: ['@ui', '@conduit', '@api'] },
   () => {
     test(
-      'article created via API is visible in the browser',
+      qase(37, 'article created via API is visible in the browser'),
       { tag: ['@smoke'] },
       async ({ articlesApi, conduitUser, page }) => {
         const input = ConduitArticleFactory.create();
@@ -39,7 +40,7 @@ test.describe(
 
 uiTest.describe('Conduit articles (UI)', { tag: ['@ui', '@conduit'] }, () => {
   uiTest(
-    'publishes an article through the editor',
+    qase(38, 'publishes an article through the editor'),
     { tag: ['@regression'] },
     async ({ conduitRegister, conduitEditor, conduitArticle, page }) => {
       const userData = ConduitUserFactory.create();

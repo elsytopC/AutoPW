@@ -1,6 +1,7 @@
 import type { TestInfo } from '@playwright/test';
 import { test, expect } from '@fixtures/a11y.fixture';
 import { TodoPage } from '@pages/todo.page';
+import { qase } from 'playwright-qase-reporter';
 
 /**
  * Accessibility checks via axe-core. Unlike visual baselines, axe results are
@@ -22,7 +23,7 @@ async function attach(testInfo: TestInfo, violations: unknown): Promise<void> {
 
 test.describe('TodoMVC accessibility', { tag: ['@a11y', '@ui'] }, () => {
   test(
-    'empty app has no detectable a11y violations',
+    qase(12, 'empty app has no detectable a11y violations'),
     { tag: ['@smoke'] },
     async ({ page, makeAxeBuilder }, testInfo) => {
       const todo = new TodoPage(page);
@@ -37,20 +38,20 @@ test.describe('TodoMVC accessibility', { tag: ['@a11y', '@ui'] }, () => {
     },
   );
 
-  test('populated list has no detectable a11y violations', async ({
-    page,
-    makeAxeBuilder,
-  }, testInfo) => {
-    const todo = new TodoPage(page);
-    await todo.goto();
-    await todo.addTodo('Write tests');
-    await todo.completeTodo('Write tests');
+  test(
+    qase(13, 'populated list has no detectable a11y violations'),
+    async ({ page, makeAxeBuilder }, testInfo) => {
+      const todo = new TodoPage(page);
+      await todo.goto();
+      await todo.addTodo('Write tests');
+      await todo.completeTodo('Write tests');
 
-    const results = await makeAxeBuilder()
-      .disableRules(KNOWN_DEMO_VIOLATIONS)
-      .analyze();
-    await attach(testInfo, results.violations);
+      const results = await makeAxeBuilder()
+        .disableRules(KNOWN_DEMO_VIOLATIONS)
+        .analyze();
+      await attach(testInfo, results.violations);
 
-    expect(results.violations).toEqual([]);
-  });
+      expect(results.violations).toEqual([]);
+    },
+  );
 });

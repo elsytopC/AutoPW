@@ -1,0 +1,18 @@
+{
+  "mode": "off",
+  "fallback": "off",
+  "testops": {
+    "project": "QA",
+    "run": {
+      "title": "Playwright automated run",
+      "complete": true
+    },
+    "batch": {
+      "size": 100
+    },
+    "uploadAttachments": true
+  },
+  "framework": {
+    "markAsFlaky": true
+  }
+}
