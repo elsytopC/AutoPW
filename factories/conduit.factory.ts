@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { RegisterUserRequest } from '@api/conduit/models/user.model';
 import { CreateArticleRequest } from '@api/conduit/models/article.model';
+import { CreateCommentRequest } from '@api/conduit/models/comment.model';
 
 export class ConduitUserFactory {
   static create(overrides?: Partial<RegisterUserRequest>): RegisterUserRequest {
@@ -33,6 +34,17 @@ export class ConduitArticleFactory {
         ['qa', 'playwright', 'testing', 'automation', 'typescript'],
         2,
       ),
+      ...overrides,
+    };
+  }
+}
+
+export class ConduitCommentFactory {
+  static create(
+    overrides?: Partial<CreateCommentRequest>,
+  ): CreateCommentRequest {
+    return {
+      body: faker.lorem.sentence(),
       ...overrides,
     };
   }

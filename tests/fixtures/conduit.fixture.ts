@@ -3,6 +3,7 @@ import { test as base } from '@playwright/test';
 import { createConduitContext } from '@api/conduit/client/conduitClient';
 import { ConduitAuthApi } from '@api/conduit/services/auth.api';
 import { ArticlesApi } from '@api/conduit/services/articles.api';
+import { CommentsApi } from '@api/conduit/services/comments.api';
 import { ConduitUser } from '@api/conduit/models/user.model';
 import { ConduitUserFactory } from '@factories/conduit.factory';
 
@@ -13,6 +14,10 @@ type ConduitFixtures = {
   articlesApi: ArticlesApi;
   /** Unauthenticated Articles API for negative auth checks. */
   anonArticlesApi: ArticlesApi;
+  /** Comments API authenticated as `conduitUser`. */
+  commentsApi: CommentsApi;
+  /** Unauthenticated Comments API for negative auth checks. */
+  anonCommentsApi: CommentsApi;
 };
 
 export const test = base.extend<ConduitFixtures>({
@@ -49,6 +54,25 @@ export const test = base.extend<ConduitFixtures>({
     const context = await createConduitContext();
 
     await use(new ArticlesApi(context));
+
+    await context.dispose();
+  },
+
+  // Comments are deleted automatically when their parent article is removed,
+  // and the articlesApi fixture already cleans up every article authored by
+  // `conduitUser`, so no extra comment teardown is required here.
+  commentsApi: async ({ conduitUser }, use) => {
+    const context = await createConduitContext(conduitUser.token);
+
+    await use(new CommentsApi(context));
+
+    await context.dispose();
+  },
+
+  anonCommentsApi: async ({}, use) => {
+    const context = await createConduitContext();
+
+    await use(new CommentsApi(context));
 
     await context.dispose();
   },
