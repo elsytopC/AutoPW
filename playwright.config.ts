@@ -19,6 +19,10 @@ import { env } from './config/env';
  */
 const uiProjectDefaults = {
   testMatch: ['**/tests/ui/**/*.spec.ts'],
+  // Conduit UI tests live under tests/ui/conduit/** but target a different
+  // baseURL — they run only in the dedicated `conduit-ui` project, so keep
+  // them out of the default browser projects to avoid wrong-baseURL failures.
+  testIgnore: ['**/tests/ui/conduit/**'],
   dependencies: ['setup-auth-admin'],
 };
 
@@ -57,22 +61,20 @@ export default defineConfig({
         ['allure-playwright', { resultsDir: 'allure-results' }],
         ['playwright-qase-reporter'],
       ],
-  /* Visual comparison defaults: tolerate sub-pixel AA noise, freeze animations */
+
   expect: {
     toHaveScreenshot: {
       maxDiffPixelRatio: 0.02,
       animations: 'disabled',
     },
   },
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+
   use: {
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     baseURL: 'https://demo.playwright.dev',
   },
 
-  /* Configure separate projects for API and UI layers */
   projects: [
     {
       name: 'setup-auth-admin',
@@ -86,9 +88,6 @@ export default defineConfig({
     },
 
     {
-      // RealWorld (Conduit) live API — public backend, no secrets needed.
-      // The shared demo backend rate-limits bursts, so run this suite serially
-      // and retry transient failures.
       name: 'conduit-api',
       testMatch: ['**/tests/api/conduit/**/*.spec.ts'],
       fullyParallel: false,
@@ -96,7 +95,6 @@ export default defineConfig({
     },
 
     {
-      // Contract tests against the in-process mock server — no network/secrets.
       name: 'mock',
       testMatch: ['**/tests/mocks/**/*.spec.ts'],
     },
@@ -139,7 +137,6 @@ export default defineConfig({
     },
 
     {
-      // Accessibility (axe-core) — platform-independent, runs in regular CI.
       name: 'ui-a11y',
       testMatch: ['**/tests/a11y/**/*.spec.ts'],
       use: {
@@ -148,8 +145,6 @@ export default defineConfig({
     },
 
     {
-      // RealWorld (Conduit) UI — live SPA against demo.realworld.show.
-      // Serial + retries: same external-backend constraints as conduit-api.
       name: 'conduit-ui',
       testMatch: ['**/tests/ui/conduit/**/*.spec.ts'],
       use: {
