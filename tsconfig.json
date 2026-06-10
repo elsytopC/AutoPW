@@ -3,6 +3,7 @@
     "target": "ES2022",
     "module": "commonjs",
     "strict": true,
+    "skipLibCheck": true,
     "esModuleInterop": true,
     "types": ["node", "@playwright/test"],
     "paths": {
