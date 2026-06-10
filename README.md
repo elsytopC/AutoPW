@@ -310,11 +310,11 @@ npm run allure:report     # generate + open in one step
 ### Trends in CI (GitHub Pages)
 
 In CI the `ui-ci` job builds the report from the combined results (mock + UI +
-a11y) with `simple-elf/allure-report-action`, which bundles the Allure CLI (no
-Java setup needed) and **merges the previous run's `history/`** so trend charts
-accumulate over time. The report is uploaded as the `allure-report-ui` artifact
-and, **on push to `main`**, published to the `gh-pages` branch via
-`peaceiris/actions-gh-pages`.
+a11y) with the npm-installed `allure-commandline` (Java 17 via
+`actions/setup-java`) and **merges the previous run's `history/`** from the
+`gh-pages` branch so trend charts accumulate over time. The report is uploaded
+as the `allure-report-ui` artifact and, **on push to `main`**, published to the
+`gh-pages` branch via `peaceiris/actions-gh-pages`.
 
 This gives a live dashboard at `https://<owner>.github.io/<repo>/` with
 trend graphs (pass rate, retries/flakiness, duration) across the last 30 runs.

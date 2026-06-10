@@ -46,6 +46,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Allure CLI is a JVM app; allure-commandline in package.json is only a
+      # launcher and needs a JRE on PATH (no Docker action required).
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
       - name: Run lint
         run: npm run lint
 
@@ -84,20 +92,22 @@ jobs:
           ref: gh-pages
           path: gh-pages
 
-      # Generates the report and merges the previous history so trend charts
-      # accumulate across runs. keep_reports caps how many runs we retain.
+      # Copy the previous run's history/ into allure-results/ so trend charts
+      # accumulate. On the first run gh-pages does not exist yet — the step is
+      # a no-op and the report is generated without prior history.
       - name: Build Allure report with history
-        if: always()
-        uses: simple-elf/allure-report-action@v1.12
-        with:
-          allure_results: allure-results
-          allure_history: allure-history
-          gh_pages: gh-pages
-          keep_reports: 30
+        if: ${{ !cancelled() }}
+        id: allure-report
+        run: |
+          mkdir -p allure-results/history
+          if [ -d gh-pages/history ]; then
+            cp -R gh-pages/history/* allure-results/history/ || true
+          fi
+          npx allure generate allure-results -o allure-history --clean
 
       - name: Upload Allure report
         uses: actions/upload-artifact@v6
-        if: always()
+        if: ${{ !cancelled() && steps.allure-report.outcome == 'success' }}
         with:
           name: allure-report-ui
           path: allure-history/
@@ -106,7 +116,10 @@ jobs:
       # Publish only on push to main so trends track the main branch over time
       # (PR runs would pollute history, and fork PRs cannot push anyway).
       - name: Publish Allure report to GitHub Pages
-        if: always() && github.event_name == 'push'
+        if: >-
+          ${{ !cancelled()
+          && github.event_name == 'push'
+          && steps.allure-report.outcome == 'success' }}
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
