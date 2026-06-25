@@ -1,4 +1,4 @@
-import { Locator, Page, expect } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import { ConduitBasePage } from './base-conduit.page';
 
 /** `/article/{slug}` — read a single article, comment, edit/delete (if author). */
@@ -16,17 +16,12 @@ export class ConduitArticlePage extends ConduitBasePage {
     return this.page.getByRole('heading', { level: 1 });
   }
 
-  async expectTitle(text: string): Promise<void> {
-    await expect(this.title).toHaveText(text);
+  /** Body is long markdown; match a distinctive substring, not the whole text. */
+  bodySnippet(text: string): Locator {
+    return this.page.getByText(text.slice(0, 40));
   }
 
-  async expectBody(text: string): Promise<void> {
-    // Body can be long markdown; match a distinctive substring, not the whole text.
-    const snippet = text.slice(0, 40);
-    await expect(this.page.getByText(snippet)).toBeVisible();
-  }
-
-  async expectTag(tag: string): Promise<void> {
-    await expect(this.page.getByText(tag, { exact: true })).toBeVisible();
+  tag(name: string): Locator {
+    return this.page.getByText(name, { exact: true });
   }
 }

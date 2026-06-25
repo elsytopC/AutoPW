@@ -3,6 +3,7 @@ import {
   test as uiTest,
   expect as uiExpect,
 } from '@fixtures/conduit-ui.fixture';
+import { expect } from '@playwright/test';
 import {
   ConduitArticleFactory,
   ConduitUserFactory,
@@ -31,8 +32,8 @@ test.describe(
         await test.step('open article in browser', () =>
           articlePage.goto(created.slug));
 
-        await articlePage.expectTitle(input.title);
-        await articlePage.expectBody(input.body);
+        await expect(articlePage.title).toHaveText(input.title);
+        await expect(articlePage.bodySnippet(input.body)).toBeVisible();
       },
     );
   },
@@ -59,12 +60,14 @@ uiTest.describe('Conduit articles (UI)', { tag: ['@ui', '@conduit'] }, () => {
 
       // Router lands on `/article/{slug}` after publish.
       await uiExpect(page).toHaveURL(/\/article\/.+/);
-      await conduitArticle.expectTitle(articleData.title);
-      await conduitArticle.expectBody(articleData.body);
+      await uiExpect(conduitArticle.title).toHaveText(articleData.title);
+      await uiExpect(
+        conduitArticle.bodySnippet(articleData.body),
+      ).toBeVisible();
 
       if (articleData.tagList?.length) {
         for (const tag of articleData.tagList) {
-          await conduitArticle.expectTag(tag);
+          await uiExpect(conduitArticle.tag(tag)).toBeVisible();
         }
       }
     },
