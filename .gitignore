@@ -17,6 +17,9 @@ node_modules/
 AGENTS.md
 .cursor/commands/
 .cursor/references/
+.cursor/hooks/
+.cursor/hooks.json
+.cursor/skills/qa-task-breakdown/
 .cursor/skills/using-qa-skills/
 .cursor/skills/writing-playwright-tests/
 .cursor/skills/mock-contract-testing/
