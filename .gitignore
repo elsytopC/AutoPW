@@ -12,3 +12,14 @@ node_modules/
 .env
 .idea/
 .DS_Store
+
+# Local agent config (personal — do not commit or push)
+AGENTS.md
+.cursor/commands/
+.cursor/references/
+.cursor/skills/using-qa-skills/
+.cursor/skills/writing-playwright-tests/
+.cursor/skills/mock-contract-testing/
+.cursor/skills/adding-api-service/
+.cursor/skills/test-pr-review/
+.cursor/skills/ci-playwright-troubleshooting/
