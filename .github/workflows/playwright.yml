@@ -46,8 +46,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Allure CLI is a JVM app; allure-commandline in package.json is only a
-      # launcher and needs a JRE on PATH (no Docker action required).
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -82,8 +80,6 @@ jobs:
             npx playwright test --project="$PROJECT"
           fi
 
-      # Pull the previous report (with its history/) from the gh-pages branch.
-      # continue-on-error: on the very first run gh-pages does not exist yet.
       - name: Fetch previous Allure history
         if: always()
         uses: actions/checkout@v6
@@ -92,9 +88,6 @@ jobs:
           ref: gh-pages
           path: gh-pages
 
-      # Copy the previous run's history/ into allure-results/ so trend charts
-      # accumulate. On the first run gh-pages does not exist yet — the step is
-      # a no-op and the report is generated without prior history.
       - name: Build Allure report with history
         if: ${{ !cancelled() }}
         id: allure-report
@@ -113,8 +106,6 @@ jobs:
           path: allure-history/
           retention-days: 7
 
-      # Publish only on push to main so trends track the main branch over time
-      # (PR runs would pollute history, and fork PRs cannot push anyway).
       - name: Publish Allure report to GitHub Pages
         if: >-
           ${{ !cancelled()
@@ -159,8 +150,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Linux baselines are produced by the "Update Visual Baselines" workflow.
-      # Until they exist, skip gracefully instead of failing the build.
       - name: Check for Linux baselines
         id: baselines
         run: |
@@ -250,9 +239,6 @@ jobs:
           retention-days: 7
 
   conduit-ci:
-    # RealWorld is a public demo backend that can be slow or rate-limited, so
-    # this job runs only nightly and on demand — its instability must never
-    # block push/PR feedback.
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     timeout-minutes: 30
     runs-on: ubuntu-latest
@@ -273,11 +259,30 @@ jobs:
       - name: Install Playwright (chromium)
         run: npx playwright install --with-deps chromium
 
+      # RealWorld is a public demo backend with no uptime guarantees. If it's
+      # down, skip gracefully instead of failing the job on an external outage.
+      - name: Check Conduit backend health
+        id: conduit_health
+        run: |
+          status=$(curl -s -o /dev/null -w '%{http_code}' https://api.realworld.show/api/tags || echo 000)
+          if [ "$status" = "200" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Conduit backend returned $status — skipping (upstream outage)."
+          fi
+
       - name: Run Conduit API tests
+        if: steps.conduit_health.outputs.ready == 'true'
         run: npx playwright test --project=conduit-api
 
       - name: Run Conduit UI tests
+        if: steps.conduit_health.outputs.ready == 'true'
         run: npx playwright test --project=conduit-ui
+
+      - name: Skip Conduit tests (backend unhealthy)
+        if: steps.conduit_health.outputs.ready != 'true'
+        run: echo "Skipped Conduit tests: api.realworld.show is unhealthy."
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v6

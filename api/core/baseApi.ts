@@ -94,6 +94,10 @@ export class BaseApi {
 
     const body = await response.text();
 
-    throw new ApiError(message, response.status(), body);
+    throw new ApiError(
+      `${message} (status ${response.status()})`,
+      response.status(),
+      body,
+    );
   }
 }
