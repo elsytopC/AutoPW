@@ -282,7 +282,8 @@ jobs:
 
       - name: Skip Conduit tests (backend unhealthy)
         if: steps.conduit_health.outputs.ready != 'true'
-        run: echo "Skipped Conduit tests: api.realworld.show is unhealthy."
+        run: |
+          echo "Skipped Conduit tests: api.realworld.show is unhealthy."
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v6
