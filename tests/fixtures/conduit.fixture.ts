@@ -23,39 +23,49 @@ type ConduitFixtures = {
 export const test = base.extend<ConduitFixtures>({
   conduitUser: async ({}, use) => {
     const context = await createConduitContext();
-    const auth = new ConduitAuthApi(context);
-    const user = await auth.register(ConduitUserFactory.create());
-    await context.dispose();
-
-    await use(user);
+    try {
+      const auth = new ConduitAuthApi(context);
+      const user = await auth.register(ConduitUserFactory.create());
+      await use(user);
+    } finally {
+      await context.dispose();
+    }
   },
 
   articlesApi: async ({ conduitUser }, use) => {
     const context = await createConduitContext(conduitUser.token);
-    const api = new ArticlesApi(context);
+    try {
+      const api = new ArticlesApi(context);
 
-    await use(api);
+      await use(api);
 
-    // The user is throwaway, so everything they authored was created by this
-    // test. Delete it all to keep the shared backend clean.
-    const { articles } = await api.list({
-      author: conduitUser.username,
-      limit: '100',
-    });
-    await Promise.all(
-      articles.map((article) =>
-        api.remove(article.slug).catch(() => undefined),
-      ),
-    );
-    await context.dispose();
+      // The user is throwaway, so everything they authored was created by
+      // this test. Delete it all to keep the shared backend clean.
+      const { articles } = await api.list({
+        author: conduitUser.username,
+        limit: '100',
+      });
+      await Promise.all(
+        articles.map((article) =>
+          api.remove(article.slug).catch((error) => {
+            console.warn(
+              `Failed to clean up article "${article.slug}": ${error}`,
+            );
+          }),
+        ),
+      );
+    } finally {
+      await context.dispose();
+    }
   },
 
   anonArticlesApi: async ({}, use) => {
     const context = await createConduitContext();
-
-    await use(new ArticlesApi(context));
-
-    await context.dispose();
+    try {
+      await use(new ArticlesApi(context));
+    } finally {
+      await context.dispose();
+    }
   },
 
   // Comments are deleted automatically when their parent article is removed,
@@ -63,18 +73,20 @@ export const test = base.extend<ConduitFixtures>({
   // `conduitUser`, so no extra comment teardown is required here.
   commentsApi: async ({ conduitUser }, use) => {
     const context = await createConduitContext(conduitUser.token);
-
-    await use(new CommentsApi(context));
-
-    await context.dispose();
+    try {
+      await use(new CommentsApi(context));
+    } finally {
+      await context.dispose();
+    }
   },
 
   anonCommentsApi: async ({}, use) => {
     const context = await createConduitContext();
-
-    await use(new CommentsApi(context));
-
-    await context.dispose();
+    try {
+      await use(new CommentsApi(context));
+    } finally {
+      await context.dispose();
+    }
   },
 });
 

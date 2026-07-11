@@ -11,7 +11,11 @@ test.describe('Users API', { tag: ['@api'] }, () => {
 
       const user = await usersApi.createUser(userData);
 
-      expect(user.id).toBeDefined();
+      try {
+        expect(user.id).toBeDefined();
+      } finally {
+        await usersApi.deleteUser(user.id);
+      }
     },
   );
 

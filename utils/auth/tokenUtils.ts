@@ -1,7 +1,7 @@
 export function isTokenExpired(token: string): boolean {
   try {
     const payload = JSON.parse(
-      Buffer.from(token.split('.')[1], 'base64').toString(),
+      Buffer.from(token.split('.')[1], 'base64url').toString(),
     );
 
     const currentTime = Math.floor(Date.now() / 1000);

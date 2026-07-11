@@ -14,7 +14,16 @@ export async function ensureAuthenticated(role: UserRole) {
     return;
   }
 
-  const state = JSON.parse(fs.readFileSync(authFile, 'utf-8'));
+  let state: {
+    origins?: { localStorage?: { name: string; value: string }[] }[];
+  };
+  try {
+    state = JSON.parse(fs.readFileSync(authFile, 'utf-8'));
+  } catch {
+    console.log('Auth state file is corrupt. Regenerating auth...');
+    await generateAuth(role, authFile);
+    return;
+  }
 
   const token = state.origins?.[0]?.localStorage?.find(
     (item: { name: string; value: string }) => item.name === 'token',
@@ -33,7 +42,13 @@ async function generateAuth(role: UserRole, authFile: string) {
   const credentials = authConfig[role];
   let token: string;
 
-  if (authForProd && apiBaseURL && credentials.email && credentials.password) {
+  if (authForProd) {
+    if (!apiBaseURL || !credentials.email || !credentials.password) {
+      throw new Error(
+        `PROD_AUTH is enabled but credentials for role "${role}" are missing. ` +
+          'Set API_BASE_URL and the corresponding email/password env vars.',
+      );
+    }
     token = await requestAuthToken(apiBaseURL, {
       email: credentials.email,
       password: credentials.password,

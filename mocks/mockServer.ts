@@ -94,7 +94,7 @@ export class MockApiServer {
     const userIdMatch = url.match(/^\/users\/(\d+)$/);
 
     if (method === 'POST' && url === '/users') {
-      this.readBody(req, (body) => {
+      this.readBody(req, res, (body) => {
         const payload = body as Partial<CreateUserRequest>;
         const errors = this.validateUserPayload(payload);
 
@@ -127,6 +127,10 @@ export class MockApiServer {
 
     if (method === 'DELETE' && userIdMatch) {
       const id = Number(userIdMatch[1]);
+      if (!this.users.has(id)) {
+        this.send(res, 404, { message: 'User not found' });
+        return;
+      }
       this.users.delete(id);
       res.writeHead(204);
       res.end();
@@ -138,11 +142,25 @@ export class MockApiServer {
 
   private readBody(
     req: http.IncomingMessage,
+    res: http.ServerResponse,
     onParsed: (body: unknown) => void,
   ): void {
     let raw = '';
     req.on('data', (chunk) => (raw += chunk));
-    req.on('end', () => onParsed(raw ? JSON.parse(raw) : {}));
+    req.on('error', () => {
+      this.send(res, 400, { message: 'Request stream error' });
+    });
+    req.on('end', () => {
+      if (!raw) {
+        onParsed({});
+        return;
+      }
+      try {
+        onParsed(JSON.parse(raw));
+      } catch {
+        this.send(res, 400, { message: 'Invalid JSON' });
+      }
+    });
   }
 
   private send(

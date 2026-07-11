@@ -15,7 +15,7 @@ on:
         required: false
         default: ''
       project:
-        description: 'UI browser project to run'
+        description: 'UI browser project to run (ui-visual runs via the visual-ci job instead, gated on baseline availability)'
         required: false
         default: 'ui-chromium'
         type: choice
@@ -23,15 +23,15 @@ on:
           - ui-chromium
           - ui-firefox
           - ui-webkit
-          - ui-visual
 
 jobs:
   ui-ci:
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    # Needs write access to push the Allure report to the gh-pages branch.
     permissions:
-      contents: write
+      contents: read
+    outputs:
+      allure-built: ${{ steps.upload-allure.outcome == 'success' }}
 
     steps:
       - name: Checkout repository
@@ -99,23 +99,13 @@ jobs:
           npx allure generate allure-results -o allure-history --clean
 
       - name: Upload Allure report
+        id: upload-allure
         uses: actions/upload-artifact@v6
         if: ${{ !cancelled() && steps.allure-report.outcome == 'success' }}
         with:
           name: allure-report-ui
           path: allure-history/
           retention-days: 7
-
-      - name: Publish Allure report to GitHub Pages
-        if: >-
-          ${{ !cancelled()
-          && github.event_name == 'push'
-          && steps.allure-report.outcome == 'success' }}
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: allure-history
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v6
@@ -132,6 +122,36 @@ jobs:
           name: junit-report-ui
           path: test-results/junit.xml
           retention-days: 7
+
+  # Separate job so only the gh-pages publish step gets contents:write —
+  # ui-ci itself only needs read access to run and report tests.
+  publish-allure-report:
+    needs: ui-ci
+    if: >-
+      ${{ !cancelled()
+      && needs.ui-ci.outputs.allure-built == 'true'
+      && github.event_name == 'push' }}
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Download Allure report artifact
+        uses: actions/download-artifact@v6
+        with:
+          name: allure-report-ui
+          path: allure-history
+
+      - name: Publish Allure report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
 
   visual-ci:
     timeout-minutes: 30
@@ -264,7 +284,7 @@ jobs:
       - name: Check Conduit backend health
         id: conduit_health
         run: |
-          status=$(curl -s -o /dev/null -w '%{http_code}' https://api.realworld.show/api/tags || echo 000)
+          status=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 --retry 2 https://api.realworld.show/api/tags || echo 000)
           if [ "$status" = "200" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
