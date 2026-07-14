@@ -54,4 +54,15 @@ export class ArticlesApi extends BaseApi {
   async tryGetBySlug(slug: string): Promise<APIResponse> {
     return this.client.get(`articles/${slug}`);
   }
+
+  async tryUpdate(
+    slug: string,
+    data: UpdateArticleRequest,
+  ): Promise<APIResponse> {
+    return this.client.put(`articles/${slug}`, { data: { article: data } });
+  }
+
+  async tryRemove(slug: string): Promise<APIResponse> {
+    return this.client.delete(`articles/${slug}`);
+  }
 }
