@@ -17,7 +17,8 @@ test.describe('Conduit auth (UI)', { tag: ['@ui', '@conduit'] }, () => {
         conduitRegister.register(userData));
 
       await expect(page).toHaveURL('/');
-      await conduitHome.expectLoggedInAs(userData.username);
+      await expect(conduitHome.newArticleLink).toBeVisible();
+      await expect(conduitHome.navUserLink(userData.username)).toBeVisible();
     },
   );
 
@@ -39,14 +40,16 @@ test.describe('Conduit auth (UI)', { tag: ['@ui', '@conduit'] }, () => {
       await page.goto('/');
       await clearConduitSession(page);
       await page.reload();
-      await conduitHome.expectLoggedOut();
+      await expect(conduitHome.signInLink).toBeVisible();
+      await expect(conduitHome.newArticleLink).not.toBeVisible();
 
       await test.step('open login page', () => conduitLogin.goto());
       await test.step('submit login form', () =>
         conduitLogin.login(userData.email, userData.password));
 
       await expect(page).toHaveURL('/');
-      await conduitHome.expectLoggedInAs(userData.username);
+      await expect(conduitHome.newArticleLink).toBeVisible();
+      await expect(conduitHome.navUserLink(userData.username)).toBeVisible();
     },
   );
 });

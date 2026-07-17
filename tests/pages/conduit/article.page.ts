@@ -1,6 +1,8 @@
 import { Locator, Page } from '@playwright/test';
 import { ConduitBasePage } from './base-conduit.page';
 
+const BODY_SNIPPET_LENGTH = 40;
+
 /** `/article/{slug}` — read a single article, comment, edit/delete (if author). */
 export class ConduitArticlePage extends ConduitBasePage {
   constructor(page: Page) {
@@ -18,7 +20,7 @@ export class ConduitArticlePage extends ConduitBasePage {
 
   /** Body is long markdown; match a distinctive substring, not the whole text. */
   bodySnippet(text: string): Locator {
-    return this.page.getByText(text.slice(0, 40));
+    return this.page.getByText(text.slice(0, BODY_SNIPPET_LENGTH));
   }
 
   tag(name: string): Locator {

@@ -14,8 +14,8 @@ import { env } from './config/env';
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 /**
- * Shared config for every UI browser project: auth session + setup dependency.
- * Default session is admin; override per-test via adminAuth / userAuth fixtures.
+ * Shared config for every Todo UI browser project: admin storage state and its
+ * setup dependency. Conduit manages its independent JWT session in its fixtures.
  */
 const uiProjectDefaults = {
   testMatch: ['**/tests/ui/**/*.spec.ts'],
@@ -127,8 +127,8 @@ export default defineConfig({
     },
 
     {
-      // Visual regression — baselines are platform-specific, so this project is
-      // kept out of the default CI run and triggered deliberately via dispatch.
+      // Visual regression is isolated from regular UI projects and runs in its
+      // dedicated CI job after Linux baseline availability has been verified.
       name: 'ui-visual',
       testMatch: ['**/tests/visual/**/*.spec.ts'],
       use: {

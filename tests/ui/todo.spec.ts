@@ -1,4 +1,4 @@
-import { faker } from '@faker-js/faker';
+import { TodoFactory } from '@factories/todo.factory';
 import { test, expect } from '@fixtures/ui.fixture';
 import { qase } from 'playwright-qase-reporter';
 
@@ -7,7 +7,7 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
     qase(1, 'add single todo'),
     { tag: ['@smoke'] },
     async ({ todoPage }) => {
-      const title = faker.lorem.words(3);
+      const title = TodoFactory.createTitle(3);
 
       await test.step('Add a new todo', async () => {
         await todoPage.addTodo(title);
@@ -24,8 +24,8 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
     qase(2, 'add multiple todos'),
     { tag: ['@smoke'] },
     async ({ todoPage }) => {
-      const first = faker.lorem.words(2);
-      const second = faker.lorem.words(2);
+      const first = TodoFactory.createTitle();
+      const second = TodoFactory.createTitle();
 
       await test.step('Add two todos', async () => {
         await todoPage.addTodo(first);
@@ -43,7 +43,7 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
     qase(3, 'complete a todo'),
     { tag: ['@smoke'] },
     async ({ todoPage }) => {
-      const title = faker.lorem.words(2);
+      const title = TodoFactory.createTitle();
 
       await test.step('Add a todo', async () => {
         await todoPage.addTodo(title);
@@ -63,8 +63,8 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
     qase(4, 'active count decreases after completing'),
     { tag: ['@regression'] },
     async ({ todoPage }) => {
-      const taskA = faker.lorem.words(2);
-      const taskB = faker.lorem.words(2);
+      const taskA = TodoFactory.createTitle();
+      const taskB = TodoFactory.createTitle();
 
       await test.step('Add two todos', async () => {
         await todoPage.addTodo(taskA);
@@ -89,8 +89,8 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
     qase(5, 'filter active todos'),
     { tag: ['@regression'] },
     async ({ todoPage }) => {
-      const activeTitle = faker.lorem.words(2);
-      const doneTitle = faker.lorem.words(2);
+      const activeTitle = TodoFactory.createTitle();
+      const doneTitle = TodoFactory.createTitle();
 
       await test.step('Add and complete one of two todos', async () => {
         await todoPage.addTodo(activeTitle);
@@ -114,8 +114,8 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
     qase(6, 'filter completed todos'),
     { tag: ['@regression'] },
     async ({ todoPage }) => {
-      const activeTitle = faker.lorem.words(2);
-      const doneTitle = faker.lorem.words(2);
+      const activeTitle = TodoFactory.createTitle();
+      const doneTitle = TodoFactory.createTitle();
 
       await test.step('Add and complete one of two todos', async () => {
         await todoPage.addTodo(activeTitle);
@@ -139,8 +139,8 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
     qase(7, 'clear completed todos'),
     { tag: ['@regression'] },
     async ({ todoPage }) => {
-      const keepTitle = faker.lorem.words(2);
-      const removeTitle = faker.lorem.words(2);
+      const keepTitle = TodoFactory.createTitle();
+      const removeTitle = TodoFactory.createTitle();
 
       await test.step('Add one active and one completed todo', async () => {
         await todoPage.addTodo(keepTitle);
@@ -164,7 +164,7 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
     qase(8, 'todo state is consistent across views'),
     { tag: ['@regression'] },
     async ({ todoPage }) => {
-      const title = faker.lorem.words(2);
+      const title = TodoFactory.createTitle();
 
       await test.step('Add a todo', async () => {
         await todoPage.addTodo(title);
@@ -194,7 +194,7 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
         });
       });
 
-      const title = faker.lorem.words(2);
+      const title = TodoFactory.createTitle();
 
       await test.step('Add a todo with third-party requests blocked', async () => {
         await todoPage.addTodo(title);

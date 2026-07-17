@@ -11,7 +11,7 @@ Lightweight SDET automation framework for UI and API testing built on top of `@p
 
 - **UI tests** with Page Object Model, typed page actions, and faker-generated test data
 - **API tests** built on a typed service layer (`BaseApi`, `UsersApi`, `AuthApi`)
-- **Auth fixtures** with role-based browser context (`adminAuth`, `userAuth`)
+- **Reusable auth state** generated once for Todo UI browser projects
 - **Contract-level mock server** — in-process HTTP server (`MockApiServer`) that the real `UsersApi` runs against
 - **Tag-based test selection** (`@smoke`, `@regression`, `@api`, `@ui`)
 - **CI** with separate `ui-ci` / `api-ci` jobs and JUnit reporting
@@ -31,17 +31,19 @@ api/
 config/
   env.ts                            ← single source of all env variables
 factories/
+  todo.factory.ts                   ← Todo title generation
   user.factory.ts                   ← faker-based test data builders
 mocks/
   mockServer.ts                     ← in-process HTTP server emulating the Users API
 tests/
   api/users.spec.ts                 ← API test suite
   auth/admin.setup.ts               ← storageState generation for admin role
-  auth/user.setup.ts                ← storageState generation for user role
   fixtures/
     api.fixture.ts                  ← usersApi, authApi, adminApiContext, existingUser
     ui.fixture.ts                   ← todoPage (pre-navigated)
-    auth.fixture.ts                 ← adminAuth, userAuth (role-based page context)
+    conduit-ui.fixture.ts           ← Conduit Page Objects
+    conduit.fixture.ts              ← Conduit API clients + cleanup
+    conduit-e2e.fixture.ts          ← composed API+UI fixtures
     mock.fixture.ts                 ← mockServer, mockUsersApi (real client vs mock server)
   mocks/users.mock.spec.ts          ← contract tests: UsersApi against MockApiServer
   pages/
@@ -85,12 +87,12 @@ Page objects encapsulate all locators and actions. Tests never reference `locato
 
 ### Auth Architecture
 
-Two independent auth layers:
+Todo and Conduit use independent session mechanisms:
 
 | Layer | What it does |
 |---|---|
-| `setup-auth-admin` project | generates `.playwright/auth/admin.json` before UI specs run |
-| `auth.fixture.ts` | overrides browser context per-test for explicit role switching |
+| `setup-auth-admin` project | generates `.playwright/auth/admin.json` before Todo UI specs run |
+| `utils/auth/conduit.session.ts` | injects/removes `localStorage.jwtToken` for Conduit UI scenarios |
 
 Auth mode is controlled by `PROD_AUTH`:
 - `PROD_AUTH=true` — performs real login via `API_BASE_URL/login`
@@ -107,6 +109,9 @@ env.uiBaseUrl         // BASE_URL ?? UI_BASE_URL ?? 'https://demo.playwright.dev
 env.credentials.admin // ADMIN_EMAIL, ADMIN_PASSWORD
 env.credentials.user  // USER_EMAIL, USER_PASSWORD
 ```
+
+Copy `.env.example` to `.env` for local configuration. Keep real credentials
+and `QASE_TESTOPS_API_TOKEN` only in `.env` or CI secrets; `.env` is gitignored.
 
 ### Global Setup / Teardown
 
@@ -179,13 +184,14 @@ Page Objects live under `tests/pages/conduit/`; specs under `tests/ui/conduit/`.
 
 | Page Object | Route | Responsibility |
 |---|---|---|
-| `ConduitHomePage` | `/` | Feed, logged-in/out nav assertions |
+| `ConduitHomePage` | `/` | Feed and authentication-state navigation locators |
 | `ConduitLoginPage` | `/login` | Email + password sign-in |
 | `ConduitRegisterPage` | `/register` | New account form |
 | `ConduitEditorPage` | `/editor` | Compose and publish an article |
 | `ConduitArticlePage` | `/article/{slug}` | Read title, body, tags |
 
-**API + UI combo:** `utils/auth/conduit.session.ts` provides
+**API + UI combo:** `tests/fixtures/conduit-e2e.fixture.ts` composes the API and
+UI fixtures through Playwright `mergeTests`. `utils/auth/conduit.session.ts` provides
 `authenticateConduitUser(page, user)` — injects the JWT into
 `localStorage.jwtToken` *before* navigation so tests can seed data via API and
 verify it in the browser without walking through the login form.
