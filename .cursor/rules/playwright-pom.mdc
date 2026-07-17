@@ -12,8 +12,9 @@ alwaysApply: false
 - Для поиска элементов ВСЕГДА используй встроенные локаторы Playwright (например, `page.getByRole`, `page.getByTestId`). Избегай XPath и сырых CSS-селекторов.
 - Все тесты должны использовать кастомные фикстуры из `tests/fixtures/` вместо стандартного `import { test } from '@playwright/test'`:
   - API-тесты: `import { test, expect } from '../fixtures/api.fixture';`
-  - Todo UI-тесты: `import { test, expect } from '../fixtures/ui.fixture';`
+  - Todo UI-тесты: `import { test, expect } from '../fixtures/todo-ui.fixture';`
+  - Conduit API-тесты: `import { test, expect } from '../fixtures/conduit-api.fixture';`
   - Conduit UI-тесты: `import { test, expect } from '../fixtures/conduit-ui.fixture';`
-  - Conduit API+UI-тесты: `import { test, expect } from '../fixtures/conduit-e2e.fixture';`
+  - Conduit API+UI-тесты: `import { test, expect } from '../fixtures/conduit-api-ui.fixture';`
 - Новые фикстуры добавляй в `tests/fixtures/`, не создавай дублирующие файлы в корне проекта.
 - Обязательно добавляй `test.step('Название шага', async () => { ... })` для логирования шагов в отчетах.

@@ -40,10 +40,10 @@ tests/
   auth/admin.setup.ts               ← storageState generation for admin role
   fixtures/
     api.fixture.ts                  ← usersApi, authApi, adminApiContext, existingUser
-    ui.fixture.ts                   ← todoPage (pre-navigated)
+    todo-ui.fixture.ts              ← todoPage (pre-navigated TodoMVC)
     conduit-ui.fixture.ts           ← Conduit Page Objects
-    conduit.fixture.ts              ← Conduit API clients + cleanup
-    conduit-e2e.fixture.ts          ← composed API+UI fixtures
+    conduit-api.fixture.ts          ← Conduit API clients + cleanup
+    conduit-api-ui.fixture.ts       ← composed API+UI fixtures
     mock.fixture.ts                 ← mockServer, mockUsersApi (real client vs mock server)
   mocks/users.mock.spec.ts          ← contract tests: UsersApi against MockApiServer
   pages/
@@ -83,7 +83,7 @@ BasePage
   └── TodoPage   (addTodo, completeTodo, filterBy, clearCompleted, …)
 ```
 
-Page objects encapsulate all locators and actions. Tests never reference `locator` / `getByRole` directly. `ui.fixture.ts` injects a pre-navigated `TodoPage` instance.
+Page objects encapsulate all locators and actions. Tests never reference `locator` / `getByRole` directly. `todo-ui.fixture.ts` injects a pre-navigated `TodoPage` instance.
 
 ### Auth Architecture
 
@@ -155,7 +155,7 @@ contract validation.
 
 Layout (`api/conduit/`): zod `models/`, a token-auth `client/`, and
 `services/` (`ConduitAuthApi`, `ArticlesApi`). Tests live in
-`tests/api/conduit/` and use `tests/fixtures/conduit.fixture.ts`.
+`tests/api/conduit/` and use `tests/fixtures/conduit-api.fixture.ts`.
 
 Key design points:
 
@@ -190,7 +190,7 @@ Page Objects live under `tests/pages/conduit/`; specs under `tests/ui/conduit/`.
 | `ConduitEditorPage` | `/editor` | Compose and publish an article |
 | `ConduitArticlePage` | `/article/{slug}` | Read title, body, tags |
 
-**API + UI combo:** `tests/fixtures/conduit-e2e.fixture.ts` composes the API and
+**API + UI combo:** `tests/fixtures/conduit-api-ui.fixture.ts` composes the API and
 UI fixtures through Playwright `mergeTests`. `utils/auth/conduit.session.ts` provides
 `authenticateConduitUser(page, user)` — injects the JWT into
 `localStorage.jwtToken` *before* navigation so tests can seed data via API and

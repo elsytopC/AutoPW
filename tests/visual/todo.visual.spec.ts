@@ -1,4 +1,4 @@
-import { test, expect } from '@fixtures/ui.fixture';
+import { test, expect } from '@fixtures/todo-ui.fixture';
 import { qase } from 'playwright-qase-reporter';
 
 /**

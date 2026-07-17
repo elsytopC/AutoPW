@@ -1,5 +1,5 @@
 import { expect, mergeTests } from '@playwright/test';
-import { test as conduitApiTest } from './conduit.fixture';
+import { test as conduitApiTest } from './conduit-api.fixture';
 import { test as conduitUiTest } from './conduit-ui.fixture';
 
 /**

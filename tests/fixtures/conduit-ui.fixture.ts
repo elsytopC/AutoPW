@@ -9,7 +9,7 @@ import { ConduitArticlePage } from '@pages/conduit/article.page';
 /**
  * UI-only fixture: wires up pre-built Page Objects so specs stay readable.
  * Does NOT register a user — auth tests create their own account via the UI,
- * while API+UI tests import `@fixtures/conduit.fixture` for API setup.
+ * while API+UI tests import `@fixtures/conduit-api-ui.fixture` for combined setup.
  */
 type ConduitUiFixtures = {
   conduitHome: ConduitHomePage;

@@ -1,5 +1,5 @@
 import { TodoFactory } from '@factories/todo.factory';
-import { test, expect } from '@fixtures/ui.fixture';
+import { test, expect } from '@fixtures/todo-ui.fixture';
 import { qase } from 'playwright-qase-reporter';
 
 test.describe('TodoMVC', { tag: ['@ui'] }, () => {

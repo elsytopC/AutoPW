@@ -1,4 +1,4 @@
-import { test, expect } from '@fixtures/conduit.fixture';
+import { test, expect } from '@fixtures/conduit-api.fixture';
 import { ConduitArticleFactory } from '@factories/conduit.factory';
 import { qase } from 'playwright-qase-reporter';
 

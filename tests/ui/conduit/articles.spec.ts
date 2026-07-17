@@ -1,4 +1,4 @@
-import { test, expect } from '@fixtures/conduit-e2e.fixture';
+import { test, expect } from '@fixtures/conduit-api-ui.fixture';
 import {
   ConduitArticleFactory,
   ConduitUserFactory,
