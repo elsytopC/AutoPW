@@ -205,9 +205,9 @@ npx playwright test --project=conduit-api
 CONDUIT_API_URL=https://api.realworld.show/api npx playwright test --project=conduit-api
 ```
 
-In CI the `conduit-ci` job runs **only nightly and on manual dispatch** — it
-starts the Docker stack, then runs `conduit-api` and `conduit-ui` against
-`127.0.0.1` (no dependency on the public demo).
+In CI the `conduit-ci` job runs on **push, pull request, nightly schedule, and
+manual dispatch** — it starts the Docker stack, then runs `conduit-api` and
+`conduit-ui` against `127.0.0.1` (no dependency on the public demo).
 
 ### Conduit Docker stack
 
@@ -433,9 +433,8 @@ The suite is scoped automatically by event so feedback stays fast where it matte
 - If secrets are missing → skips gracefully with an informative message
 
 **`conduit-ci`** — starts `docker-compose.conduit.yml`, then runs `conduit-api`,
-`conduit-ui`, and Conduit IDOR mock tests against `127.0.0.1`. Triggered **only
-on schedule (nightly) and manual dispatch** so Conduit never blocks push/PR
-feedback.
+`conduit-ui`, and Conduit IDOR contract tests against `127.0.0.1`. Runs on
+push, pull request, nightly schedule, and manual dispatch.
 
 ### Reporters
 

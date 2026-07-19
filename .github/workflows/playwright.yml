@@ -259,7 +259,6 @@ jobs:
           retention-days: 7
 
   conduit-ci:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     timeout-minutes: 45
     runs-on: ubuntu-latest
 
