@@ -1,8 +1,11 @@
-import { test, expect } from '@fixtures/conduit-api-ui.fixture';
+import { test, expect } from '@fixtures/conduit-ui.fixture';
 import {
   ConduitArticleFactory,
   ConduitUserFactory,
 } from '@factories/conduit.factory';
+import { createConduitContext } from '@api/conduit/client/conduitClient';
+import { ConduitAuthApi } from '@api/conduit/services/auth.api';
+import { ArticlesApi } from '@api/conduit/services/articles.api';
 import { authenticateConduitUser } from '@utils/auth/conduit.session';
 import { qase } from 'playwright-qase-reporter';
 
@@ -13,14 +16,29 @@ test.describe(
     test(
       qase(37, 'article created via API is visible in the browser'),
       { tag: ['@smoke'] },
-      async ({ articlesApi, conduitUser, conduitArticle, page }) => {
+      async ({ conduitArticle, page }) => {
         const input = ConduitArticleFactory.create();
 
-        const created = await test.step('create article via API', () =>
-          articlesApi.create(input));
+        const { user, article: created } =
+          await test.step('create article via API', async () => {
+            const ctx = await createConduitContext();
+            try {
+              const user = await new ConduitAuthApi(ctx).register(
+                ConduitUserFactory.create(),
+              );
+              const apiCtx = await createConduitContext(user.token);
+              try {
+                const article = await new ArticlesApi(apiCtx).create(input);
+                return { user, article };
+              } finally {
+                await apiCtx.dispose();
+              }
+            } finally {
+              await ctx.dispose();
+            }
+          });
 
-        // Inject the JWT before navigation so we skip the login form.
-        await authenticateConduitUser(page, conduitUser);
+        await authenticateConduitUser(page, user);
 
         await test.step('open article in browser', () =>
           conduitArticle.goto(created.slug));
@@ -51,7 +69,6 @@ test.describe('Conduit articles (UI)', { tag: ['@ui', '@conduit'] }, () => {
         await conduitEditor.publishArticle(articleData);
       });
 
-      // Router lands on `/article/{slug}` after publish.
       await expect(page).toHaveURL(/\/article\/.+/);
       await expect(conduitArticle.title).toHaveText(articleData.title);
       await expect(conduitArticle.bodySnippet(articleData.body)).toBeVisible();

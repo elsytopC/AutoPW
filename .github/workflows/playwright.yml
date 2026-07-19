@@ -55,8 +55,8 @@ jobs:
       - name: Run lint
         run: npm run lint
 
-      - name: Run mock contract tests
-        run: npx playwright test --project=mock
+      - name: Run contract tests
+        run: npx playwright test --project=contract
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
@@ -260,7 +260,7 @@ jobs:
 
   conduit-ci:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    timeout-minutes: 30
+    timeout-minutes: 45
     runs-on: ubuntu-latest
 
     steps:
@@ -279,31 +279,27 @@ jobs:
       - name: Install Playwright (chromium)
         run: npx playwright install --with-deps chromium
 
-      # RealWorld is a public demo backend with no uptime guarantees. If it's
-      # down, skip gracefully instead of failing the job on an external outage.
-      - name: Check Conduit backend health
-        id: conduit_health
-        run: |
-          status=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 --retry 2 https://api.realworld.show/api/tags || echo 000)
-          if [ "$status" = "200" ]; then
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "Conduit backend returned $status — skipping (upstream outage)."
-          fi
+      - name: Start Conduit stack (Docker)
+        run: docker compose -f docker-compose.conduit.yml up -d --build --wait
 
       - name: Run Conduit API tests
-        if: steps.conduit_health.outputs.ready == 'true'
-        run: npx playwright test --project=conduit-api
+        env:
+          CONDUIT_API_URL: http://127.0.0.1:3000/api
+          CONDUIT_UI_URL: http://127.0.0.1:4201
+        run: npx playwright test --project=conduit-api --workers=2
+
+      - name: Run Conduit authorization mock tests
+        run: npx playwright test tests/contract/conduit/ --project=contract
 
       - name: Run Conduit UI tests
-        if: steps.conduit_health.outputs.ready == 'true'
-        run: npx playwright test --project=conduit-ui
+        env:
+          CONDUIT_API_URL: http://127.0.0.1:3000/api
+          CONDUIT_UI_URL: http://127.0.0.1:4201
+        run: npx playwright test --project=conduit-ui --workers=2
 
-      - name: Skip Conduit tests (backend unhealthy)
-        if: steps.conduit_health.outputs.ready != 'true'
-        run: |
-          echo "Skipped Conduit tests: api.realworld.show is unhealthy."
+      - name: Stop Conduit stack
+        if: always()
+        run: docker compose -f docker-compose.conduit.yml down -v
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v6

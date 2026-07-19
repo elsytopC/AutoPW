@@ -12,7 +12,9 @@ Lightweight SDET automation framework for UI and API testing built on top of `@p
 - **UI tests** with Page Object Model, typed page actions, and faker-generated test data
 - **API tests** built on a typed service layer (`BaseApi`, `UsersApi`, `AuthApi`)
 - **Reusable auth state** generated once for Todo UI browser projects
-- **Contract-level mock server** — in-process HTTP server (`MockApiServer`) that the real `UsersApi` runs against
+- **Contract stub-servers** — in-process HTTP servers (`MockApiServer`) that the real `UsersApi` runs against; specs in `tests/contract/`
+
+See **`docs/testing-layers.md`** for the full layer map (stub-servers vs contract vs live API).
 - **Tag-based test selection** (`@smoke`, `@regression`, `@api`, `@ui`)
 - **CI** with separate `ui-ci` / `api-ci` jobs and JUnit reporting
 - **Code quality** — ESLint flat config, Prettier, Husky pre-commit + pre-push hooks
@@ -34,18 +36,22 @@ factories/
   todo.factory.ts                   ← Todo title generation
   user.factory.ts                   ← faker-based test data builders
 mocks/
-  mockServer.ts                     ← in-process HTTP server emulating the Users API
+  mockServer.ts                     ← in-process stub-server (Users API)
+  conduitMockServer.ts              ← Conduit stub-server (IDOR enforcement)
+  README.md                         ← pointer: implementations, not specs
 tests/
-  api/users.spec.ts                 ← API test suite
+  api/users.spec.ts                 ← live API test suite
+  contract/
+    users.contract.spec.ts          ← contract tests: UsersApi against MockApiServer
+    conduit/articles-idor.contract.spec.ts
+    README.md
   auth/admin.setup.ts               ← storageState generation for admin role
   fixtures/
     api.fixture.ts                  ← usersApi, authApi, adminApiContext, existingUser
     todo-ui.fixture.ts              ← todoPage (pre-navigated TodoMVC)
     conduit-ui.fixture.ts           ← Conduit Page Objects
     conduit-api.fixture.ts          ← Conduit API clients + cleanup
-    conduit-api-ui.fixture.ts       ← composed API+UI fixtures
-    mock.fixture.ts                 ← mockServer, mockUsersApi (real client vs mock server)
-  mocks/users.mock.spec.ts          ← contract tests: UsersApi against MockApiServer
+    contract.fixture.ts             ← mockServer, mockUsersApi, conduitMockServer
   pages/
     base.page.ts                    ← abstract BasePage with shared helpers
     todo.page.ts                    ← TodoPage : BasePage
@@ -143,15 +149,37 @@ npx playwright test --grep "@api"
 npx playwright test --project=ui-chromium --grep "@smoke"
 ```
 
+### npm scripts (shortcuts)
+
+| Script | What runs |
+|---|---|
+| `npm run test:smoke` | contract + a11y + ui-chromium `@smoke` (PR-like, no ReqRes API) |
+| `npm run test:smoke:all` | above + `api` `@smoke` (needs `API_BASE_URL` + credentials) |
+| `npm run test:smoke:ui` | Todo UI smoke only |
+| `npm run test:smoke:api` | Users API smoke only |
+| `npm run test:smoke:contract` | contract smoke only |
+| `npm run test:contract` / `test:ui` / `test:api` / `test:a11y` / `test:visual` | full project, no tag filter |
+| `npm run test:mock` | deprecated alias → `test:contract` |
+| `npm run test:conduit:demo` | Conduit API + UI against public demo |
+| `npm run test:conduit:demo:smoke` | Conduit smoke against public demo |
+| `npm run test:conduit:smoke` | Docker stack + Conduit API/UI smoke |
+| `npm run test:conduit` | Docker stack + full Conduit API/UI + IDOR contract |
+
 ---
 
 ## RealWorld (Conduit) Live API
 
 The `conduit-api` project exercises the framework end-to-end against a real,
 stateful REST backend — the [RealWorld](https://realworld-docs.netlify.app/)
-"Conduit" API (`https://api.realworld.show/api`). It demonstrates the full
-stack on non-trivial logic: JWT-style auth, CRUD with server-derived state, and
-contract validation.
+"Conduit" API. It demonstrates the full stack on non-trivial logic: JWT-style
+auth, CRUD with server-derived state, and contract validation.
+
+**Default target:** public demo (`https://api.realworld.show/api`) when env vars
+are unset.
+
+**Recommended for local + CI:** an isolated Docker stack (Nitro + Prisma API and
+Angular UI) — see [Conduit Docker stack](#conduit-docker-stack) below. Avoids
+shared-demo flakiness under parallel runs.
 
 Layout (`api/conduit/`): zod `models/`, a token-auth `client/`, and
 `services/` (`ConduitAuthApi`, `ArticlesApi`). Tests live in
@@ -161,25 +189,66 @@ Key design points:
 
 - **Auth header is `Token <jwt>`** (not `Bearer`) — a dedicated client, the
   existing reqres-based auth is untouched.
-- **Fresh throwaway user per run** (`ConduitUserFactory`) + a teardown that
-  deletes every article that user authored, so the shared backend stays clean.
+- **Fresh throwaway user per test** (`ConduitUserFactory`) + sequential teardown
+  that deletes articles the user authored.
 - **Unique titles** — slugs are derived from the title and must be globally
   unique, so the factory seeds each title with a random token.
-- **Serial + retries** — the public backend rate-limits bursts, so the project
-  runs with `fullyParallel: false` and `retries: 2`.
+- **IDOR (QA-44)** — update/delete by non-owner is verified against
+  `ConduitMockServer` in `tests/contract/conduit/` (public demo does not enforce
+  403 consistently).
+- **Serial + retries** — `fullyParallel: false` and `retries: 2` on Conduit
+  projects.
 
 ```bash
 npx playwright test --project=conduit-api
-# Point at a different backend:
+# Public demo explicitly:
 CONDUIT_API_URL=https://api.realworld.show/api npx playwright test --project=conduit-api
 ```
 
-In CI the `conduit-ci` job runs **only nightly and on manual dispatch** — the
-public backend's instability must never block push/PR feedback.
+In CI the `conduit-ci` job runs **only nightly and on manual dispatch** — it
+starts the Docker stack, then runs `conduit-api` and `conduit-ui` against
+`127.0.0.1` (no dependency on the public demo).
+
+### Conduit Docker stack
+
+Requires [Docker](https://docs.docker.com/get-docker/) with Compose v2.
+
+| Service | URL | Image source |
+|---|---|---|
+| API | `http://127.0.0.1:3000/api` | [nitro-prisma-zod-realworld-example-app](https://github.com/realworld-apps/nitro-prisma-zod-realworld-example-app) |
+| UI | `http://127.0.0.1:4201` | [angular-realworld-example-app](https://github.com/realworld-apps/angular-realworld-example-app) (API URL patched at build) |
+
+```bash
+# Start API + UI, wait for healthchecks
+npm run conduit:up
+
+# Conduit smoke or full suite against Docker
+npm run test:conduit:smoke
+npm run test:conduit
+
+# Conduit against public demo (no Docker)
+npm run test:conduit:demo:smoke
+npm run test:conduit:demo
+
+# Stop and remove volumes
+npm run conduit:down
+```
+
+Or set env manually after `npm run conduit:up`:
+
+```bash
+export CONDUIT_API_URL=http://127.0.0.1:3000/api
+export CONDUIT_UI_URL=http://127.0.0.1:4201
+npx playwright test --project=conduit-api --project=conduit-ui
+```
+
+Files: `docker-compose.conduit.yml`, `docker/conduit/Dockerfile.api`,
+`docker/conduit/Dockerfile.ui`.
 
 ### UI layer (Phase 2)
 
-The `conduit-ui` project drives the live Angular SPA at `demo.realworld.show`.
+The `conduit-ui` project drives the RealWorld Angular SPA (Docker UI by default
+in `conduit-ci`, or `demo.realworld.show` when env is unset).
 Page Objects live under `tests/pages/conduit/`; specs under `tests/ui/conduit/`.
 
 | Page Object | Route | Responsibility |
@@ -190,11 +259,12 @@ Page Objects live under `tests/pages/conduit/`; specs under `tests/ui/conduit/`.
 | `ConduitEditorPage` | `/editor` | Compose and publish an article |
 | `ConduitArticlePage` | `/article/{slug}` | Read title, body, tags |
 
-**API + UI combo:** `tests/fixtures/conduit-api-ui.fixture.ts` composes the API and
-UI fixtures through Playwright `mergeTests`. `utils/auth/conduit.session.ts` provides
-`authenticateConduitUser(page, user)` — injects the JWT into
-`localStorage.jwtToken` *before* navigation so tests can seed data via API and
-verify it in the browser without walking through the login form.
+**Cross-layer UI checks:** UI specs import `@fixtures/conduit-ui.fixture` only.
+When a test needs API seed data (e.g. create an article before opening it in the
+browser), call the Conduit API inline in a `test.step` — same pattern as
+`auth.spec.ts`. `utils/auth/conduit.session.ts` provides
+`authenticateConduitUser(page, user)` to inject the JWT into `localStorage.jwtToken`
+before navigation.
 
 ```bash
 npx playwright test --project=conduit-ui
@@ -266,7 +336,7 @@ npx playwright test --project=ui-webkit
 npx playwright test --project=api
 
 # Run contract tests against the in-process mock server (no backend needed)
-npx playwright test --project=mock
+npx playwright test --project=contract
 
 # Run RealWorld (Conduit) live-API tests against a public backend
 npx playwright test --project=conduit-api
@@ -362,9 +432,10 @@ The suite is scoped automatically by event so feedback stays fast where it matte
 - If `API_BASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` secrets are set → runs API tests
 - If secrets are missing → skips gracefully with an informative message
 
-**`conduit-ci`** — runs `conduit-api` and `conduit-ui` against the public
-RealWorld backend + SPA. Triggered **only on schedule (nightly) and manual
-dispatch** so external instability never blocks push/PR feedback.
+**`conduit-ci`** — starts `docker-compose.conduit.yml`, then runs `conduit-api`,
+`conduit-ui`, and Conduit IDOR mock tests against `127.0.0.1`. Triggered **only
+on schedule (nightly) and manual dispatch** so Conduit never blocks push/PR
+feedback.
 
 ### Reporters
 

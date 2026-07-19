@@ -15,8 +15,14 @@ export const conduitUserSchema = z.object({
   email: z.email(),
   username: z.string(),
   token: z.string(),
-  bio: z.string().nullable(),
-  image: z.string().nullable(),
+  bio: z
+    .string()
+    .nullish()
+    .transform((value) => value ?? null),
+  image: z
+    .string()
+    .nullish()
+    .transform((value) => value ?? null),
 });
 
 // RealWorld wraps payloads in a root key: { "user": { ... } }

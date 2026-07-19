@@ -1,0 +1,26 @@
+# Local / CI RealWorld (Conduit) stack — isolated API + UI for Playwright tests.
+# Usage: docker compose -f docker-compose.conduit.yml up -d --build --wait
+services:
+  conduit-api:
+    build:
+      context: .
+      dockerfile: docker/conduit/Dockerfile.api
+    ports:
+      - '3000:3000'
+    volumes:
+      - conduit-api-data:/data
+
+  conduit-ui:
+    build:
+      context: .
+      dockerfile: docker/conduit/Dockerfile.ui
+      args:
+        CONDUIT_API_URL: http://127.0.0.1:3000/api
+    ports:
+      - '4201:80'
+    depends_on:
+      conduit-api:
+        condition: service_healthy
+
+volumes:
+  conduit-api-data:

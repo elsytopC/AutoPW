@@ -14,10 +14,6 @@ type ConduitFixtures = {
   articlesApi: ArticlesApi;
   /** Unauthenticated Articles API for negative auth checks. */
   anonArticlesApi: ArticlesApi;
-  /** A second throwaway user, unrelated to `conduitUser`, for cross-user authorization (IDOR) checks. */
-  otherUser: ConduitUser;
-  /** Articles API authenticated as `otherUser` — a valid token that does not own `conduitUser`'s resources. */
-  otherUserArticlesApi: ArticlesApi;
   /** Comments API authenticated as `conduitUser`. */
   commentsApi: CommentsApi;
   /** Unauthenticated Comments API for negative auth checks. */
@@ -49,15 +45,17 @@ export const test = base.extend<ConduitFixtures>({
         author: conduitUser.username,
         limit: '100',
       });
-      await Promise.all(
-        articles.map((article) =>
-          api.remove(article.slug).catch((error) => {
-            console.warn(
-              `Failed to clean up article "${article.slug}": ${error}`,
-            );
-          }),
-        ),
-      );
+      // Sequential deletes — avoid hammering the shared demo backend with
+      // parallel teardown when multiple spec files run concurrently.
+      for (const article of articles) {
+        try {
+          await api.remove(article.slug);
+        } catch (error) {
+          console.warn(
+            `Failed to clean up article "${article.slug}": ${error}`,
+          );
+        }
+      }
     } finally {
       await context.dispose();
     }
@@ -67,43 +65,6 @@ export const test = base.extend<ConduitFixtures>({
     const context = await createConduitContext();
     try {
       await use(new ArticlesApi(context));
-    } finally {
-      await context.dispose();
-    }
-  },
-
-  otherUser: async ({}, use) => {
-    const context = await createConduitContext();
-    try {
-      const auth = new ConduitAuthApi(context);
-      const user = await auth.register(ConduitUserFactory.create());
-      await use(user);
-    } finally {
-      await context.dispose();
-    }
-  },
-
-  otherUserArticlesApi: async ({ otherUser }, use) => {
-    const context = await createConduitContext(otherUser.token);
-    try {
-      const api = new ArticlesApi(context);
-
-      await use(api);
-
-      // Same throwaway cleanup rationale as `articlesApi`, scoped to `otherUser`.
-      const { articles } = await api.list({
-        author: otherUser.username,
-        limit: '100',
-      });
-      await Promise.all(
-        articles.map((article) =>
-          api.remove(article.slug).catch((error) => {
-            console.warn(
-              `Failed to clean up article "${article.slug}": ${error}`,
-            );
-          }),
-        ),
-      );
     } finally {
       await context.dispose();
     }

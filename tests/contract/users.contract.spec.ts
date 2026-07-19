@@ -1,9 +1,9 @@
-import { test, expect } from '@fixtures/mock.fixture';
+import { test, expect } from '@fixtures/contract.fixture';
 import { UserFactory } from '@factories/user.factory';
 import { userResponseSchema } from '@api/models/user.model';
 import { qase } from 'playwright-qase-reporter';
 
-test.describe('Users API against mock server', { tag: ['@api'] }, () => {
+test.describe('Users API contract (stub server)', { tag: ['@api'] }, () => {
   test(
     qase(19, 'creates user and returns generated id'),
     { tag: ['@smoke'] },

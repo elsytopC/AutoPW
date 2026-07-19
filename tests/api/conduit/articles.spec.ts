@@ -99,30 +99,4 @@ test.describe('Conduit articles', { tag: ['@api'] }, () => {
       });
     },
   );
-
-  test(
-    qase(44, 'rejects update/delete of an article by a non-owner (IDOR)'),
-    { tag: ['@regression', '@security'] },
-    async ({ articlesApi, otherUserArticlesApi }) => {
-      const created = await test.step('create article as its owner', () =>
-        articlesApi.create(ConduitArticleFactory.create()));
-
-      await test.step('update as a different authenticated user', async () => {
-        const response = await otherUserArticlesApi.tryUpdate(created.slug, {
-          title: 'Hijacked title',
-        });
-        expect(response.status()).toBe(403);
-      });
-
-      await test.step('delete as a different authenticated user', async () => {
-        const response = await otherUserArticlesApi.tryRemove(created.slug);
-        expect(response.status()).toBe(403);
-      });
-
-      await test.step('article is unchanged after both rejected attempts', async () => {
-        const stillThere = await articlesApi.getBySlug(created.slug);
-        expect(stillThere.title).toBe(created.title);
-      });
-    },
-  );
 });

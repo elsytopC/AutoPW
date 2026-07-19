@@ -2,8 +2,14 @@ import { z } from 'zod';
 
 export const authorSchema = z.object({
   username: z.string(),
-  bio: z.string().nullable(),
-  image: z.string().nullable(),
+  bio: z
+    .string()
+    .nullish()
+    .transform((value) => value ?? null),
+  image: z
+    .string()
+    .nullish()
+    .transform((value) => value ?? null),
   following: z.boolean(),
 });
 

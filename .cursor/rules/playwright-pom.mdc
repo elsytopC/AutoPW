@@ -15,6 +15,6 @@ alwaysApply: false
   - Todo UI-тесты: `import { test, expect } from '../fixtures/todo-ui.fixture';`
   - Conduit API-тесты: `import { test, expect } from '../fixtures/conduit-api.fixture';`
   - Conduit UI-тесты: `import { test, expect } from '../fixtures/conduit-ui.fixture';`
-  - Conduit API+UI-тесты: `import { test, expect } from '../fixtures/conduit-api-ui.fixture';`
+  - Contract-тесты (stub-server): `import { test, expect } from '../fixtures/contract.fixture';`
 - Новые фикстуры добавляй в `tests/fixtures/`, не создавай дублирующие файлы в корне проекта.
 - Обязательно добавляй `test.step('Название шага', async () => { ... })` для логирования шагов в отчетах.

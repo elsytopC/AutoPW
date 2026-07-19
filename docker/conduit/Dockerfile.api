@@ -1,0 +1,50 @@
+# RealWorld API (Nitro + Prisma + Zod) — spec-compliant backend for Conduit tests.
+# Upstream: https://github.com/realworld-apps/nitro-prisma-zod-realworld-example-app
+FROM oven/bun:1 AS build
+
+WORKDIR /app
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends git ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+ARG CONDUIT_API_REPO=https://github.com/realworld-apps/nitro-prisma-zod-realworld-example-app.git
+RUN git clone --depth 1 "${CONDUIT_API_REPO}" .
+
+RUN bun install \
+  && bun run prepare \
+  && bun run db:generate
+
+ENV DATABASE_URL=file:./dev.db
+RUN bun run db:push \
+  && bun run build
+
+FROM oven/bun:1-slim AS runtime
+
+WORKDIR /app
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends curl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /app/.output ./.output
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/prisma.config.ts ./prisma.config.ts
+COPY docker/conduit/entrypoint-api.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+
+ENV JWT_SECRET=dxLmhnE0pRY2+vUlu+i5Pxh8LTxLBTgBWdp82W74mMs=
+ENV DATABASE_URL=file:/data/conduit.db
+ENV NITRO_HOST=0.0.0.0
+ENV PORT=3000
+
+VOLUME ["/data"]
+EXPOSE 3000
+
+HEALTHCHECK --interval=5s --timeout=5s --retries=12 \
+  CMD curl -fsS http://127.0.0.1:3000/api/tags || exit 1
+
+ENTRYPOINT ["/entrypoint.sh"]

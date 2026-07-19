@@ -42,8 +42,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Local: 1 worker (stable against shared Conduit demo). CI: 2 workers. */
+  workers: process.env.CI ? 2 : 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI
     ? [
@@ -95,8 +95,8 @@ export default defineConfig({
     },
 
     {
-      name: 'mock',
-      testMatch: ['**/tests/mocks/**/*.spec.ts'],
+      name: 'contract',
+      testMatch: ['**/tests/contract/**/*.spec.ts'],
     },
 
     {
