@@ -16,7 +16,7 @@ Playwright project runs them.
 |---|---|---|---|
 | Live API (Users) | `tests/api/*.spec.ts` | `API_BASE_URL` + credentials | `api` |
 | Live API (Conduit) | `tests/api/conduit/` | `CONDUIT_API_URL` / Docker | `conduit-api` |
-| Contract | `tests/contract/` | `mocks/` stub-servers (in-process) | `contract` |
+| Contract | `tests/contract/` | `stub-servers/` (in-process) | `contract` |
 | UI (Todo) | `tests/ui/` (not `conduit/`) | `demo.playwright.dev` | `ui-chromium`, `ui-firefox`, `ui-webkit` |
 | UI (Conduit) | `tests/ui/conduit/` | `CONDUIT_UI_URL` / Docker | `conduit-ui` |
 | Visual | `tests/visual/` | TodoMVC hosted demo | `ui-visual` |
@@ -24,12 +24,13 @@ Playwright project runs them.
 
 ---
 
-## Folder roles (avoid “two mocks” confusion)
+## Folder roles
 
 | Path | Role |
 |---|---|
-| `mocks/` | **Implementation** — in-process HTTP servers (`MockApiServer`, `ConduitMockServer`). Not Playwright specs. |
-| `tests/contract/` | **Specs** — contract tests that exercise real clients against stub-servers. |
+| `stub-servers/` | **Implementation** — in-process HTTP (`UsersApiStubServer`, `ConduitApiStubServer`) |
+| `tests/contract/` | **Specs** — contract tests against stub-servers |
+| `mocks/` | Legacy redirect only (`README.md` → use `stub-servers/`) |
 
 See also: [ADR 001 — stub-servers vs contract tests](./adr/001-stub-servers-vs-contract-tests.md).
 
@@ -39,13 +40,15 @@ See also: [ADR 001 — stub-servers vs contract tests](./adr/001-stub-servers-vs
 
 | Change | Stub handler | Contract spec | Live spec |
 |---|---|---|---|
-| New Users API endpoint | `mocks/mockServer.ts` | `tests/contract/*.contract.spec.ts` | `tests/api/` |
-| Conduit behavior public demo cannot test (e.g. IDOR 403) | `mocks/conduitMockServer.ts` | `tests/contract/conduit/` | — |
+| New Users API endpoint | `stub-servers/users-api.stub-server.ts` | `tests/contract/*.contract.spec.ts` | `tests/api/` |
+| Conduit behavior public demo cannot test (e.g. IDOR 403) | `stub-servers/conduit-api.stub-server.ts` | `tests/contract/conduit/` | — |
 | Conduit CRUD against real backend | — | — | `tests/api/conduit/` |
 | UI flow | — | — | `tests/ui/` + `tests/pages/` |
 
 Contract specs **must not** import `@fixtures/api.fixture` or depend on
 `API_BASE_URL`.
+
+Import stub-servers via `@stub-servers/*` (not `@mocks/*`).
 
 ---
 

@@ -10,7 +10,7 @@
       "@api/*": ["./api/*"],
       "@config/*": ["./config/*"],
       "@factories/*": ["./factories/*"],
-      "@mocks/*": ["./mocks/*"],
+      "@stub-servers/*": ["./stub-servers/*"],
       "@utils/*": ["./utils/*"],
       "@pages/*": ["./tests/pages/*"],
       "@fixtures/*": ["./tests/fixtures/*"]

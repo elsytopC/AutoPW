@@ -12,7 +12,7 @@ Lightweight SDET automation framework for UI and API testing built on top of `@p
 - **UI tests** with Page Object Model, typed page actions, and faker-generated test data
 - **API tests** built on a typed service layer (`BaseApi`, `UsersApi`, `AuthApi`)
 - **Reusable auth state** generated once for Todo UI browser projects
-- **Contract stub-servers** — in-process HTTP servers (`MockApiServer`) that the real `UsersApi` runs against; specs in `tests/contract/`
+- **Contract stub-servers** — in-process HTTP servers (`UsersApiStubServer`) that the real `UsersApi` runs against; specs in `tests/contract/`
 
 See **`docs/testing-layers.md`** for the full layer map (stub-servers vs contract vs live API).
 - **Tag-based test selection** (`@smoke`, `@regression`, `@api`, `@ui`)
@@ -35,14 +35,16 @@ config/
 factories/
   todo.factory.ts                   ← Todo title generation
   user.factory.ts                   ← faker-based test data builders
+stub-servers/
+  users-api.stub-server.ts          ← UsersApiStubServer (Users API contract)
+  conduit-api.stub-server.ts        ← ConduitApiStubServer (IDOR enforcement)
+  README.md
 mocks/
-  mockServer.ts                     ← in-process stub-server (Users API)
-  conduitMockServer.ts              ← Conduit stub-server (IDOR enforcement)
-  README.md                         ← pointer: implementations, not specs
+  README.md                         ← redirect → stub-servers/
 tests/
   api/users.spec.ts                 ← live API test suite
   contract/
-    users.contract.spec.ts          ← contract tests: UsersApi against MockApiServer
+    users.contract.spec.ts          ← contract tests: UsersApi against UsersApiStubServer
     conduit/articles-idor.contract.spec.ts
     README.md
   auth/admin.setup.ts               ← storageState generation for admin role
@@ -194,7 +196,7 @@ Key design points:
 - **Unique titles** — slugs are derived from the title and must be globally
   unique, so the factory seeds each title with a random token.
 - **IDOR (QA-44)** — update/delete by non-owner is verified against
-  `ConduitMockServer` in `tests/contract/conduit/` (public demo does not enforce
+  `ConduitApiStubServer` in `tests/contract/conduit/` (public demo does not enforce
   403 consistently).
 - **Serial + retries** — `fullyParallel: false` and `retries: 2` on Conduit
   projects.

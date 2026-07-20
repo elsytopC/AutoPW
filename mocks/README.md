@@ -1,11 +1,5 @@
-# Stub-servers (in-process HTTP)
+# Moved
 
-This folder holds **fake HTTP backends**, not Playwright tests.
+Stub-server implementations moved to **`stub-servers/`**.
 
-| File | Purpose |
-|---|---|
-| `mockServer.ts` | Users API contract (`MockApiServer`) |
-| `conduitMockServer.ts` | Conduit subset + IDOR 403 enforcement |
-
-Specs that use these servers live in **`tests/contract/`** (Playwright project
-`contract`). See `docs/testing-layers.md`.
+See `stub-servers/README.md` and `docs/testing-layers.md`.

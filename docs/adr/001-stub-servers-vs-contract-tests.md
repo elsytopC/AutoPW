@@ -18,12 +18,14 @@ filename suffix `.mock.spec.ts`), which made onboarding and legacy support harde
 1. **Specs** move to `tests/contract/` with suffix `*.contract.spec.ts`.
 2. Playwright project **`mock`** renames to **`contract`**.
 3. Fixture **`mock.fixture.ts`** renames to **`contract.fixture.ts`**.
-4. **Stub-server implementations** stay in `mocks/` for now (Phase 2 may rename
-   to `stub-servers/`).
+4. **Stub-server implementations** live in **`stub-servers/`** (Phase 2, 2026-07-19).
+   Legacy `mocks/` folder is a redirect only.
 5. Deprecated npm aliases: `test:mock` → `test:contract` (remove after one release cycle).
+6. Deprecated class names: `MockApiServer` / `ConduitMockServer` → `UsersApiStubServer` /
+   `ConduitApiStubServer` (re-exports remain).
 
 Fixture keys (`mockServer`, `mockUsersApi`, `conduitMockServer`) unchanged in
-Phase 1; rename planned for Phase 3.
+Phase 1–2; rename planned for Phase 3.
 
 ## Consequences
 
@@ -40,3 +42,8 @@ Phase 1; rename planned for Phase 3.
 | `@fixtures/mock.fixture` | `@fixtures/contract.fixture` |
 | `--project=mock` | `--project=contract` |
 | `npm run test:mock` | `npm run test:contract` |
+| `@mocks/*` | `@stub-servers/*` |
+| `mocks/mockServer.ts` | `stub-servers/users-api.stub-server.ts` |
+| `mocks/conduitMockServer.ts` | `stub-servers/conduit-api.stub-server.ts` |
+| `MockApiServer` | `UsersApiStubServer` |
+| `ConduitMockServer` | `ConduitApiStubServer` |

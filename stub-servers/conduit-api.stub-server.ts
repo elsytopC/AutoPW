@@ -31,7 +31,7 @@ type StoredArticle = {
  * In-process RealWorld (Conduit) API subset for contract/security tests.
  * Enforces author-only article update and delete — non-owners receive 403.
  */
-export class ConduitMockServer {
+export class ConduitApiStubServer {
   private server?: http.Server;
   private usersByUsername = new Map<string, StoredUser>();
   private usersByToken = new Map<string, StoredUser>();
@@ -39,7 +39,7 @@ export class ConduitMockServer {
 
   get baseURL(): string {
     if (!this.server) {
-      throw new Error('Conduit mock server is not started');
+      throw new Error('Conduit API stub server is not started');
     }
     const { port } = this.server.address() as AddressInfo;
     return `http://127.0.0.1:${port}`;
@@ -397,3 +397,6 @@ function slugify(title: string): string {
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
 }
+
+/** @deprecated Use ConduitApiStubServer */
+export { ConduitApiStubServer as ConduitMockServer };

@@ -7,7 +7,7 @@ import { CreateUserRequest, UserResponse } from '@api/models/user.model';
  * It lets API tests exercise the real UsersApi / BaseApi / ApiError code path
  * against deterministic responses, without depending on an external backend.
  */
-export class MockApiServer {
+export class UsersApiStubServer {
   private server?: http.Server;
   private users = new Map<number, UserResponse>();
   private nextId = 1;
@@ -23,7 +23,7 @@ export class MockApiServer {
 
   get baseURL(): string {
     if (!this.server) {
-      throw new Error('Mock server is not started');
+      throw new Error('Users API stub server is not started');
     }
     const { port } = this.server.address() as AddressInfo;
     return `http://127.0.0.1:${port}`;
@@ -173,3 +173,6 @@ export class MockApiServer {
     res.end(body);
   }
 }
+
+/** @deprecated Use UsersApiStubServer */
+export { UsersApiStubServer as MockApiServer };
