@@ -7,10 +7,10 @@ test.describe('Users API contract (stub server)', { tag: ['@api'] }, () => {
   test(
     qase(19, 'creates user and returns generated id'),
     { tag: ['@smoke'] },
-    async ({ mockUsersApi }) => {
+    async ({ usersApi }) => {
       const data = UserFactory.create();
 
-      const user = await mockUsersApi.createUser(data);
+      const user = await usersApi.createUser(data);
 
       expect(user.id).toBeGreaterThan(0);
       expect(user.email).toBe(data.email);
@@ -20,8 +20,8 @@ test.describe('Users API contract (stub server)', { tag: ['@api'] }, () => {
   test(
     qase(20, 'response payload satisfies the user schema contract'),
     { tag: ['@regression'] },
-    async ({ mockUsersApi }) => {
-      const user = await mockUsersApi.createUser(UserFactory.create());
+    async ({ usersApi }) => {
+      const user = await usersApi.createUser(UserFactory.create());
 
       expect(userResponseSchema.safeParse(user).success).toBe(true);
       expect(
@@ -33,8 +33,8 @@ test.describe('Users API contract (stub server)', { tag: ['@api'] }, () => {
   test(
     qase(21, 'fetches a seeded user'),
     { tag: ['@smoke'] },
-    async ({ mockUsersApi }) => {
-      const user = await mockUsersApi.getUser(1);
+    async ({ usersApi }) => {
+      const user = await usersApi.getUser(1);
 
       expect(user.id).toBe(1);
     },
@@ -43,8 +43,8 @@ test.describe('Users API contract (stub server)', { tag: ['@api'] }, () => {
   test(
     qase(22, 'returns a non-empty users list'),
     { tag: ['@regression'] },
-    async ({ mockUsersApi }) => {
-      const users = await mockUsersApi.getUsers();
+    async ({ usersApi }) => {
+      const users = await usersApi.getUsers();
 
       expect(users.length).toBeGreaterThan(0);
     },
@@ -53,10 +53,10 @@ test.describe('Users API contract (stub server)', { tag: ['@api'] }, () => {
   test(
     qase(23, 'created user is retrievable afterwards'),
     { tag: ['@regression'] },
-    async ({ mockUsersApi }) => {
-      const created = await mockUsersApi.createUser(UserFactory.create());
+    async ({ usersApi }) => {
+      const created = await usersApi.createUser(UserFactory.create());
 
-      const fetched = await mockUsersApi.getUser(created.id);
+      const fetched = await usersApi.getUser(created.id);
 
       expect(fetched.id).toBe(created.id);
       expect(fetched.email).toBe(created.email);
@@ -66,8 +66,8 @@ test.describe('Users API contract (stub server)', { tag: ['@api'] }, () => {
   test(
     qase(24, 'throws ApiError with status 404 for unknown user'),
     { tag: ['@regression'] },
-    async ({ mockUsersApi }) => {
-      await expect(mockUsersApi.getUser(999999)).rejects.toMatchObject({
+    async ({ usersApi }) => {
+      await expect(usersApi.getUser(999999)).rejects.toMatchObject({
         name: 'ApiError',
         status: 404,
       });
@@ -77,8 +77,8 @@ test.describe('Users API contract (stub server)', { tag: ['@api'] }, () => {
   test(
     qase(25, 'rejects user creation with per-field validation errors'),
     { tag: ['@regression'] },
-    async ({ mockUsersApi }) => {
-      const response = await mockUsersApi.tryCreateUser({
+    async ({ usersApi }) => {
+      const response = await usersApi.tryCreateUser({
         email: 'only@test.com',
       });
 
@@ -98,8 +98,8 @@ test.describe('Users API contract (stub server)', { tag: ['@api'] }, () => {
   test(
     qase(26, 'reports every required field for an empty payload'),
     { tag: ['@regression'] },
-    async ({ mockUsersApi }) => {
-      const response = await mockUsersApi.tryCreateUser({});
+    async ({ usersApi }) => {
+      const response = await usersApi.tryCreateUser({});
 
       expect(response.status()).toBe(400);
 
@@ -116,8 +116,8 @@ test.describe('Users API contract (stub server)', { tag: ['@api'] }, () => {
   test(
     qase(27, 'rejects malformed email with a format error'),
     { tag: ['@regression'] },
-    async ({ mockUsersApi }) => {
-      const response = await mockUsersApi.tryCreateUser({
+    async ({ usersApi }) => {
+      const response = await usersApi.tryCreateUser({
         ...UserFactory.create(),
         email: 'not-an-email',
       });
@@ -132,8 +132,8 @@ test.describe('Users API contract (stub server)', { tag: ['@api'] }, () => {
   test(
     qase(28, 'returns 404 response for unknown user without throwing'),
     { tag: ['@regression'] },
-    async ({ mockUsersApi }) => {
-      const response = await mockUsersApi.tryGetUser(999999);
+    async ({ usersApi }) => {
+      const response = await usersApi.tryGetUser(999999);
 
       expect(response.status()).toBe(404);
       expect(response.ok()).toBe(false);

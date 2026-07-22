@@ -24,8 +24,7 @@ filename suffix `.mock.spec.ts`), which made onboarding and legacy support harde
 6. Deprecated class names: `MockApiServer` / `ConduitMockServer` → `UsersApiStubServer` /
    `ConduitApiStubServer` (re-exports remain).
 
-Fixture keys (`mockServer`, `mockUsersApi`, `conduitMockServer`) unchanged in
-Phase 1–2; rename planned for Phase 3.
+Fixture keys renamed in Phase 3: `usersApiStub`, `usersApi`, `conduitApiStub`.
 
 ## Consequences
 
@@ -47,3 +46,6 @@ Phase 1–2; rename planned for Phase 3.
 | `mocks/conduitMockServer.ts` | `stub-servers/conduit-api.stub-server.ts` |
 | `MockApiServer` | `UsersApiStubServer` |
 | `ConduitMockServer` | `ConduitApiStubServer` |
+| `mockServer` fixture | `usersApiStub` |
+| `mockUsersApi` fixture | `usersApi` |
+| `conduitMockServer` fixture | `conduitApiStub` |

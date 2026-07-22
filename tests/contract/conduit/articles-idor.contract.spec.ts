@@ -33,18 +33,12 @@ test.describe(
     test(
       qase(44, 'rejects update/delete of an article by a non-owner (IDOR)'),
       { tag: ['@regression', '@security'] },
-      async ({ conduitMockServer }) => {
-        const owner = await registerUser(conduitMockServer.baseURL);
-        const other = await registerUser(conduitMockServer.baseURL);
+      async ({ conduitApiStub }) => {
+        const owner = await registerUser(conduitApiStub.baseURL);
+        const other = await registerUser(conduitApiStub.baseURL);
 
-        const ownerCtx = await articlesApi(
-          conduitMockServer.baseURL,
-          owner.token,
-        );
-        const otherCtx = await articlesApi(
-          conduitMockServer.baseURL,
-          other.token,
-        );
+        const ownerCtx = await articlesApi(conduitApiStub.baseURL, owner.token);
+        const otherCtx = await articlesApi(conduitApiStub.baseURL, other.token);
 
         try {
           const ownerApi = new ArticlesApi(ownerCtx);

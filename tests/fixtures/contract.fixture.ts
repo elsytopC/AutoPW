@@ -4,26 +4,28 @@ import { ConduitApiStubServer } from '@stub-servers/conduit-api.stub-server';
 import { UsersApi } from '@api/services/users.api';
 
 type ContractFixtures = {
-  mockServer: UsersApiStubServer;
-  mockUsersApi: UsersApi;
-  conduitMockServer: ConduitApiStubServer;
+  usersApiStub: UsersApiStubServer;
+  usersApi: UsersApi;
+  conduitApiStub: ConduitApiStubServer;
 };
 
 export const test = base.extend<ContractFixtures>({
-  mockServer: async ({}, use) => {
+  usersApiStub: async ({}, use) => {
     const server = new UsersApiStubServer();
     await server.start();
     await use(server);
     await server.stop();
   },
 
-  mockUsersApi: async ({ mockServer }, use) => {
-    const context = await request.newContext({ baseURL: mockServer.baseURL });
+  usersApi: async ({ usersApiStub }, use) => {
+    const context = await request.newContext({
+      baseURL: usersApiStub.baseURL,
+    });
     await use(new UsersApi(context));
     await context.dispose();
   },
 
-  conduitMockServer: async ({}, use) => {
+  conduitApiStub: async ({}, use) => {
     const server = new ConduitApiStubServer();
     await server.start();
     await use(server);

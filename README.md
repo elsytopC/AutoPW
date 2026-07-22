@@ -53,7 +53,7 @@ tests/
     todo-ui.fixture.ts              ← todoPage (pre-navigated TodoMVC)
     conduit-ui.fixture.ts           ← Conduit Page Objects
     conduit-api.fixture.ts          ← Conduit API clients + cleanup
-    contract.fixture.ts             ← mockServer, mockUsersApi, conduitMockServer
+    contract.fixture.ts             ← usersApiStub, usersApi, conduitApiStub
   pages/
     base.page.ts                    ← abstract BasePage with shared helpers
     todo.page.ts                    ← TodoPage : BasePage
