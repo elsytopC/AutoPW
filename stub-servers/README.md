@@ -9,5 +9,3 @@ Fake HTTP backends for contract tests — **not** Playwright specs.
 
 Specs: **`tests/contract/`** (project `contract`).  
 Docs: **`docs/testing-layers.md`**.
-
-Legacy class names `MockApiServer` / `ConduitMockServer` are deprecated re-exports.

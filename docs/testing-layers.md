@@ -71,5 +71,3 @@ npm run test:smoke:contract        # contract @smoke only
 npx playwright test --project=contract
 npx playwright test tests/contract/users.contract.spec.ts --workers=1
 ```
-
-Legacy alias (deprecated): `npm run test:mock` → same as `test:contract`.

@@ -20,9 +20,8 @@ filename suffix `.mock.spec.ts`), which made onboarding and legacy support harde
 3. Fixture **`mock.fixture.ts`** renames to **`contract.fixture.ts`**.
 4. **Stub-server implementations** live in **`stub-servers/`** (Phase 2, 2026-07-19).
    Legacy `mocks/` folder is a redirect only.
-5. Deprecated npm aliases: `test:mock` → `test:contract` (remove after one release cycle).
-6. Deprecated class names: `MockApiServer` / `ConduitMockServer` → `UsersApiStubServer` /
-   `ConduitApiStubServer` (re-exports remain).
+5. Phase 4 (2026-07-22): removed `test:mock` npm aliases and deprecated class re-exports.
+6. Agent skill **`mock-contract-testing`** → **`contract-testing`**; slash command **`/contract-test`**.
 
 Fixture keys renamed in Phase 3: `usersApiStub`, `usersApi`, `conduitApiStub`.
 
@@ -48,4 +47,5 @@ Fixture keys renamed in Phase 3: `usersApiStub`, `usersApi`, `conduitApiStub`.
 | `ConduitMockServer` | `ConduitApiStubServer` |
 | `mockServer` fixture | `usersApiStub` |
 | `mockUsersApi` fixture | `usersApi` |
-| `conduitMockServer` fixture | `conduitApiStub` |
+| `mock-contract-testing` skill | `contract-testing` |
+| `/mock-contract` | `/contract-test` |

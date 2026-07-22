@@ -161,7 +161,6 @@ npx playwright test --project=ui-chromium --grep "@smoke"
 | `npm run test:smoke:api` | Users API smoke only |
 | `npm run test:smoke:contract` | contract smoke only |
 | `npm run test:contract` / `test:ui` / `test:api` / `test:a11y` / `test:visual` | full project, no tag filter |
-| `npm run test:mock` | deprecated alias → `test:contract` |
 | `npm run test:conduit:demo` | Conduit API + UI against public demo |
 | `npm run test:conduit:demo:smoke` | Conduit smoke against public demo |
 | `npm run test:conduit:smoke` | Docker stack + Conduit API/UI smoke |

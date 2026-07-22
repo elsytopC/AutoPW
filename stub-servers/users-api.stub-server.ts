@@ -173,6 +173,3 @@ export class UsersApiStubServer {
     res.end(body);
   }
 }
-
-/** @deprecated Use UsersApiStubServer */
-export { UsersApiStubServer as MockApiServer };

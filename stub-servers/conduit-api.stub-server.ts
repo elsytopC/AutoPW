@@ -397,6 +397,3 @@ function slugify(title: string): string {
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
 }
-
-/** @deprecated Use ConduitApiStubServer */
-export { ConduitApiStubServer as ConduitMockServer };

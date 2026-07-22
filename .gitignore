@@ -22,7 +22,7 @@ AGENTS.md
 .cursor/skills/qa-task-breakdown/
 .cursor/skills/using-qa-skills/
 .cursor/skills/writing-playwright-tests/
-.cursor/skills/mock-contract-testing/
+.cursor/skills/contract-testing/
 .cursor/skills/adding-api-service/
 .cursor/skills/test-pr-review/
 .cursor/skills/ci-playwright-troubleshooting/
