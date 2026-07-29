@@ -5,6 +5,8 @@ Lightweight SDET automation framework for UI and API testing built on top of `@p
 **Demo target app:** [TodoMVC](https://demo.playwright.dev/todomvc) (Playwright official demo)  
 **API target:** configurable via `API_BASE_URL` env variable
 
+**New here?** [First run (2 minutes)](#first-run-2-minutes) — `npm ci` → `test:setup` → `test:contract` → `test:smoke` (no `.env`, no backend).
+
 ---
 
 ## What Is Included
