@@ -118,8 +118,11 @@ env.credentials.admin // ADMIN_EMAIL, ADMIN_PASSWORD
 env.credentials.user  // USER_EMAIL, USER_PASSWORD
 ```
 
-Copy `.env.example` to `.env` for local configuration. Keep real credentials
-and `QASE_TESTOPS_API_TOKEN` only in `.env` or CI secrets; `.env` is gitignored.
+`.env` is **optional** for first run — defaults in `config/env.ts` are enough
+for contract, smoke UI, and Conduit public demo. Copy `.env.example` to `.env`
+when you need live Users API (`API_BASE_URL`), `PROD_AUTH=true`, or custom
+Conduit URLs. Keep real credentials and `QASE_TESTOPS_API_TOKEN` only in `.env`
+or CI secrets; `.env` is gitignored.
 
 ### Global Setup / Teardown
 
@@ -155,6 +158,7 @@ npx playwright test --project=ui-chromium --grep "@smoke"
 
 | Script | What runs |
 |---|---|
+| `npm run test:setup` | install Chromium for UI/a11y (one-time after clone) |
 | `npm run test:smoke` | contract + a11y + ui-chromium `@smoke` (PR-like, no ReqRes API) |
 | `npm run test:smoke:all` | above + `api` `@smoke` (needs `API_BASE_URL` + credentials) |
 | `npm run test:smoke:ui` | Todo UI smoke only |
@@ -317,52 +321,115 @@ change, re-run the **Update Visual Baselines** workflow to refresh them.
 
 ---
 
+## First run (2 minutes)
+
+Verify the framework after clone — no `.env`, no backend, no Docker:
+
+```bash
+npm ci
+npm run test:setup          # playwright install chromium (UI/a11y only)
+npm run test:contract       # ~30s — stub-server only, no browsers or network
+npm run test:smoke          # PR-like: contract + a11y + UI @smoke
+```
+
+- **`test:contract`** is the fastest sanity check (Node only).
+- **`test:smoke`** matches what `ui-ci` runs on pull requests (minus tag filter on contract).
+- **`.env` is not required** for the steps above.
+
+For Firefox/WebKit or all browser deps: `npx playwright install --with-deps`.
+
+---
+
 ## Local Usage
+
+### Prerequisites
+
+| Requirement | Notes |
+|---|---|
+| Node.js 22 | matches CI (`setup-node@v6`); Node 20 may work but is untested |
+| npm | use `npm ci` (not `npm install`) for a reproducible lockfile install |
+| Network | smoke UI/a11y hit `demo.playwright.dev`; blockers need proxy/VPN config |
+| Docker | only for `test:conduit*` / `conduit:up` — not first run |
+
+### What runs where
+
+| Command | Backend | Browsers | `.env` | Notes |
+|---|---|---|---|---|
+| `npm run test:contract` | in-process stub | no | no | ✅ first verify |
+| `npm run test:smoke` | hosted Todo demo | Chromium | no | ✅ PR-like local |
+| `npm run test:api` | `API_BASE_URL` | no | yes | not out-of-the-box |
+| `npm run test:conduit:demo:smoke` | public Conduit demo | Chromium | no | may flake under load |
+| `npm run test:conduit:smoke` | Docker stack | Chromium | URL override | needs Docker |
+| `npm test` | all of the above | all projects | varies | full regression — see below |
+
+See **`docs/testing-layers.md`** for the full layer map.
+
+### Run by project
 
 ```bash
 # Install dependencies (also sets up Husky hooks)
 npm ci
 
-# Run all tests
+# One-time: Chromium for UI / a11y (after clone)
+npm run test:setup
+
+# PR-like smoke — recommended daily driver
+npm run test:smoke
+
+# Contract only (no backend, no browsers)
+npm run test:contract
+
+# Full regression — ALL Playwright projects (api, conduit, 3 browsers, visual, …)
+# Expect failures without API_BASE_URL, Docker, or OS-matched visual baselines.
 npm test
 
-# Run UI tests (chromium by default)
-npx playwright test --project=ui-chromium
-
-# Run UI tests in other browsers
+# UI (Chromium default)
+npm run test:ui
 npx playwright test --project=ui-firefox
 npx playwright test --project=ui-webkit
 
-# Run API tests only (needs a real backend)
-npx playwright test --project=api
+# Live Users API (needs API_BASE_URL + credentials in .env)
+npm run test:api
 
-# Run contract tests against the in-process mock server (no backend needed)
-npx playwright test --project=contract
+# Conduit against public demo (no Docker)
+npm run test:conduit:demo:smoke
 
-# Run RealWorld (Conduit) live-API tests against a public backend
-npx playwright test --project=conduit-api
+# Conduit against local Docker stack
+npm run test:conduit:smoke
 
-# Run RealWorld (Conduit) UI tests against the live SPA
-npx playwright test --project=conduit-ui
-
-# Run visual regression tests against committed baselines
-npx playwright test --project=ui-visual
-
-# Regenerate visual baselines after an intended UI change
+# Visual regression (darwin/linux baselines only — skip on Windows)
+npm run test:visual
 npx playwright test --project=ui-visual --update-snapshots
 
-# Lint
+# Quality
 npm run lint
-
-# Format
 npm run format
-
-# Type check
 npx tsc --noEmit
 
-# Generate and open the Allure report (requires Java 8+ on PATH)
+# Allure report (requires Java 8+ on PATH)
 npm run allure:report
 ```
+
+### Local vs CI
+
+| Local | CI |
+|---|---|
+| `npm test` runs every project in one command | jobs are split (`ui-ci`, `api-ci`, `conduit-ci`, `visual-ci`) |
+| `api` project always included in `npm test` | `api-ci` **skips** when GitHub secrets are missing |
+| `ui-visual` included in `npm test` | `visual-ci` **skips** until Linux baselines exist in the repo |
+
+A red `npm test` locally with a green PR is often expected — use `test:smoke` or
+target a single `--project=` instead.
+
+### Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `Executable doesn't exist at …` | Playwright browsers not installed | `npm run test:setup` or `npx playwright install chromium` |
+| `Invalid test configuration` at startup | `PROD_AUTH=true` without `API_BASE_URL` / credentials | set `PROD_AUTH=false` or fill `.env` |
+| API tests: connection refused / invalid URL | empty `API_BASE_URL` | don't run `--project=api` without a backend; use `test:contract` |
+| Conduit: `ECONNREFUSED 127.0.0.1:3000` | Docker URLs in `.env` but stack not running | `npm run conduit:up` or use public demo URLs |
+| Visual: snapshot not found (e.g. Windows) | no baseline for your OS | skip `ui-visual` locally; baselines are darwin/linux only |
 
 ---
 
@@ -386,7 +453,7 @@ npm run allure:report     # generate + open in one step
 
 ### Trends in CI (GitHub Pages)
 
-In CI the `ui-ci` job builds the report from the combined results (mock + UI +
+In CI the `ui-ci` job builds the report from the combined results (contract + UI +
 a11y) with the npm-installed `allure-commandline` (Java 17 via
 `actions/setup-java`) and **merges the previous run's `history/`** from the
 `gh-pages` branch so trend charts accumulate over time. The report is uploaded
@@ -410,7 +477,7 @@ Workflow: `.github/workflows/playwright.yml`
 
 **`ui-ci`** — always runs on push / PR to `main`:
 1. Run lint (`npm run lint`)
-2. Run `mock` contract tests (no backend/secrets required)
+2. Run contract tests (no backend/secrets required)
 3. Install Playwright browsers
 4. Run `ui-chromium` project (cross-browser `ui-firefox` / `ui-webkit` available via manual dispatch)
 5. Run `ui-a11y` accessibility checks

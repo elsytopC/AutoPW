@@ -71,3 +71,18 @@ npm run test:smoke:contract        # contract @smoke only
 npx playwright test --project=contract
 npx playwright test tests/contract/users.contract.spec.ts --workers=1
 ```
+
+---
+
+## Local onboarding
+
+After clone, verify without `.env`, backend, or Docker:
+
+```bash
+npm ci
+npm run test:setup      # playwright install chromium — for UI/a11y only
+npm run test:contract   # no browsers, no network
+npm run test:smoke      # PR-like: contract + a11y + UI @smoke
+```
+
+Full first-run guide, prerequisites, and troubleshooting: [README — First run](../README.md#first-run-2-minutes).

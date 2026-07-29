@@ -4,6 +4,7 @@
   "description": "Playwright and TypeScript framework for UI, API, contract, accessibility, and visual testing",
   "scripts": {
     "prepare": "husky",
+    "test:setup": "playwright install chromium",
     "test": "playwright test",
     "test:contract": "playwright test --project=contract",
     "test:ui": "playwright test --project=ui-chromium",
