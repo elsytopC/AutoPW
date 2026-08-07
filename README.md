@@ -7,6 +7,8 @@ Lightweight SDET automation framework for UI and API testing built on top of `@p
 
 **New here?** Start at [`docs/INDEX.md`](docs/INDEX.md), then [First run (2 minutes)](#first-run-2-minutes) — `npm ci` → `test:setup` → `test:contract` → `test:smoke` (no `.env`, no backend).
 
+**Contributing?** See [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
 ---
 
 ## What Is Included
@@ -364,23 +366,26 @@ The `ui-visual` project captures screenshot baselines of the TodoMVC app
 pixel-diff tolerance).
 
 **Baselines are platform-specific** — the filename encodes the OS (e.g.
-`...-darwin.png`, `...-linux.png`), since font/AA rendering differs per
-platform. Both local (darwin) and CI (linux) baselines live side by side.
+`todo-empty-ui-visual-linux.png`), since font/AA rendering differs per platform.
+Linux baselines for CI are committed under
+`tests/visual/todo.visual.spec.ts-snapshots/`.
+
+Full guide: [`docs/visual-regression.md`](docs/visual-regression.md) (running locally,
+reviewing diffs in the HTML report, updating baselines).
 
 ### Generating Linux baselines for CI
 
-Local `--update-snapshots` only produces a baseline for *your* OS. To get the
-Linux baselines that CI compares against, run the **Update Visual Baselines**
-workflow (`.github/workflows/visual-baselines.yml`) from the Actions tab. It
-generates baselines on an ubuntu runner — the same environment as CI — and
-commits them back to the branch.
+Local `--update-snapshots` only produces a baseline for *your* OS. To refresh
+Linux baselines, run the **Update Visual Baselines** workflow
+(`.github/workflows/visual-baselines.yml`) from the Actions tab after any
+intended visual change.
 
 ### How CI uses them
 
-The `visual-ci` job runs `ui-visual` automatically **once Linux baselines
-exist** in the repo. Until then it skips gracefully, so the build never goes
-red just because baselines haven't been bootstrapped yet. After an intended UI
-change, re-run the **Update Visual Baselines** workflow to refresh them.
+The `visual-ci` job runs `ui-visual` on every push/PR when `*-linux.png`
+baselines exist in the repo. On failure, download the `playwright-report-visual`
+artifact or run `npx playwright show-report` locally to compare **Expected**,
+**Actual**, and **Diff** screenshots.
 
 ---
 

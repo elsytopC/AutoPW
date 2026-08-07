@@ -9,9 +9,10 @@ new or looking for a specific layer.
 
 1. [README — First run (2 minutes)](../README.md#first-run-2-minutes) —
    `npm ci` → `test:setup` → `test:contract` → `test:smoke` (no `.env`, no backend)
-2. [Architecture](./architecture.md) — domains, diagrams, layer flows
-3. [Testing layers](./testing-layers.md) — stub-server vs contract vs live API
-4. [Playwright projects](../playwright.config.ts) — which `--project=` runs what
+2. [CONTRIBUTING.md](../CONTRIBUTING.md) — branch workflow, quality gates, PR checklist
+3. [Architecture](./architecture.md) — domains, diagrams, layer flows
+4. [Testing layers](./testing-layers.md) — stub-server vs contract vs live API
+5. [Playwright projects](../playwright.config.ts) — which `--project=` runs what
 
 ---
 
@@ -34,14 +35,14 @@ Quick lookup by goal:
 | **Users API (contract)** | [ADR 001](./adr/001-stub-servers-vs-contract-tests.md) | `stub-servers/users-api.stub-server.ts`, `tests/contract/users.contract.spec.ts`, `tests/fixtures/contract.fixture.ts` |
 | **Conduit (any layer)** | [Conduit map](./conduit-map.md) | `api/conduit/`, `tests/api/conduit/`, `tests/ui/conduit/`, `tests/fixtures/conduit-*.fixture.ts` |
 | **Accessibility** | [README — Accessibility](../README.md#accessibility) | `tests/a11y/`, `tests/fixtures/a11y.fixture.ts` |
-| **Visual regression** | [README — Visual Regression](../README.md#visual-regression) | `tests/visual/` |
+| **Visual regression** | [visual-regression.md](./visual-regression.md) | `tests/visual/` |
 
 Reference specs (copy patterns from these):
 
 - UI: `tests/ui/todo.spec.ts`
 - Live API: `tests/api/users.spec.ts`
 - Contract: `tests/contract/users.contract.spec.ts`
-- Cross-layer (Conduit): `tests/ui/conduit/articles.spec.ts`
+- Cross-layer (Conduit, `@showcase`): `tests/ui/conduit/articles.spec.ts`
 - Security (IDOR): `tests/contract/conduit/articles-idor.contract.spec.ts`
 
 ---
@@ -58,6 +59,9 @@ Reference specs (copy patterns from these):
 | Auth (Todo storageState vs Conduit JWT) | [README — Auth Architecture](../README.md#auth-architecture) |
 | CI jobs and tag strategy | [README — CI](../README.md#ci-github-actions) |
 | Test tags | [README — Test Tags](../README.md#test-tags) · [tags.md](./tags.md) |
+| Visual regression | [visual-regression.md](./visual-regression.md) |
+| Qase TestOps | [qase.md](./qase.md) |
+| Contributing | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 
 ---
 

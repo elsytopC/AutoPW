@@ -17,6 +17,8 @@ Combine tags with `--grep` or use the npm scripts below.
 | `@a11y` | Accessibility (axe-core) | `ui-a11y` | `npm run test:a11y` |
 | `@conduit` | RealWorld (Conduit) specs | `conduit-api`, `conduit-ui` | `npm run test:tags:conduit` |
 | `@security` | Security-focused tests (e.g. IDOR) | `contract` | `npm run test:tags:security` |
+| `@showcase` | Reference test to copy patterns from | varies | `npx playwright test --grep @showcase` |
+| `@showcase` | Reference implementation to copy | varies | `npx playwright test --grep @showcase` |
 
 ---
 
@@ -60,7 +62,8 @@ See [README — CI](../README.md#ci-github-actions) for job breakdown (`ui-ci`, 
 2. Add a **layer tag**: `@api`, `@ui`, `@visual`, or `@a11y`.
 3. Conduit specs add `@conduit`.
 4. Security contract specs add `@security`.
-5. Cross-layer Conduit specs may combine `@ui` + `@conduit` + `@api`.
+5. Reference implementations may add `@showcase` (optional, for teaching).
+6. Cross-layer Conduit specs may combine `@ui` + `@conduit` + `@api`.
 
 Example:
 

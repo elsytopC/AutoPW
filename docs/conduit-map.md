@@ -131,7 +131,7 @@ Copy patterns from these files:
 |---|---|
 | Live API CRUD + cleanup fixture | `tests/api/conduit/articles.spec.ts` |
 | UI register + publish | `tests/ui/conduit/articles.spec.ts` |
-| Cross-layer API seed → UI assert | `tests/ui/conduit/articles.spec.ts` (first test) |
+| Cross-layer API seed → UI assert | `tests/ui/conduit/articles.spec.ts` (`@showcase`) |
 | Auth UI flow | `tests/ui/conduit/auth.spec.ts` |
 | IDOR security contract | `tests/contract/conduit/articles-idor.contract.spec.ts` |
 
