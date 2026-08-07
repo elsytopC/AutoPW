@@ -5,19 +5,19 @@ Lightweight SDET automation framework for UI and API testing built on top of `@p
 **Demo target app:** [TodoMVC](https://demo.playwright.dev/todomvc) (Playwright official demo)  
 **API target:** configurable via `API_BASE_URL` env variable
 
-**New here?** [First run (2 minutes)](#first-run-2-minutes) — `npm ci` → `test:setup` → `test:contract` → `test:smoke` (no `.env`, no backend).
+**New here?** Start at [`docs/INDEX.md`](docs/INDEX.md), then [First run (2 minutes)](#first-run-2-minutes) — `npm ci` → `test:setup` → `test:contract` → `test:smoke` (no `.env`, no backend).
 
 ---
 
 ## What Is Included
 
 - **UI tests** with Page Object Model, typed page actions, and faker-generated test data
-- **API tests** built on a typed service layer (`BaseApi`, `UsersApi`, `AuthApi`)
+- **API tests** built on a typed service layer (`BaseApi`, `UsersApi`, `AuthenticatedApiClient`)
 - **Reusable auth state** generated once for Todo UI browser projects
 - **Contract stub-servers** — in-process HTTP servers (`UsersApiStubServer`) that the real `UsersApi` runs against; specs in `tests/contract/`
 
 See **`docs/testing-layers.md`** for the full layer map (stub-servers vs contract vs live API).
-- **Tag-based test selection** (`@smoke`, `@regression`, `@api`, `@ui`)
+- **Tag-based test selection** (`@smoke`, `@regression`, `@api`, `@ui`, `@conduit`, `@security`)
 - **CI** with separate `ui-ci` / `api-ci` jobs and JUnit reporting
 - **Code quality** — ESLint flat config, Prettier, Husky pre-commit + pre-push hooks
 
@@ -30,8 +30,8 @@ api/
   client/authenticatedApiClient.ts  ← creates APIRequestContext per role
   core/baseApi.ts                   ← generic HTTP methods + error handling
   errors/api.error.ts               ← typed ApiError
-  models/                           ← auth.model.ts, user.model.ts
-  services/                         ← auth.api.ts, users.api.ts
+  models/user.model.ts              ← Zod schemas for Users API
+  services/users.api.ts             ← UsersApi (CRUD)
 config/
   env.ts                            ← single source of all env variables
 factories/
@@ -41,8 +41,6 @@ stub-servers/
   users-api.stub-server.ts          ← UsersApiStubServer (Users API contract)
   conduit-api.stub-server.ts        ← ConduitApiStubServer (IDOR enforcement)
   README.md
-mocks/
-  README.md                         ← redirect → stub-servers/
 tests/
   api/users.spec.ts                 ← live API test suite
   contract/
@@ -51,7 +49,7 @@ tests/
     README.md
   auth/admin.setup.ts               ← storageState generation for admin role
   fixtures/
-    api.fixture.ts                  ← usersApi, authApi, adminApiContext, existingUser
+    api.fixture.ts                  ← usersApi, adminApiContext, existingUser
     todo-ui.fixture.ts              ← todoPage (pre-navigated TodoMVC)
     conduit-ui.fixture.ts           ← Conduit Page Objects
     conduit-api.fixture.ts          ← Conduit API clients + cleanup
@@ -79,12 +77,14 @@ tsconfig.json                       ← path aliases (@api, @config, @fixtures, 
 ```
 BaseApi
   └── UsersApi   (createUser, getUser, getUsers, deleteUser)
-  └── AuthApi    (login)
+
+AuthenticatedApiClient  → Bearer token per role (fake JWT or real /login)
+utils/auth/login.ts     → shared login contract for API client + UI storageState
 ```
 
 `BaseApi` centralizes HTTP operations and maps non-2xx responses to `ApiError`.  
 `AuthenticatedApiClient` creates a pre-authenticated `APIRequestContext` per role.  
-All API fixtures are wired in `tests/fixtures/api.fixture.ts`.
+All Users API fixtures are wired in `tests/fixtures/api.fixture.ts`.
 
 ### UI Layer
 
@@ -137,7 +137,8 @@ or CI secrets; `.env` is gitignored.
 
 ## Test Tags
 
-Every test carries `@smoke` or `@regression` plus `@api` or `@ui`.
+Every test carries `@smoke` or `@regression` plus a layer tag (`@api`, `@ui`,
+`@visual`, `@a11y`). Conduit and security tests add domain tags as needed.
 
 | Tag | Meaning |
 |---|---|
@@ -147,13 +148,19 @@ Every test carries `@smoke` or `@regression` plus `@api` or `@ui`.
 | `@ui` | Browser tests |
 | `@visual` | Screenshot baseline tests |
 | `@a11y` | Accessibility (axe-core) tests |
+| `@conduit` | RealWorld (Conduit) UI or cross-layer specs |
+| `@security` | Security-focused tests (e.g. IDOR contract) |
 
 Run by tag locally:
 
 ```bash
 npx playwright test --grep "@smoke"
 npx playwright test --grep "@api"
+npx playwright test --grep "@conduit"
+npx playwright test --grep "@security"
 npx playwright test --project=ui-chromium --grep "@smoke"
+npx playwright test --project=conduit-api
+npx playwright test --project=conduit-ui
 ```
 
 ### npm scripts (shortcuts)

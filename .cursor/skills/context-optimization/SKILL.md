@@ -39,9 +39,10 @@ Before reading or searching again, check if the answer is already in the convers
 
 | Need | Go directly to |
 |---|---|
+| Navigation index | `docs/INDEX.md` |
 | API HTTP layer | `api/core/baseApi.ts`, `api/services/` |
-| Test fixtures | `tests/fixtures/api.fixture.ts`, `auth.fixture.ts` |
-| Test data | `factories/user.factory.ts` |
+| Test fixtures | `tests/fixtures/api.fixture.ts`, `contract.fixture.ts`, `conduit-api.fixture.ts` |
+| Test data | `factories/user.factory.ts`, `factories/conduit.factory.ts` |
 | Auth / env | `utils/auth/`, `.env` vars in README |
 | Playwright config | `playwright.config.ts` |
 | Standards | `.cursor/rules/*.mdc` |

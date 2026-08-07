@@ -18,7 +18,7 @@ Do not edit code until Phase 1 is complete. Do not commit without explicit user 
 
 ## When to Use
 
-- Playwright test failures (`tests/api/`, `tests/ui/`, `tests/mocks/`)
+- Playwright test failures (`tests/api/`, `tests/ui/`, `tests/contract/`)
 - `ApiError` with unexpected status/body
 - Auth/setup failures (`tests/auth/*.setup.ts`, `PROD_AUTH`, missing `.env`)
 - Flaky or order-dependent tests (`fullyParallel: true`)
@@ -36,11 +36,12 @@ Before debugging, know where things live:
 | Layer | Location |
 |---|---|
 | API services | `api/services/*.api.ts`, `api/core/baseApi.ts` |
+| Conduit API | `api/conduit/services/*.api.ts`, `api/conduit/client/` |
 | Errors | `api/errors/api.error.ts` |
 | Auth | `utils/auth/`, `api/client/authenticatedApiClient.ts` |
-| Fixtures | `tests/fixtures/api.fixture.ts`, `auth.fixture.ts` |
-| Factories | `factories/user.factory.ts` |
-| Mocks | `mocks/users.mock.ts` |
+| Fixtures | `tests/fixtures/api.fixture.ts`, `conduit-api.fixture.ts`, `contract.fixture.ts` |
+| Factories | `factories/user.factory.ts`, `factories/conduit.factory.ts` |
+| Stub-servers | `stub-servers/*.stub-server.ts` |
 | Config | `playwright.config.ts`, `.env` |
 
 Key env vars: `API_BASE_URL`, `PROD_AUTH`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `BASE_URL`.
@@ -87,7 +88,7 @@ Look for: fixture changes, auth mode, env vars, parallel config, factory data, m
 For API failures, verify each boundary:
 
 ```
-.env vars → AuthenticatedApiClient → APIRequestContext → BaseApi → UsersApi/AuthApi → test assertion
+.env vars → AuthenticatedApiClient → APIRequestContext → BaseApi → UsersApi → test assertion
 ```
 
 Checklist:
@@ -105,9 +106,10 @@ For UI failures, also check:
 - [ ] `storageState` and `baseURL` in `playwright.config.ts`
 - [ ] UI project `dependencies: ['setup-auth-admin']`
 
-For mock tests (`tests/mocks/`):
+For contract tests (`tests/contract/`):
 
-- [ ] Failure is in mock logic, not live API — do not debug network
+- [ ] Failure is in stub-server logic, not live API — do not debug network
+- [ ] Spec uses `@fixtures/contract.fixture`, not `@fixtures/api.fixture`
 
 ### 5. Trace data flow backward
 
@@ -125,7 +127,7 @@ When assertion fails deep in the stack:
 1. **Find a working reference** in the same codebase:
    - Passing test in `tests/api/users.spec.ts`
    - Working fixture usage in `api.fixture.ts`
-   - Similar service method in `UsersApi` vs `AuthApi`
+   - Similar service method in `UsersApi` vs `ConduitAuthApi` (`api/conduit/services/auth.api.ts`)
 
 2. **Read the reference completely** — do not skim `BaseApi` or auth client.
 

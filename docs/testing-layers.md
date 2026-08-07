@@ -3,6 +3,8 @@
 Quick map for maintainers: where specs live, what backend they use, and which
 Playwright project runs them.
 
+> **Navigation:** see [`docs/INDEX.md`](./INDEX.md) for the full documentation index.
+
 > **Stub-server** emulates a backend in-process. **Contract test** verifies
 > that our API client (`UsersApi`, `BaseApi`, `ApiError`) behaves correctly
 > against that contract — no live network, no `.env` API URL. **Live API test**
@@ -30,7 +32,7 @@ Playwright project runs them.
 |---|---|
 | `stub-servers/` | **Implementation** — in-process HTTP (`UsersApiStubServer`, `ConduitApiStubServer`) |
 | `tests/contract/` | **Specs** — contract tests against stub-servers |
-| `mocks/` | Legacy redirect only (`README.md` → use `stub-servers/`) |
+| `mocks/` | **Deprecated redirect** — use `stub-servers/` instead (see [ADR 001](./adr/001-stub-servers-vs-contract-tests.md)) |
 
 See also: [ADR 001 — stub-servers vs contract tests](./adr/001-stub-servers-vs-contract-tests.md).
 
