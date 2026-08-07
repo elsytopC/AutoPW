@@ -71,7 +71,7 @@ test.describe('Conduit articles (UI)', { tag: ['@ui', '@conduit'] }, () => {
         await conduitEditor.publishArticle(articleData);
       });
 
-      await expect(page).toHaveURL(/\/article\/.+/);
+      await conduitArticle.expectPathname(/^\/article\/[^/]+$/);
       await expect(conduitArticle.title).toHaveText(articleData.title);
       await expect(conduitArticle.bodySnippet(articleData.body)).toBeVisible();
 
