@@ -47,10 +47,16 @@ The framework targets **two independent apps** on shared infrastructure
 ```text
 api/
   client/authenticatedApiClient.ts  ← Bearer token per role
+<<<<<<< HEAD
   core/baseApi.ts                   ← generic HTTP methods + error handling
   errors/api.error.ts               ← typed ApiError
   models/user.model.ts              ← Zod schemas for Users API
   services/users.api.ts             ← UsersApi (CRUD)
+=======
+  core/baseApi.ts
+  models/user.model.ts
+  services/users.api.ts
+>>>>>>> 6411999 (docs: phase 1 architecture, conduit map, and cookbooks)
 factories/
   todo.factory.ts
   user.factory.ts
