@@ -44,7 +44,11 @@ flowchart TD
 | **Zod models** | `api/conduit/models/` | Request/response schemas |
 | **Live API specs** | `tests/api/conduit/` | Uses `conduit-api.fixture.ts` |
 | **UI specs** | `tests/ui/conduit/` | Uses `conduit-ui.fixture.ts` |
+<<<<<<< HEAD
 | **Page Objects** | `tests/pages/conduit/` · `import { … } from '@pages/conduit'` | 5 pages + `ConduitBasePage` |
+=======
+| **Page Objects** | `tests/pages/conduit/` | 5 pages + `ConduitBasePage` |
+>>>>>>> 6411999 (docs: phase 1 architecture, conduit map, and cookbooks)
 | **Contract / IDOR** | `tests/contract/conduit/` | Uses `contract.fixture.ts` + stub |
 | **Stub-server** | `stub-servers/conduit-api.stub-server.ts` | Enforces owner-only update/delete |
 | **Test data** | `factories/conduit.factory.ts` | Unique titles (slug collision avoidance) |

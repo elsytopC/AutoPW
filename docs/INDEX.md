@@ -53,8 +53,9 @@ Reference specs (copy patterns from these):
 | **Domains, diagrams, shared infra** | [architecture.md](./architecture.md) |
 | **Conduit file map + decision tree** | [conduit-map.md](./conduit-map.md) |
 | Layer matrix (spec folder → backend → project) | [testing-layers.md](./testing-layers.md) |
+| **Architecture diagrams + domains** | [architecture.md](./architecture.md) |
+| **Conduit file map** | [conduit-map.md](./conduit-map.md) |
 | Stub-server rename history | [ADR 001](./adr/001-stub-servers-vs-contract-tests.md) |
-| API layer (`BaseApi`, `UsersApi`, auth) | [README — Architecture](../README.md#architecture) |
 | Auth (Todo storageState vs Conduit JWT) | [README — Auth Architecture](../README.md#auth-architecture) |
 | CI jobs and tag strategy | [README — CI](../README.md#ci-github-actions) |
 | Test tags | [README — Test Tags](../README.md#test-tags) · [tags.md](./tags.md) |
