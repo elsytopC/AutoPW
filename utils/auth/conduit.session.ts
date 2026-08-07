@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { ConduitUser } from '@api/conduit/models/user.model';
+import { ConduitUser } from '@api/conduit';
 
 /**
  * Browser-session helpers for the RealWorld (Conduit) Angular SPA.

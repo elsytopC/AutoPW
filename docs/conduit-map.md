@@ -39,12 +39,12 @@ flowchart TD
 
 | Concern | Path | Notes |
 |---|---|---|
-| **API client** | `api/conduit/client/conduitClient.ts` | `Token <jwt>` header (not `Bearer`) |
+| **API client** | `api/conduit/` · `import { … } from '@api/conduit'` | `Token <jwt>` header (not `Bearer`) |
 | **API services** | `api/conduit/services/` | `ConduitAuthApi`, `ArticlesApi`, `CommentsApi` |
 | **Zod models** | `api/conduit/models/` | Request/response schemas |
 | **Live API specs** | `tests/api/conduit/` | Uses `conduit-api.fixture.ts` |
 | **UI specs** | `tests/ui/conduit/` | Uses `conduit-ui.fixture.ts` |
-| **Page Objects** | `tests/pages/conduit/` | 5 pages + `ConduitBasePage` |
+| **Page Objects** | `tests/pages/conduit/` · `import { … } from '@pages/conduit'` | 5 pages + `ConduitBasePage` |
 | **Contract / IDOR** | `tests/contract/conduit/` | Uses `contract.fixture.ts` + stub |
 | **Stub-server** | `stub-servers/conduit-api.stub-server.ts` | Enforces owner-only update/delete |
 | **Test data** | `factories/conduit.factory.ts` | Unique titles (slug collision avoidance) |

@@ -1,12 +1,13 @@
 import type { TestInfo } from '@playwright/test';
 import { test, expect } from '@fixtures/a11y.fixture';
-import { TodoPage } from '@pages/todo.page';
 import { qase } from 'playwright-qase-reporter';
 
 /**
  * Accessibility checks via axe-core. Unlike visual baselines, axe results are
  * platform-independent, so these run in regular CI. On failure the full axe
  * report is attached to the Playwright HTML report for triage.
+ *
+ * Uses `todoPage` from `@fixtures/a11y.fixture` (pre-navigated TodoMVC).
  *
  * `color-contrast` is a known issue in the third-party TodoMVC demo (low-
  * contrast footer/counter text), not our code. We disable just that rule so
@@ -25,9 +26,8 @@ test.describe('TodoMVC accessibility', { tag: ['@a11y', '@ui'] }, () => {
   test(
     qase(12, 'empty app has no detectable a11y violations'),
     { tag: ['@smoke'] },
-    async ({ page, makeAxeBuilder }, testInfo) => {
-      const todo = new TodoPage(page);
-      await todo.goto();
+    async ({ todoPage, makeAxeBuilder }, testInfo) => {
+      await expect(todoPage.items).toHaveCount(0);
 
       const results = await makeAxeBuilder()
         .disableRules(KNOWN_DEMO_VIOLATIONS)
@@ -40,11 +40,9 @@ test.describe('TodoMVC accessibility', { tag: ['@a11y', '@ui'] }, () => {
 
   test(
     qase(13, 'populated list has no detectable a11y violations'),
-    async ({ page, makeAxeBuilder }, testInfo) => {
-      const todo = new TodoPage(page);
-      await todo.goto();
-      await todo.addTodo('Write tests');
-      await todo.completeTodo('Write tests');
+    async ({ todoPage, makeAxeBuilder }, testInfo) => {
+      await todoPage.addTodo('Write tests');
+      await todoPage.completeTodo('Write tests');
 
       const results = await makeAxeBuilder()
         .disableRules(KNOWN_DEMO_VIOLATIONS)

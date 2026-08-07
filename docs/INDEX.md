@@ -57,7 +57,7 @@ Reference specs (copy patterns from these):
 | API layer (`BaseApi`, `UsersApi`, auth) | [README — Architecture](../README.md#architecture) |
 | Auth (Todo storageState vs Conduit JWT) | [README — Auth Architecture](../README.md#auth-architecture) |
 | CI jobs and tag strategy | [README — CI](../README.md#ci-github-actions) |
-| Test tags | [README — Test Tags](../README.md#test-tags) |
+| Test tags | [README — Test Tags](../README.md#test-tags) · [tags.md](./tags.md) |
 
 ---
 

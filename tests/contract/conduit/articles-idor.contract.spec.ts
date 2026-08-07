@@ -1,7 +1,6 @@
 import { request } from '@playwright/test';
 import { test, expect } from '@fixtures/contract.fixture';
-import { ConduitAuthApi } from '@api/conduit/services/auth.api';
-import { ArticlesApi } from '@api/conduit/services/articles.api';
+import { ConduitAuthApi, ArticlesApi } from '@api/conduit';
 import {
   ConduitUserFactory,
   ConduitArticleFactory,

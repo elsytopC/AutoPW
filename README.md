@@ -140,8 +140,14 @@ Todo and Conduit use independent session mechanisms:
 
 | Layer | What it does |
 |---|---|
-| `setup-auth-admin` project | generates `.playwright/auth/admin.json` before Todo UI specs run |
+| `setup-auth-admin` project | generates `.playwright/auth/admin.json` before Todo UI browser projects run |
 | `utils/auth/conduit.session.ts` | injects/removes `localStorage.jwtToken` for Conduit UI scenarios |
+
+**Why `setup-auth-admin` runs for Todo UI?** TodoMVC specs do not require a
+logged-in user. The setup project exists to **demonstrate the storageState
+bootstrap pattern** — how to generate auth once and reuse it across browser
+projects via `playwright.config.ts`. Projects that do not need this
+(`ui-a11y`, `ui-visual`, `conduit-ui`) omit the dependency intentionally.
 
 Auth mode is controlled by `PROD_AUTH`:
 - `PROD_AUTH=true` — performs real login via `API_BASE_URL/login`
@@ -179,6 +185,8 @@ or CI secrets; `.env` is gitignored.
 Every test carries `@smoke` or `@regression` plus a layer tag (`@api`, `@ui`,
 `@visual`, `@a11y`). Conduit and security tests add domain tags as needed.
 
+Full reference: [`docs/tags.md`](docs/tags.md).
+
 | Tag | Meaning |
 |---|---|
 | `@smoke` | Critical path, fast feedback |
@@ -213,6 +221,10 @@ npx playwright test --project=conduit-ui
 | `npm run test:smoke:api` | Users API smoke only |
 | `npm run test:smoke:contract` | contract smoke only |
 | `npm run test:contract` / `test:ui` / `test:api` / `test:a11y` / `test:visual` | full project, no tag filter |
+| `npm run test:conduit:api` | Conduit live API only (`conduit-api` project) |
+| `npm run test:conduit:ui` | Conduit browser tests only (`conduit-ui` project) |
+| `npm run test:tags:conduit` | all specs tagged `@conduit` |
+| `npm run test:tags:security` | all specs tagged `@security` |
 | `npm run test:conduit:demo` | Conduit API + UI against public demo |
 | `npm run test:conduit:demo:smoke` | Conduit smoke against public demo |
 | `npm run test:conduit:smoke` | Docker stack + Conduit API/UI smoke |

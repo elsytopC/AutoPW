@@ -4,11 +4,9 @@ import { randomBytes } from 'crypto';
 import {
   CreateArticleRequest,
   UpdateArticleRequest,
-} from '@api/conduit/models/article.model';
-import {
   LoginRequest,
   RegisterUserRequest,
-} from '@api/conduit/models/user.model';
+} from '@api/conduit';
 
 type StoredUser = RegisterUserRequest & {
   token: string;
