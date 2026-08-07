@@ -3,9 +3,11 @@ import {
   ConduitArticleFactory,
   ConduitUserFactory,
 } from '@factories/conduit.factory';
-import { createConduitContext } from '@api/conduit/client/conduitClient';
-import { ConduitAuthApi } from '@api/conduit/services/auth.api';
-import { ArticlesApi } from '@api/conduit/services/articles.api';
+import {
+  createConduitContext,
+  ConduitAuthApi,
+  ArticlesApi,
+} from '@api/conduit';
 import { authenticateConduitUser } from '@utils/auth/conduit.session';
 import { qase } from 'playwright-qase-reporter';
 

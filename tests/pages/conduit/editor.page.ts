@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { CreateArticleRequest } from '@api/conduit/models/article.model';
+import { CreateArticleRequest } from '@api/conduit';
 import { ConduitBasePage } from './base-conduit.page';
 
 /** `/editor` — compose and publish a new article (auth required). */

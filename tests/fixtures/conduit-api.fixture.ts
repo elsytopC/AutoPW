@@ -1,10 +1,12 @@
 import { test as base } from '@playwright/test';
 
-import { createConduitContext } from '@api/conduit/client/conduitClient';
-import { ConduitAuthApi } from '@api/conduit/services/auth.api';
-import { ArticlesApi } from '@api/conduit/services/articles.api';
-import { CommentsApi } from '@api/conduit/services/comments.api';
-import { ConduitUser } from '@api/conduit/models/user.model';
+import {
+  createConduitContext,
+  ConduitAuthApi,
+  ArticlesApi,
+  CommentsApi,
+  ConduitUser,
+} from '@api/conduit';
 import { ConduitUserFactory } from '@factories/conduit.factory';
 
 type ConduitFixtures = {

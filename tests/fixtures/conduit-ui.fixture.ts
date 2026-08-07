@@ -1,10 +1,12 @@
 import { test as base } from '@playwright/test';
 
-import { ConduitHomePage } from '@pages/conduit/home.page';
-import { ConduitLoginPage } from '@pages/conduit/login.page';
-import { ConduitRegisterPage } from '@pages/conduit/register.page';
-import { ConduitEditorPage } from '@pages/conduit/editor.page';
-import { ConduitArticlePage } from '@pages/conduit/article.page';
+import {
+  ConduitHomePage,
+  ConduitLoginPage,
+  ConduitRegisterPage,
+  ConduitEditorPage,
+  ConduitArticlePage,
+} from '@pages/conduit';
 
 /**
  * UI-only fixture: wires up pre-built Page Objects so specs stay readable.

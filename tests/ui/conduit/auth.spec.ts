@@ -1,7 +1,6 @@
 import { test, expect } from '@fixtures/conduit-ui.fixture';
 import { ConduitUserFactory } from '@factories/conduit.factory';
-import { createConduitContext } from '@api/conduit/client/conduitClient';
-import { ConduitAuthApi } from '@api/conduit/services/auth.api';
+import { createConduitContext, ConduitAuthApi } from '@api/conduit';
 import { clearConduitSession } from '@utils/auth/conduit.session';
 import { qase } from 'playwright-qase-reporter';
 

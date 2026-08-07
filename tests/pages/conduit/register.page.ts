@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { RegisterUserRequest } from '@api/conduit/models/user.model';
+import { RegisterUserRequest } from '@api/conduit';
 import { ConduitBasePage } from './base-conduit.page';
 
 /** `/register` — username + email + password form. */

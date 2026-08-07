@@ -14,8 +14,12 @@ import { env } from './config/env';
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 /**
- * Shared config for every Todo UI browser project: admin storage state and its
- * setup dependency. Conduit manages its independent JWT session in its fixtures.
+ * Shared config for Todo UI browser projects.
+ *
+ * `dependencies: ['setup-auth-admin']` bootstraps admin storageState before
+ * ui-chromium/firefox/webkit run. TodoMVC specs do not require login — this
+ * demonstrates the auth-bootstrap pattern for apps that do. Projects that
+ * do not need it (ui-a11y, ui-visual, conduit-ui) omit this dependency.
  */
 const uiProjectDefaults = {
   testMatch: ['**/tests/ui/**/*.spec.ts'],
@@ -137,6 +141,7 @@ export default defineConfig({
     },
 
     {
+      // No setup-auth-admin — TodoMVC a11y scans are unauthenticated.
       name: 'ui-a11y',
       testMatch: ['**/tests/a11y/**/*.spec.ts'],
       use: {

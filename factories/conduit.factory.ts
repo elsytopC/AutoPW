@@ -1,7 +1,9 @@
 import { faker } from '@faker-js/faker';
-import { RegisterUserRequest } from '@api/conduit/models/user.model';
-import { CreateArticleRequest } from '@api/conduit/models/article.model';
-import { CreateCommentRequest } from '@api/conduit/models/comment.model';
+import {
+  RegisterUserRequest,
+  CreateArticleRequest,
+  CreateCommentRequest,
+} from '@api/conduit';
 
 export class ConduitUserFactory {
   static create(overrides?: Partial<RegisterUserRequest>): RegisterUserRequest {
