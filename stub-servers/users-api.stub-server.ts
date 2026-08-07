@@ -2,11 +2,6 @@ import http from 'http';
 import { AddressInfo } from 'net';
 import { CreateUserRequest, UserResponse } from '@api/models/user.model';
 
-/**
- * Lightweight in-process HTTP server that emulates the Users API contract.
- * It lets API tests exercise the real UsersApi / BaseApi / ApiError code path
- * against deterministic responses, without depending on an external backend.
- */
 export class UsersApiStubServer {
   private server?: http.Server;
   private users = new Map<number, UserResponse>();

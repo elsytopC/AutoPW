@@ -24,10 +24,6 @@ export class CommentsApi extends BaseApi {
     return this.delete(`articles/${slug}/comments/${id}`);
   }
 
-  /**
-   * Negative-path variant: returns the raw response instead of throwing, so
-   * tests can assert on error status codes (401 unauth, 404 missing article).
-   */
   async tryAdd(
     slug: string,
     data: Partial<CreateCommentRequest>,

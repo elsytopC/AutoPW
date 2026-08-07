@@ -27,9 +27,7 @@ test.describe('Conduit auth (UI)', { tag: ['@ui', '@conduit'] }, () => {
     async ({ conduitLogin, conduitHome, page }) => {
       const userData = ConduitUserFactory.create();
 
-      // Seed the account via API (fast). We are testing the login *form*, not
-      // registration — and we cannot "log out" in this demo, so we clear
-      // localStorage to simulate a fresh browser session.
+      // Demo has no logout — clear localStorage to test the login form in isolation
       await test.step('seed user via API', async () => {
         const ctx = await createConduitContext();
         await new ConduitAuthApi(ctx).register(userData);

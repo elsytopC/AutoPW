@@ -36,6 +36,12 @@ Enforced by Cursor rules (`.cursor/rules/`) and CI:
 - **Tags** — every test: `@smoke` or `@regression` + layer tag ([tags.md](docs/tags.md))
 - **Steps** — wrap key actions in `test.step('English description', …)`
 
+### Comments
+
+Prefer self-documenting names over comments. Add a comment only when the code
+cannot express **why** (non-obvious API contracts, shared-backend workarounds,
+framework quirks). Do not restate what the code already shows.
+
 Adding a test? Use the [cookbooks](docs/cookbooks/README.md).
 
 ---

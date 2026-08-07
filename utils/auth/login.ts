@@ -5,11 +5,7 @@ export type LoginCredentials = {
   password: string;
 };
 
-/**
- * Performs a real /login request against the given API base URL and returns
- * the auth token. Shared by the API client and the UI storageState bootstrap
- * so the login contract lives in a single place.
- */
+/** Shared /login contract for API client and UI storageState bootstrap. */
 export async function requestAuthToken(
   baseURL: string,
   credentials: LoginCredentials,

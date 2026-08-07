@@ -2,17 +2,7 @@ import type { TestInfo } from '@playwright/test';
 import { test, expect } from '@fixtures/a11y.fixture';
 import { qase } from 'playwright-qase-reporter';
 
-/**
- * Accessibility checks via axe-core. Unlike visual baselines, axe results are
- * platform-independent, so these run in regular CI. On failure the full axe
- * report is attached to the Playwright HTML report for triage.
- *
- * Uses `todoPage` from `@fixtures/a11y.fixture` (pre-navigated TodoMVC).
- *
- * `color-contrast` is a known issue in the third-party TodoMVC demo (low-
- * contrast footer/counter text), not our code. We disable just that rule so
- * the scan still guards against every *other* regression.
- */
+// Known third-party TodoMVC demo issue — disable so other WCAG rules still run
 const KNOWN_DEMO_VIOLATIONS = ['color-contrast'];
 
 async function attach(testInfo: TestInfo, violations: unknown): Promise<void> {

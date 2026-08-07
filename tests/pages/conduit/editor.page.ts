@@ -2,7 +2,6 @@ import { Page } from '@playwright/test';
 import { CreateArticleRequest } from '@api/conduit';
 import { ConduitBasePage } from './base-conduit.page';
 
-/** `/editor` — compose and publish a new article (auth required). */
 export class ConduitEditorPage extends ConduitBasePage {
   constructor(page: Page) {
     super(page);
@@ -12,11 +11,7 @@ export class ConduitEditorPage extends ConduitBasePage {
     await this.navigate('/editor');
   }
 
-  /**
-   * Fills all fields and clicks Publish. Tags are added one-by-one with Enter
-   * because the Angular tag input only commits a tag on keypress.
-   * After publish the router navigates to `/article/{slug}`.
-   */
+  /** Tag input commits each tag on Enter — fill + press per tag. */
   async publishArticle(data: CreateArticleRequest): Promise<void> {
     await this.page.getByPlaceholder('Article Title').fill(data.title);
     await this.page
