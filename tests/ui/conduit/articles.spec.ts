@@ -11,16 +11,27 @@ import {
 import { authenticateConduitUser } from '@utils/auth/conduit.session';
 import { qase } from 'playwright-qase-reporter';
 
+/**
+ * Cross-layer pattern (API seed → UI assert):
+ *
+ * 1. Fixture: `@fixtures/conduit-ui.fixture` — Page Objects only, no auto-login.
+ * 2. Seed:    Conduit API inline in `test.step` (register user + create article).
+ * 3. Auth:    `authenticateConduitUser(page, user)` — inject JWT before navigation.
+ * 4. Assert:  Page Object locators in the browser.
+ *
+ * Reference implementation — tagged `@showcase`. See docs/cookbooks/add-conduit-flow.md.
+ */
 test.describe(
   'Conduit articles (API + UI)',
   { tag: ['@ui', '@conduit', '@api'] },
   () => {
     test(
       qase(37, 'article created via API is visible in the browser'),
-      { tag: ['@smoke'] },
+      { tag: ['@smoke', '@showcase'] },
       async ({ conduitArticle, page }) => {
         const input = ConduitArticleFactory.create();
 
+        // Step 2 — seed state via API (not UI) for speed and determinism
         const { user, article: created } =
           await test.step('create article via API', async () => {
             const ctx = await createConduitContext();
@@ -40,8 +51,10 @@ test.describe(
             }
           });
 
+        // Step 3 — bridge API user into browser session
         await authenticateConduitUser(page, user);
 
+        // Step 4 — UI assertions via Page Object
         await test.step('open article in browser', () =>
           conduitArticle.goto(created.slug));
 
