@@ -1,0 +1,53 @@
+---
+description: Self-documented code — комментарии только для неочевидного «why», не для пересказа кода
+globs:
+  - "**/*.ts"
+  - "**/*.mjs"
+alwaysApply: false
+---
+
+# Комментарии — self-documented code
+
+Политика совпадает с [CONTRIBUTING.md](../CONTRIBUTING.md#comments).
+
+## Принцип
+
+- Код должен быть **самодокументируемым**: имена функций, переменных, `test.step`, типы.
+- Комментарий добавляй **только** когда код не может выразить **why** (почему так сделано).
+- **Запрещено** комментировать **what** — то, что уже видно из кода.
+
+## Когда комментарий нужен
+
+- Неочевидный контракт API (`Token` vs `Bearer`, envelope `{ user: … }`, slug из title)
+- Workaround фреймворка или приложения (Angular reactive form, tag input + Enter)
+- Ограничения shared backend (sequential teardown, unique slug на demo)
+- Намеренный trade-off (отключение `color-contrast` в a11y, `fullyParallel: false`)
+- Security/IDOR поведение stub-server
+
+## Когда комментарий не нужен
+
+- JSDoc на очевидных методах (`async goto()`, `get title()`)
+- Route-описания на Page Object (`/** /login — … */`)
+- Пересказ `test.step('create article via API', …)` inline-комментарием
+- Playwright scaffold (`/* Run tests in parallel */`, ссылки на docs.playwright.dev)
+- Дублирование имён fixture/property (`/** articlesApi — Articles API */`)
+- «204 No Content», «delete user in teardown» и прочее, видное из кода
+
+## При рефакторинге
+
+- Удаляя комментарий, **не** удаляй информацию о **why** — перенеси в имя или оставь один короткий комментарий.
+- Не добавляй новые комментарии «для полноты» или «для новичков», если код уже читается.
+- Документация для onboarding — в `docs/`, не в каждом spec-файле.
+
+## Примеры
+
+```typescript
+// ❌ Step 3 — verify user was created
+expect(user.id).toBeDefined();
+
+// ✅ без комментария — assertion говорит сам за себя
+expect(user.id).toBeDefined();
+
+// ✅ Demo has no logout — clear localStorage to test login form in isolation
+await clearConduitSession(page);
+```

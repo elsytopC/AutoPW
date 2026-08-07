@@ -42,6 +42,8 @@ Prefer self-documenting names over comments. Add a comment only when the code
 cannot express **why** (non-obvious API contracts, shared-backend workarounds,
 framework quirks). Do not restate what the code already shows.
 
+Enforced for agents via [`.cursor/rules/code-comments.mdc`](.cursor/rules/code-comments.mdc).
+
 Adding a test? Use the [cookbooks](docs/cookbooks/README.md).
 
 ---
