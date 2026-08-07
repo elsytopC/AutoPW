@@ -29,10 +29,10 @@ Quick lookup by goal:
 
 | Goal | Read first | Key paths |
 |---|---|---|
-| **Todo UI test** | [Cookbook: Todo UI](./cookbooks/add-todo-ui-test.md) | `tests/ui/todo.spec.ts`, `tests/pages/todo.page.ts`, `tests/fixtures/todo-ui.fixture.ts` |
-| **Users API (live)** | [Cookbook: Users API](./cookbooks/add-users-api-endpoint.md) | `api/services/users.api.ts`, `tests/api/users.spec.ts` |
-| **Users API (contract)** | [ADR 001](./adr/001-stub-servers-vs-contract-tests.md) | `stub-servers/users-api.stub-server.ts`, `tests/contract/users.contract.spec.ts` |
-| **Conduit (any layer)** | [Conduit map](./conduit-map.md) | `api/conduit/`, `tests/api/conduit/`, `tests/ui/conduit/` |
+| **Todo UI test** | [Cookbook: Todo UI](./cookbooks/add-todo-ui-test.md) · [POM rule](../.cursor/rules/playwright-pom.mdc) | `tests/ui/todo.spec.ts`, `tests/pages/todo.page.ts`, `tests/fixtures/todo-ui.fixture.ts`, `factories/todo.factory.ts` |
+| **Users API (live)** | [Cookbook: Users API](./cookbooks/add-users-api-endpoint.md) | `api/services/users.api.ts`, `tests/api/users.spec.ts`, `tests/fixtures/api.fixture.ts` |
+| **Users API (contract)** | [ADR 001](./adr/001-stub-servers-vs-contract-tests.md) | `stub-servers/users-api.stub-server.ts`, `tests/contract/users.contract.spec.ts`, `tests/fixtures/contract.fixture.ts` |
+| **Conduit (any layer)** | [Conduit map](./conduit-map.md) | `api/conduit/`, `tests/api/conduit/`, `tests/ui/conduit/`, `tests/fixtures/conduit-*.fixture.ts` |
 | **Accessibility** | [README — Accessibility](../README.md#accessibility) | `tests/a11y/`, `tests/fixtures/a11y.fixture.ts` |
 | **Visual regression** | [README — Visual Regression](../README.md#visual-regression) | `tests/visual/` |
 
@@ -53,9 +53,8 @@ Reference specs (copy patterns from these):
 | **Domains, diagrams, shared infra** | [architecture.md](./architecture.md) |
 | **Conduit file map + decision tree** | [conduit-map.md](./conduit-map.md) |
 | Layer matrix (spec folder → backend → project) | [testing-layers.md](./testing-layers.md) |
-| **Architecture diagrams + domains** | [architecture.md](./architecture.md) |
-| **Conduit file map** | [conduit-map.md](./conduit-map.md) |
 | Stub-server rename history | [ADR 001](./adr/001-stub-servers-vs-contract-tests.md) |
+| API layer (`BaseApi`, `UsersApi`, auth) | [README — Architecture](../README.md#architecture) |
 | Auth (Todo storageState vs Conduit JWT) | [README — Auth Architecture](../README.md#auth-architecture) |
 | CI jobs and tag strategy | [README — CI](../README.md#ci-github-actions) |
 | Test tags | [README — Test Tags](../README.md#test-tags) |
