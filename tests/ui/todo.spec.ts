@@ -170,8 +170,6 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
         await todoPage.addTodo(title);
       });
 
-      // Soft assertions collect every failure instead of stopping at the first,
-      // giving a full picture of what is broken in a single run.
       await test.step('Verify todo visual state with soft assertions', async () => {
         await expect.soft(todoPage.items).toHaveCount(1);
         await expect.soft(todoPage.itemByText(title)).toBeVisible();
@@ -184,8 +182,6 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
     qase(9, 'app stays functional when third-party requests are blocked'),
     { tag: ['@regression'] },
     async ({ page, todoPage }) => {
-      // Network interception: abort non-essential third-party assets to keep
-      // the app isolated from external flakiness (analytics, fonts, images).
       await test.step('Block third-party network requests', async () => {
         await page.route('**/*', (route) => {
           const url = route.request().url();

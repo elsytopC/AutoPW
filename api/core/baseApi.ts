@@ -72,7 +72,6 @@ export class BaseApi {
 
     const text = await response.text();
 
-    // 204 No Content
     if (!text) {
       return undefined as T;
     }

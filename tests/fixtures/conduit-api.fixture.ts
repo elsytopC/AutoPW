@@ -10,15 +10,10 @@ import {
 import { ConduitUserFactory } from '@factories/conduit.factory';
 
 type ConduitFixtures = {
-  /** A throwaway user registered fresh for each test. */
   conduitUser: ConduitUser;
-  /** Articles API authenticated as `conduitUser`. */
   articlesApi: ArticlesApi;
-  /** Unauthenticated Articles API for negative auth checks. */
   anonArticlesApi: ArticlesApi;
-  /** Comments API authenticated as `conduitUser`. */
   commentsApi: CommentsApi;
-  /** Unauthenticated Comments API for negative auth checks. */
   anonCommentsApi: CommentsApi;
 };
 
@@ -41,14 +36,11 @@ export const test = base.extend<ConduitFixtures>({
 
       await use(api);
 
-      // The user is throwaway, so everything they authored was created by
-      // this test. Delete it all to keep the shared backend clean.
       const { articles } = await api.list({
         author: conduitUser.username,
         limit: '100',
       });
-      // Sequential deletes — avoid hammering the shared demo backend with
-      // parallel teardown when multiple spec files run concurrently.
+      // Sequential deletes — shared demo backend cannot handle parallel teardown
       for (const article of articles) {
         try {
           await api.remove(article.slug);
@@ -72,9 +64,6 @@ export const test = base.extend<ConduitFixtures>({
     }
   },
 
-  // Comments are deleted automatically when their parent article is removed,
-  // and the articlesApi fixture already cleans up every article authored by
-  // `conduitUser`, so no extra comment teardown is required here.
   commentsApi: async ({ conduitUser }, use) => {
     const context = await createConduitContext(conduitUser.token);
     try {

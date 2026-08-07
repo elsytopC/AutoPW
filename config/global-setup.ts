@@ -1,10 +1,5 @@
 import { env } from './env';
 
-/**
- * Runs once before the whole suite. Validates configuration so the run fails
- * fast (with a clear message) instead of every test erroring out later, and
- * logs a concise banner describing how this run is configured.
- */
 async function globalSetup(): Promise<void> {
   const configErrors: string[] = [];
 

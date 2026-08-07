@@ -49,7 +49,6 @@ test.describe('Conduit articles', { tag: ['@api'] }, () => {
 
       expect(updated.slug).not.toBe(created.slug);
 
-      // Old slug no longer resolves; new slug does.
       const oldSlugResponse = await articlesApi.tryGetBySlug(created.slug);
       expect(oldSlugResponse.status()).toBe(404);
 

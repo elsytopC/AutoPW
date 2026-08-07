@@ -43,10 +43,6 @@ export class ArticlesApi extends BaseApi {
     return this.delete(`articles/${slug}`);
   }
 
-  /**
-   * Negative-path variants: return the raw response instead of throwing, so
-   * tests can assert on error status codes and bodies directly.
-   */
   async tryCreate(data: Partial<CreateArticleRequest>): Promise<APIResponse> {
     return this.client.post('articles', { data: { article: data } });
   }

@@ -18,10 +18,6 @@ export class UsersApi extends BaseApi {
     return userResponseSchema.parse(body);
   }
 
-  /**
-   * Negative-path variants: return the raw response instead of throwing, so
-   * tests can assert on error status codes and bodies directly.
-   */
   async tryCreateUser(data: Partial<CreateUserRequest>): Promise<APIResponse> {
     return this.client.post('/users', { data });
   }

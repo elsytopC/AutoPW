@@ -8,10 +8,6 @@ import {
   ConduitArticlePage,
 } from '@pages/conduit';
 
-/**
- * UI-only fixture: wires up pre-built Page Objects so specs stay readable.
- * Does NOT register a user — specs seed accounts via the UI or inline API calls.
- */
 type ConduitUiFixtures = {
   conduitHome: ConduitHomePage;
   conduitLogin: ConduitLoginPage;
