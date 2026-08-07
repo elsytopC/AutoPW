@@ -16,63 +16,101 @@ Lightweight SDET automation framework for UI and API testing built on top of `@p
 - **Reusable auth state** generated once for Todo UI browser projects
 - **Contract stub-servers** — in-process HTTP servers (`UsersApiStubServer`) that the real `UsersApi` runs against; specs in `tests/contract/`
 
-See **`docs/testing-layers.md`** for the full layer map (stub-servers vs contract vs live API).
+See **`docs/testing-layers.md`** for the full layer map (stub-servers vs contract vs live API).  
+See **`docs/architecture.md`** for diagrams and domain overview.  
+See **`docs/cookbooks/`** for step-by-step recipes.
 - **Tag-based test selection** (`@smoke`, `@regression`, `@api`, `@ui`, `@conduit`, `@security`)
 - **CI** with separate `ui-ci` / `api-ci` jobs and JUnit reporting
 - **Code quality** — ESLint flat config, Prettier, Husky pre-commit + pre-push hooks
 
 ---
 
+## Domains
+
+The framework targets **two independent apps** on shared infrastructure
+(fixtures pattern, factories, POM, CI). Pick the domain that matches your task.
+
+| | Domain A — TodoMVC + Users API | Domain B — Conduit (RealWorld) |
+|---|---|---|
+| **Purpose** | Simple UI demo + configurable REST API | Full-stack app with JWT, slugs, cross-layer flows |
+| **UI target** | `demo.playwright.dev/todomvc` | Conduit Angular SPA (demo or Docker) |
+| **API target** | `API_BASE_URL` (ReqRes-style) | `CONDUIT_API_URL` |
+| **Auth** | `Bearer` token | `Token <jwt>` |
+| **Map** | sections below | [`docs/conduit-map.md`](docs/conduit-map.md) |
+
+---
+
 ## Project Structure
+
+### Domain A — TodoMVC + Users API
 
 ```text
 api/
-  client/authenticatedApiClient.ts  ← creates APIRequestContext per role
-  core/baseApi.ts                   ← generic HTTP methods + error handling
-  errors/api.error.ts               ← typed ApiError
-  models/user.model.ts              ← Zod schemas for Users API
-  services/users.api.ts             ← UsersApi (CRUD)
-config/
-  env.ts                            ← single source of all env variables
+  client/authenticatedApiClient.ts  ← Bearer token per role
+  core/baseApi.ts
+  models/user.model.ts
+  services/users.api.ts
 factories/
-  todo.factory.ts                   ← Todo title generation
-  user.factory.ts                   ← faker-based test data builders
+  todo.factory.ts
+  user.factory.ts
 stub-servers/
-  users-api.stub-server.ts          ← UsersApiStubServer (Users API contract)
-  conduit-api.stub-server.ts        ← ConduitApiStubServer (IDOR enforcement)
-  README.md
+  users-api.stub-server.ts          ← Users API contract stub
 tests/
-  api/users.spec.ts                 ← live API test suite
-  contract/
-    users.contract.spec.ts          ← contract tests: UsersApi against UsersApiStubServer
-    conduit/articles-idor.contract.spec.ts
-    README.md
-  auth/admin.setup.ts               ← storageState generation for admin role
-  fixtures/
-    api.fixture.ts                  ← usersApi, adminApiContext, existingUser
-    todo-ui.fixture.ts              ← todoPage (pre-navigated TodoMVC)
-    conduit-ui.fixture.ts           ← Conduit Page Objects
-    conduit-api.fixture.ts          ← Conduit API clients + cleanup
-    contract.fixture.ts             ← usersApiStub, usersApi, conduitApiStub
-  pages/
-    base.page.ts                    ← abstract BasePage with shared helpers
-    todo.page.ts                    ← TodoPage : BasePage
-  ui/todo.spec.ts                   ← UI test suite (TodoMVC)
-utils/auth/
-  authManager.ts                    ← storageState creation / token refresh
-  auth.config.ts                    ← credentials per role from env
-  auth.types.ts                     ← UserRole type
-  tokenUtils.ts                     ← JWT expiry check
-playwright.config.ts
-tsconfig.json                       ← path aliases (@api, @config, @fixtures, …)
-.github/workflows/playwright.yml
+  api/users.spec.ts                 ← live API
+  contract/users.contract.spec.ts   ← contract (stub-server)
+  fixtures/api.fixture.ts
+  fixtures/todo-ui.fixture.ts
+  fixtures/contract.fixture.ts
+  pages/todo.page.ts
+  ui/todo.spec.ts
+  a11y/                             ← axe-core on TodoMVC
+  visual/                           ← screenshot baselines
+utils/auth/                         ← storageState + /login for Domain A
+```
+
+### Domain B — Conduit (RealWorld)
+
+```text
+api/conduit/
+  client/conduitClient.ts           ← Token auth (not Bearer)
+  models/                           ← article, user, comment (Zod)
+  services/                         ← ConduitAuthApi, ArticlesApi, CommentsApi
+factories/conduit.factory.ts
+stub-servers/conduit-api.stub-server.ts  ← IDOR enforcement
+tests/
+  api/conduit/                      ← live API (project: conduit-api)
+  ui/conduit/                       ← browser (project: conduit-ui)
+  contract/conduit/                 ← IDOR contract
+  fixtures/conduit-api.fixture.ts
+  fixtures/conduit-ui.fixture.ts
+  pages/conduit/                    ← 5 Page Objects
+utils/auth/conduit.session.ts       ← localStorage JWT injection
+docker-compose.conduit.yml          ← local API + UI stack
+```
+
+Full Conduit file map: [`docs/conduit-map.md`](docs/conduit-map.md).
+
+### Shared infrastructure
+
+```text
+config/env.ts                       ← all env variables
+config/global-setup.ts              ← fail-fast validation
+config/global-teardown.ts           ← cleans .playwright/auth/
+tests/auth/admin.setup.ts           ← storageState for Todo UI projects
+tests/fixtures/                     ← one fixture file per test layer
+playwright.config.ts                ← Playwright projects
+tsconfig.json                       ← path aliases (@api, @fixtures, …)
+.github/workflows/playwright.yml    ← CI jobs
+docs/INDEX.md                       ← documentation entry point
 ```
 
 ---
 
 ## Architecture
 
-### API Layer
+> Full diagrams and layer flows: [`docs/architecture.md`](docs/architecture.md)
+
+### Domain A — API Layer
 
 ```
 BaseApi
@@ -86,7 +124,7 @@ utils/auth/login.ts     → shared login contract for API client + UI storageSta
 `AuthenticatedApiClient` creates a pre-authenticated `APIRequestContext` per role.  
 All Users API fixtures are wired in `tests/fixtures/api.fixture.ts`.
 
-### UI Layer
+### Domain A — UI Layer
 
 ```
 BasePage
@@ -182,6 +220,9 @@ npx playwright test --project=conduit-ui
 ---
 
 ## RealWorld (Conduit) Live API
+
+> **Conduit file map and decision tree:** [`docs/conduit-map.md`](docs/conduit-map.md)  
+> **Recipe for new Conduit tests:** [`docs/cookbooks/add-conduit-flow.md`](docs/cookbooks/add-conduit-flow.md)
 
 The `conduit-api` project exercises the framework end-to-end against a real,
 stateful REST backend — the [RealWorld](https://realworld-docs.netlify.app/)
