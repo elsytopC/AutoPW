@@ -13,7 +13,7 @@ ARG CONDUIT_API_URL=http://127.0.0.1:3000/api
 
 RUN git clone --recurse-submodules --depth 1 "${CONDUIT_UI_REPO}" .
 
-RUN rm -f package-lock.json && npm install --no-audit --no-fund
+RUN npm install -g bun@1 && bun install --frozen-lockfile --ignore-scripts
 
 RUN sed -i "s|https://api.realworld.show/api|${CONDUIT_API_URL}|g" \
   src/app/core/interceptors/api.interceptor.ts
