@@ -1,5 +1,4 @@
 import http from 'http';
-import { AddressInfo } from 'net';
 import { randomBytes } from 'crypto';
 import {
   CreateArticleRequest,
@@ -7,6 +6,7 @@ import {
   LoginRequest,
   RegisterUserRequest,
 } from '@api/conduit';
+import { BaseStubServer } from './base.stub-server';
 
 type StoredUser = RegisterUserRequest & {
   token: string;
@@ -29,41 +29,23 @@ type StoredArticle = {
  * In-process RealWorld (Conduit) API subset for contract/security tests.
  * Enforces author-only article update and delete — non-owners receive 403.
  */
-export class ConduitApiStubServer {
-  private server?: http.Server;
+export class ConduitApiStubServer extends BaseStubServer {
+  protected readonly label = 'Conduit API';
   private usersByUsername = new Map<string, StoredUser>();
   private usersByToken = new Map<string, StoredUser>();
   private articlesBySlug = new Map<string, StoredArticle>();
 
-  get baseURL(): string {
-    if (!this.server) {
-      throw new Error('Conduit API stub server is not started');
-    }
-    const { port } = this.server.address() as AddressInfo;
-    return `http://127.0.0.1:${port}`;
-  }
-
-  async start(): Promise<void> {
-    this.server = http.createServer((req, res) => this.handle(req, res));
-    await new Promise<void>((resolve) => {
-      this.server!.listen(0, '127.0.0.1', resolve);
-    });
-  }
-
-  async stop(): Promise<void> {
-    if (!this.server) {
-      return;
-    }
-    await new Promise<void>((resolve, reject) => {
-      this.server!.close((err) => (err ? reject(err) : resolve()));
-    });
-    this.server = undefined;
+  protected reset(): void {
     this.usersByUsername.clear();
     this.usersByToken.clear();
     this.articlesBySlug.clear();
   }
 
-  private handle(req: http.IncomingMessage, res: http.ServerResponse): void {
+  protected errorBody(message: string): unknown {
+    return { errors: { body: [message] } };
+  }
+
+  protected handle(req: http.IncomingMessage, res: http.ServerResponse): void {
     const url = new URL(req.url ?? '/', 'http://127.0.0.1');
     const pathname = url.pathname;
     const method = req.method ?? 'GET';
@@ -195,8 +177,7 @@ export class ConduitApiStubServer {
         return;
       }
       this.articlesBySlug.delete(slug);
-      res.writeHead(204);
-      res.end();
+      this.sendNoContent(res);
       return;
     }
 
@@ -351,39 +332,6 @@ export class ConduitApiStubServer {
     this.send(res, 403, {
       errors: { body: ['You do not have permission to perform this action'] },
     });
-  }
-
-  private readBody(
-    req: http.IncomingMessage,
-    res: http.ServerResponse,
-    onParsed: (body: unknown) => void,
-  ): void {
-    let raw = '';
-    req.on('data', (chunk) => (raw += chunk));
-    req.on('error', () => {
-      this.send(res, 400, { errors: { body: ['Request stream error'] } });
-    });
-    req.on('end', () => {
-      if (!raw) {
-        onParsed({});
-        return;
-      }
-      try {
-        onParsed(JSON.parse(raw));
-      } catch {
-        this.send(res, 400, { errors: { body: ['Invalid JSON'] } });
-      }
-    });
-  }
-
-  private send(
-    res: http.ServerResponse,
-    status: number,
-    payload: unknown,
-  ): void {
-    const body = JSON.stringify(payload);
-    res.writeHead(status, { 'Content-Type': 'application/json' });
-    res.end(body);
   }
 }
 

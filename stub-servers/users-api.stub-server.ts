@@ -1,44 +1,20 @@
 import http from 'http';
-import { AddressInfo } from 'net';
 import { CreateUserRequest, UserResponse } from '@api/models/user.model';
+import { BaseStubServer } from './base.stub-server';
 
-export class UsersApiStubServer {
-  private server?: http.Server;
+export class UsersApiStubServer extends BaseStubServer {
+  protected readonly label = 'Users API';
   private users = new Map<number, UserResponse>();
   private nextId = 1;
 
   constructor() {
+    super();
     this.seedUser({
       firstName: 'Seed',
       lastName: 'User',
       email: 'seed@test.com',
       password: 'seeded',
     });
-  }
-
-  get baseURL(): string {
-    if (!this.server) {
-      throw new Error('Users API stub server is not started');
-    }
-    const { port } = this.server.address() as AddressInfo;
-    return `http://127.0.0.1:${port}`;
-  }
-
-  async start(): Promise<void> {
-    this.server = http.createServer((req, res) => this.handle(req, res));
-    await new Promise<void>((resolve) => {
-      this.server!.listen(0, '127.0.0.1', resolve);
-    });
-  }
-
-  async stop(): Promise<void> {
-    if (!this.server) {
-      return;
-    }
-    await new Promise<void>((resolve, reject) => {
-      this.server!.close((err) => (err ? reject(err) : resolve()));
-    });
-    this.server = undefined;
   }
 
   private validateUserPayload(
@@ -82,7 +58,7 @@ export class UsersApiStubServer {
     return user;
   }
 
-  private handle(req: http.IncomingMessage, res: http.ServerResponse): void {
+  protected handle(req: http.IncomingMessage, res: http.ServerResponse): void {
     const url = req.url ?? '';
     const method = req.method ?? 'GET';
 
@@ -127,44 +103,10 @@ export class UsersApiStubServer {
         return;
       }
       this.users.delete(id);
-      res.writeHead(204);
-      res.end();
+      this.sendNoContent(res);
       return;
     }
 
     this.send(res, 404, { message: 'Not found' });
-  }
-
-  private readBody(
-    req: http.IncomingMessage,
-    res: http.ServerResponse,
-    onParsed: (body: unknown) => void,
-  ): void {
-    let raw = '';
-    req.on('data', (chunk) => (raw += chunk));
-    req.on('error', () => {
-      this.send(res, 400, { message: 'Request stream error' });
-    });
-    req.on('end', () => {
-      if (!raw) {
-        onParsed({});
-        return;
-      }
-      try {
-        onParsed(JSON.parse(raw));
-      } catch {
-        this.send(res, 400, { message: 'Invalid JSON' });
-      }
-    });
-  }
-
-  private send(
-    res: http.ServerResponse,
-    status: number,
-    payload: unknown,
-  ): void {
-    const body = JSON.stringify(payload);
-    res.writeHead(status, { 'Content-Type': 'application/json' });
-    res.end(body);
   }
 }
