@@ -336,9 +336,10 @@ Page Objects live under `tests/pages/conduit/`; specs under `tests/ui/conduit/`.
 | `ConduitArticlePage` | `/article/{slug}` | Read title, body, tags |
 
 **Cross-layer UI checks:** UI specs import `@fixtures/conduit-ui.fixture` only.
-When a test needs API seed data (e.g. create an article before opening it in the
-browser), call the Conduit API inline in a `test.step` — same pattern as
-`auth.spec.ts`. `utils/auth/conduit.session.ts` provides
+It extends `conduit-api.fixture`, so a test that needs API seed data (e.g. create
+an article before opening it in the browser) requests `conduitUser` and
+`articlesApi` directly and gets article cleanup for free.
+`utils/auth/conduit.session.ts` provides
 `authenticateConduitUser(page, user)` to inject the JWT into `localStorage.jwtToken`
 before navigation.
 

@@ -1,19 +1,11 @@
-import { test as base } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { TodoPage } from '@pages/todo.page';
+import { test as todoUiTest } from '@fixtures/todo-ui.fixture';
 
 type A11yFixtures = {
-  todoPage: TodoPage;
   makeAxeBuilder: () => AxeBuilder;
 };
 
-export const test = base.extend<A11yFixtures>({
-  todoPage: async ({ page }, use) => {
-    const todoPage = new TodoPage(page);
-    await todoPage.goto();
-    await use(todoPage);
-  },
-
+export const test = todoUiTest.extend<A11yFixtures>({
   makeAxeBuilder: async ({ page }, use) => {
     const make = () =>
       new AxeBuilder({ page }).withTags([

@@ -3,11 +3,6 @@ import {
   ConduitArticleFactory,
   ConduitUserFactory,
 } from '@factories/conduit.factory';
-import {
-  createConduitContext,
-  ConduitAuthApi,
-  ArticlesApi,
-} from '@api/conduit';
 import { authenticateConduitUser } from '@utils/auth/conduit.session';
 import { qase } from 'playwright-qase-reporter';
 
@@ -18,29 +13,13 @@ test.describe(
     test(
       qase(37, 'article created via API is visible in the browser'),
       { tag: ['@smoke', '@showcase'] },
-      async ({ conduitArticle, page }) => {
+      async ({ conduitArticle, conduitUser, articlesApi, page }) => {
         const input = ConduitArticleFactory.create();
 
-        const { user, article: created } =
-          await test.step('create article via API', async () => {
-            const ctx = await createConduitContext();
-            try {
-              const user = await new ConduitAuthApi(ctx).register(
-                ConduitUserFactory.create(),
-              );
-              const apiCtx = await createConduitContext(user.token);
-              try {
-                const article = await new ArticlesApi(apiCtx).create(input);
-                return { user, article };
-              } finally {
-                await apiCtx.dispose();
-              }
-            } finally {
-              await ctx.dispose();
-            }
-          });
+        const created = await test.step('create article via API', () =>
+          articlesApi.create(input));
 
-        await authenticateConduitUser(page, user);
+        await authenticateConduitUser(page, conduitUser);
 
         await test.step('open article in browser', () =>
           conduitArticle.goto(created.slug));

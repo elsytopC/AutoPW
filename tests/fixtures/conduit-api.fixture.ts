@@ -11,6 +11,7 @@ import { ConduitUserFactory } from '@factories/conduit.factory';
 
 type ConduitFixtures = {
   conduitUser: ConduitUser;
+  anonAuthApi: ConduitAuthApi;
   articlesApi: ArticlesApi;
   anonArticlesApi: ArticlesApi;
   commentsApi: CommentsApi;
@@ -24,6 +25,15 @@ export const test = base.extend<ConduitFixtures>({
       const auth = new ConduitAuthApi(context);
       const user = await auth.register(ConduitUserFactory.create());
       await use(user);
+    } finally {
+      await context.dispose();
+    }
+  },
+
+  anonAuthApi: async ({}, use) => {
+    const context = await createConduitContext();
+    try {
+      await use(new ConduitAuthApi(context));
     } finally {
       await context.dispose();
     }

@@ -19,7 +19,7 @@ See also: [conduit-map.md](../conduit-map.md) for the full file layout.
 |---|---|---|---|
 | API CRUD against real backend | `conduit-api.fixture.ts` | `tests/api/conduit/` | `conduit-api` |
 | Browser-only flow | `conduit-ui.fixture.ts` | `tests/ui/conduit/` | `conduit-ui` |
-| API seed → UI assert | `conduit-ui.fixture.ts` + inline API | `tests/ui/conduit/` | `conduit-ui` |
+| API seed → UI assert | `conduit-ui.fixture.ts` (inherits API fixtures) | `tests/ui/conduit/` | `conduit-ui` |
 | Security the demo won't enforce | `contract.fixture.ts` | `tests/contract/conduit/` | `contract` |
 
 ---
@@ -129,43 +129,30 @@ Use when the UI state is easier to set up via API than through multiple UI click
 
 ```typescript
 import { test, expect } from '@fixtures/conduit-ui.fixture';
-import { ConduitArticleFactory, ConduitUserFactory } from '@factories/conduit.factory';
-import { createConduitContext } from '@api/conduit/client/conduitClient';
-import { ConduitAuthApi } from '@api/conduit/services/auth.api';
-import { ArticlesApi } from '@api/conduit/services/articles.api';
+import { ConduitArticleFactory } from '@factories/conduit.factory';
 import { authenticateConduitUser } from '@utils/auth/conduit.session';
 import { qase } from 'playwright-qase-reporter';
 
 test(
   qase(99, 'API-created article visible in browser'),
   { tag: ['@smoke', '@ui', '@conduit'] },
-  async ({ conduitArticle, page }) => {
+  async ({ conduitArticle, conduitUser, articlesApi, page }) => {
     const input = ConduitArticleFactory.create();
 
-    const { user, article } = await test.step('Create via API', async () => {
-      const ctx = await createConduitContext();
-      try {
-        const user = await new ConduitAuthApi(ctx).register(
-          ConduitUserFactory.create(),
-        );
-        const apiCtx = await createConduitContext(user.token);
-        try {
-          const article = await new ArticlesApi(apiCtx).create(input);
-          return { user, article };
-        } finally {
-          await apiCtx.dispose();
-        }
-      } finally {
-        await ctx.dispose();
-      }
-    });
+    const article = await test.step('Create via API', () =>
+      articlesApi.create(input));
 
-    await authenticateConduitUser(page, user);
+    await authenticateConduitUser(page, conduitUser);
     await conduitArticle.goto(article.slug);
     await expect(conduitArticle.title).toHaveText(input.title);
   },
 );
 ```
+
+`conduit-ui.fixture.ts` extends `conduit-api.fixture.ts`: `conduitUser` is
+registered only when the test requests it, and `articlesApi` deletes the
+user's articles in teardown. Use `anonAuthApi.register(data)` when the spec
+needs the user's password (e.g. to drive the login form).
 
 ---
 

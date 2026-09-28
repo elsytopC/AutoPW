@@ -61,16 +61,17 @@ flowchart TD
 
 | Fixture file | Provides | Teardown |
 |---|---|---|
-| `tests/fixtures/conduit-api.fixture.ts` | `conduitUser`, `articlesApi`, `commentsApi`, `anon*` variants | Deletes all articles authored by `conduitUser` |
-| `tests/fixtures/conduit-ui.fixture.ts` | `conduitHome`, `conduitLogin`, `conduitRegister`, `conduitEditor`, `conduitArticle` | Page objects only — no API cleanup |
+| `tests/fixtures/conduit-api.fixture.ts` | `conduitUser`, `articlesApi`, `commentsApi`, `anonAuthApi`, `anon*` variants | Deletes all articles authored by `conduitUser` |
+| `tests/fixtures/conduit-ui.fixture.ts` | Everything from `conduit-api.fixture.ts` + `conduitHome`, `conduitLogin`, `conduitRegister`, `conduitEditor`, `conduitArticle` | Inherited API cleanup when `articlesApi` is used |
 | `tests/fixtures/contract.fixture.ts` | `conduitApiStub` | Stops in-process stub-server |
 
 For live API tests prefer `conduit-api.fixture.ts` — it registers a throwaway
 user and cleans up authored articles automatically.
 
-For UI tests that need pre-seeded data, call the Conduit API inline inside a
-`test.step` (see `tests/ui/conduit/articles.spec.ts`), then use
-`authenticateConduitUser(page, user)` before navigation.
+For UI tests that need pre-seeded data, request `conduitUser` / `articlesApi`
+(or `anonAuthApi` when the spec needs the password) from `conduit-ui.fixture.ts`
+— see `tests/ui/conduit/articles.spec.ts` — then call
+`authenticateConduitUser(page, conduitUser)` before navigation.
 
 ---
 

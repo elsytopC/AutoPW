@@ -1,6 +1,5 @@
 import { test, expect } from '@fixtures/conduit-ui.fixture';
 import { ConduitUserFactory } from '@factories/conduit.factory';
-import { createConduitContext, ConduitAuthApi } from '@api/conduit';
 import { clearConduitSession } from '@utils/auth/conduit.session';
 import { qase } from 'playwright-qase-reporter';
 
@@ -24,15 +23,13 @@ test.describe('Conduit auth (UI)', { tag: ['@ui', '@conduit'] }, () => {
   test(
     qase(30, 'logs in with existing credentials'),
     { tag: ['@regression'] },
-    async ({ conduitLogin, conduitHome, page }) => {
+    async ({ conduitLogin, conduitHome, anonAuthApi, page }) => {
       const userData = ConduitUserFactory.create();
 
+      await test.step('seed user via API', () =>
+        anonAuthApi.register(userData));
+
       // Demo has no logout — clear localStorage to test the login form in isolation
-      await test.step('seed user via API', async () => {
-        const ctx = await createConduitContext();
-        await new ConduitAuthApi(ctx).register(userData);
-        await ctx.dispose();
-      });
 
       await page.goto('/');
       await clearConduitSession(page);

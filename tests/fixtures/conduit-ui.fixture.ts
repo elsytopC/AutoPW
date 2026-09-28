@@ -1,5 +1,4 @@
-import { test as base } from '@playwright/test';
-
+import { test as conduitApiTest } from '@fixtures/conduit-api.fixture';
 import {
   ConduitHomePage,
   ConduitLoginPage,
@@ -16,7 +15,7 @@ type ConduitUiFixtures = {
   conduitArticle: ConduitArticlePage;
 };
 
-export const test = base.extend<ConduitUiFixtures>({
+export const test = conduitApiTest.extend<ConduitUiFixtures>({
   conduitHome: async ({ page }, use) => {
     await use(new ConduitHomePage(page));
   },
