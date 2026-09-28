@@ -70,6 +70,7 @@ Import stub-servers via `@stub-servers/*` (not `@mocks/*`).
 ```bash
 npm run test:contract              # all contract tests
 npm run test:smoke:contract        # contract @smoke only
+npx playwright test --grep @contract   # every contract spec is tagged @contract
 npx playwright test --project=contract
 npx playwright test tests/contract/users.contract.spec.ts --workers=1
 ```

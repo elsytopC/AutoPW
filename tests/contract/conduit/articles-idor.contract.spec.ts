@@ -27,7 +27,7 @@ function articlesApi(baseURL: string, token: string) {
 
 test.describe(
   'Conduit articles authorization (contract)',
-  { tag: ['@api'] },
+  { tag: ['@api', '@contract'] },
   () => {
     test(
       qase(44, 'rejects update/delete of an article by a non-owner (IDOR)'),

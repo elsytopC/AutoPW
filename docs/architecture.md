@@ -122,7 +122,7 @@ These patterns apply to **both domains**:
 | Page Objects | `tests/pages/` | All locators live in POM classes |
 | Custom fixtures | `tests/fixtures/` | Specs import layer fixture, not raw `@playwright/test` |
 | Env config | `config/env.ts` | Single source of truth for all env vars |
-| Global hooks | `config/global-setup.ts`, `global-teardown.ts` | Fail-fast validation; clean auth artifacts |
+| Global hooks | `config/global-setup.ts`, `global-teardown.ts` | Run banner; clean auth artifacts (validation lives in `config/env.ts`) |
 | Playwright projects | `playwright.config.ts` | One project per layer/backend combination |
 | CI | `.github/workflows/playwright.yml` | Split jobs: `ui-ci`, `api-ci`, `conduit-ci`, `visual-ci` |
 | Tags | every spec | `@smoke`/`@regression` + layer tag; `@conduit`, `@security` for domain |

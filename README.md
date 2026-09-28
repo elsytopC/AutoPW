@@ -21,7 +21,7 @@ Lightweight SDET automation framework for UI and API testing built on top of `@p
 See **`docs/testing-layers.md`** for the full layer map (stub-servers vs contract vs live API).  
 See **`docs/architecture.md`** for diagrams and domain overview.  
 See **`docs/cookbooks/`** for step-by-step recipes.
-- **Tag-based test selection** (`@smoke`, `@regression`, `@api`, `@ui`, `@conduit`, `@security`)
+- **Tag-based test selection** (`@smoke`, `@regression`, `@api`, `@ui`, `@conduit`, `@contract`, `@security`)
 - **CI** with separate `ui-ci` / `api-ci` jobs and JUnit reporting
 - **Code quality** — ESLint flat config, Prettier, Husky pre-commit + pre-push hooks
 
@@ -102,8 +102,8 @@ Full Conduit file map: [`docs/conduit-map.md`](docs/conduit-map.md).
 ### Shared infrastructure
 
 ```text
-config/env.ts                       ← all env variables
-config/global-setup.ts              ← fail-fast validation
+config/env.ts                       ← all env variables, Zod-validated at load
+config/global-setup.ts              ← run configuration banner
 config/global-teardown.ts           ← cleans .playwright/auth/
 tests/auth/admin.setup.ts           ← storageState for Todo UI projects
 tests/fixtures/                     ← one fixture file per test layer
@@ -173,6 +173,12 @@ env.credentials.admin // ADMIN_EMAIL, ADMIN_PASSWORD
 env.credentials.user  // USER_EMAIL, USER_PASSWORD
 ```
 
+`config/env.ts` validates every variable with a Zod schema when it is first
+imported (URLs must be valid, `PROD_AUTH` must be `true`/`false`,
+`PROD_AUTH=true` requires `API_BASE_URL` + admin credentials). A bad value stops
+the run immediately with `Invalid test configuration` naming the variable.
+Empty values (as in `.env.example`) count as unset.
+
 `.env` is **optional** for first run — defaults in `config/env.ts` are enough
 for contract, smoke UI, and Conduit public demo. Copy `.env.example` to `.env`
 when you need live Users API (`API_BASE_URL`), `PROD_AUTH=true`, or custom
@@ -183,7 +189,7 @@ or CI secrets; `.env` is gitignored.
 
 | Hook | File | Responsibility |
 |---|---|---|
-| `globalSetup` | `config/global-setup.ts` | Validate config (fail fast on inconsistent `PROD_AUTH` setup) and print a run banner |
+| `globalSetup` | `config/global-setup.ts` | Print a run banner (validation happens in `config/env.ts`) |
 | `globalTeardown` | `config/global-teardown.ts` | Remove generated `.playwright/auth` state so stale tokens don't leak across runs |
 
 ---
@@ -501,7 +507,7 @@ target a single `--project=` instead.
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | `Executable doesn't exist at …` | Playwright browsers not installed | `npm run test:setup` or `npx playwright install chromium` |
-| `Invalid test configuration` at startup | `PROD_AUTH=true` without `API_BASE_URL` / credentials | set `PROD_AUTH=false` or fill `.env` |
+| `Invalid test configuration` at startup | an env var failed validation (malformed URL, `PROD_AUTH` not `true`/`false`, `PROD_AUTH=true` without `API_BASE_URL` / credentials) | fix the variable named in the message, or set `PROD_AUTH=false` |
 | API tests: connection refused / invalid URL | empty `API_BASE_URL` | don't run `--project=api` without a backend; use `test:contract` |
 | Conduit: `ECONNREFUSED 127.0.0.1:3000` | Docker URLs in `.env` but stack not running | `npm run conduit:up` or use public demo URLs |
 | Visual: snapshot not found (e.g. Windows) | no baseline for your OS | skip `ui-visual` locally; baselines are darwin/linux only |
