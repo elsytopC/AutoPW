@@ -61,7 +61,7 @@ flowchart TD
 
 | Fixture file | Provides | Teardown |
 |---|---|---|
-| `tests/fixtures/conduit-api.fixture.ts` | `conduitUser`, `articlesApi`, `commentsApi`, `anonAuthApi`, `anon*` variants | Deletes all articles authored by `conduitUser` |
+| `tests/fixtures/conduit-api.fixture.ts` | `conduitUser`, `articlesApi`, `commentsApi`, `anonAuthApi`, `conduitCleanup`, `anon*` variants | Deletes all articles authored by `conduitUser` and by users passed to `conduitCleanup.trackUser` |
 | `tests/fixtures/conduit-ui.fixture.ts` | Everything from `conduit-api.fixture.ts` + `conduitHome`, `conduitLogin`, `conduitRegister`, `conduitEditor`, `conduitArticle` | Inherited API cleanup when `articlesApi` is used |
 | `tests/fixtures/contract.fixture.ts` | `conduitApiStub` | Stops in-process stub-server |
 
@@ -72,6 +72,16 @@ For UI tests that need pre-seeded data, request `conduitUser` / `articlesApi`
 (or `anonAuthApi` when the spec needs the password) from `conduit-ui.fixture.ts`
 — see `tests/ui/conduit/articles.spec.ts` — then call
 `authenticateConduitUser(page, conduitUser)` before navigation.
+
+When a user is created **through the UI** (register form), call
+`conduitCleanup.trackUser({ email, password })` before registering: teardown
+logs in via API and deletes everything that user authored.
+
+**Known residue:** the RealWorld API has no endpoint to delete a user, so
+registered accounts remain on the backend. They are unique (`ConduitUserFactory`)
+and no test depends on them; the CI Docker stack is rebuilt from scratch on
+every run. Articles and comments are always removed (comments go with their
+article). See `.cursor/rules/test-isolation.mdc`.
 
 ---
 

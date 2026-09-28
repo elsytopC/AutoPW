@@ -35,9 +35,19 @@ test.describe('Conduit articles (UI)', { tag: ['@ui', '@conduit'] }, () => {
   test(
     qase(38, 'publishes an article through the editor'),
     { tag: ['@regression'] },
-    async ({ conduitRegister, conduitEditor, conduitArticle, page }) => {
+    async ({
+      conduitRegister,
+      conduitEditor,
+      conduitArticle,
+      conduitCleanup,
+      page,
+    }) => {
       const userData = ConduitUserFactory.create();
       const articleData = ConduitArticleFactory.create();
+      conduitCleanup.trackUser({
+        email: userData.email,
+        password: userData.password,
+      });
 
       await test.step('register via UI', async () => {
         await conduitRegister.goto();

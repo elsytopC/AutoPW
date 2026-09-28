@@ -94,9 +94,10 @@ test.describe('Conduit articles (UI)', { tag: ['@ui', '@conduit'] }, () => {
   test(
     qase(99, 'publishes article via editor'),
     { tag: ['@regression'] },
-    async ({ conduitRegister, conduitEditor, conduitArticle, page }) => {
+    async ({ conduitRegister, conduitEditor, conduitArticle, conduitCleanup, page }) => {
       const userData = ConduitUserFactory.create();
       const articleData = ConduitArticleFactory.create();
+      conduitCleanup.trackUser({ email: userData.email, password: userData.password });
 
       await test.step('Register via UI', async () => {
         await conduitRegister.goto();
@@ -177,5 +178,6 @@ Add handler logic in `stub-servers/conduit-api.stub-server.ts`.
 - [ ] Correct fixture import (`conduit-api`, `conduit-ui`, or `contract`)
 - [ ] `Token` auth for API — not `Bearer`
 - [ ] UI auth via `authenticateConduitUser` when seeding via API
+- [ ] Users registered through the UI are passed to `conduitCleanup.trackUser` — the spec leaves no articles behind
 - [ ] Tags: `@conduit` + layer tag; `@security` for IDOR tests
 - [ ] Targeted `--project=` run passes
