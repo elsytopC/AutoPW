@@ -1,5 +1,6 @@
 import type { TestInfo } from '@playwright/test';
 import { test, expect } from '@fixtures/a11y.fixture';
+import { behavior } from '@utils/allure';
 import { qase } from 'playwright-qase-reporter';
 
 // Known third-party TodoMVC demo issue — disable so other WCAG rules still run
@@ -12,34 +13,47 @@ async function attach(testInfo: TestInfo, violations: unknown): Promise<void> {
   });
 }
 
-test.describe('TodoMVC accessibility', { tag: ['@a11y', '@ui'] }, () => {
-  test(
-    qase(12, 'empty app has no detectable a11y violations'),
-    { tag: ['@smoke'] },
-    async ({ todoPage, makeAxeBuilder }, testInfo) => {
-      await expect(todoPage.items).toHaveCount(0);
+test.describe(
+  'TodoMVC accessibility',
+  {
+    tag: ['@a11y', '@ui'],
+    annotation: behavior('TodoMVC', 'Accessibility'),
+  },
+  () => {
+    test(
+      qase(12, 'empty app has no detectable a11y violations'),
+      { tag: ['@smoke'] },
+      async ({ todoPage, makeAxeBuilder }, testInfo) => {
+        await test.step('Verify list is empty', async () => {
+          await expect(todoPage.items).toHaveCount(0);
+        });
 
-      const results = await makeAxeBuilder()
-        .disableRules(KNOWN_DEMO_VIOLATIONS)
-        .analyze();
-      await attach(testInfo, results.violations);
+        const results = await test.step('Run axe WCAG scan', () =>
+          makeAxeBuilder().disableRules(KNOWN_DEMO_VIOLATIONS).analyze());
+        await attach(testInfo, results.violations);
 
-      expect(results.violations).toEqual([]);
-    },
-  );
+        await test.step('Verify no violations', () => {
+          expect(results.violations).toEqual([]);
+        });
+      },
+    );
 
-  test(
-    qase(13, 'populated list has no detectable a11y violations'),
-    async ({ todoPage, makeAxeBuilder }, testInfo) => {
-      await todoPage.addTodo('Write tests');
-      await todoPage.completeTodo('Write tests');
+    test(
+      qase(13, 'populated list has no detectable a11y violations'),
+      async ({ todoPage, makeAxeBuilder }, testInfo) => {
+        await test.step('Add and complete a todo', async () => {
+          await todoPage.addTodo('Write tests');
+          await todoPage.completeTodo('Write tests');
+        });
 
-      const results = await makeAxeBuilder()
-        .disableRules(KNOWN_DEMO_VIOLATIONS)
-        .analyze();
-      await attach(testInfo, results.violations);
+        const results = await test.step('Run axe WCAG scan', () =>
+          makeAxeBuilder().disableRules(KNOWN_DEMO_VIOLATIONS).analyze());
+        await attach(testInfo, results.violations);
 
-      expect(results.violations).toEqual([]);
-    },
-  );
-});
+        await test.step('Verify no violations', () => {
+          expect(results.violations).toEqual([]);
+        });
+      },
+    );
+  },
+);

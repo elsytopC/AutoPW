@@ -1,101 +1,134 @@
 import { test, expect } from '@fixtures/conduit-api.fixture';
 import { ConduitArticleFactory } from '@factories/conduit.factory';
+import { behavior } from '@utils/allure';
 import { qase } from 'playwright-qase-reporter';
 
-test.describe('Conduit articles', { tag: ['@api'] }, () => {
-  test(
-    qase(31, 'creates and reads back an article'),
-    { tag: ['@smoke'] },
-    async ({ articlesApi, conduitUser }) => {
-      const input = ConduitArticleFactory.create();
+test.describe(
+  'Conduit articles',
+  { tag: ['@api'], annotation: behavior('Conduit', 'Articles') },
+  () => {
+    test(
+      qase(31, 'creates and reads back an article'),
+      { tag: ['@smoke'] },
+      async ({ articlesApi, conduitUser }) => {
+        const input = ConduitArticleFactory.create();
 
-      const created = await test.step('create article', () =>
-        articlesApi.create(input));
-      expect(created.title).toBe(input.title);
-      expect(created.author.username).toBe(conduitUser.username);
-      expect(created.slug).toBeTruthy();
+        const created = await test.step('create article', () =>
+          articlesApi.create(input));
 
-      const fetched = await test.step('read article by slug', () =>
-        articlesApi.getBySlug(created.slug));
-      expect(fetched.body).toBe(input.body);
-      expect(fetched.tagList).toEqual(expect.arrayContaining(input.tagList!));
-    },
-  );
+        await test.step('verify created article', () => {
+          expect(created.title).toBe(input.title);
+          expect(created.author.username).toBe(conduitUser.username);
+          expect(created.slug).toBeTruthy();
+        });
 
-  test(
-    qase(32, 'lists the article under its author'),
-    { tag: ['@regression'] },
-    async ({ articlesApi, conduitUser }) => {
-      const created = await articlesApi.create(ConduitArticleFactory.create());
+        const fetched = await test.step('read article by slug', () =>
+          articlesApi.getBySlug(created.slug));
 
-      const { articles, articlesCount } = await articlesApi.list({
-        author: conduitUser.username,
-      });
+        await test.step('verify body and tags are persisted', () => {
+          expect(fetched.body).toBe(input.body);
+          expect(fetched.tagList).toEqual(
+            expect.arrayContaining(input.tagList!),
+          );
+        });
+      },
+    );
 
-      expect(articlesCount).toBeGreaterThan(0);
-      expect(articles.map((a) => a.slug)).toContain(created.slug);
-    },
-  );
+    test(
+      qase(32, 'lists the article under its author'),
+      { tag: ['@regression'] },
+      async ({ articlesApi, conduitUser }) => {
+        const created = await test.step('create article', () =>
+          articlesApi.create(ConduitArticleFactory.create()));
 
-  test(
-    qase(33, 'updating the title regenerates the slug'),
-    { tag: ['@regression'] },
-    async ({ articlesApi }) => {
-      const created = await articlesApi.create(ConduitArticleFactory.create());
+        const { articles, articlesCount } =
+          await test.step('list articles by author', () =>
+            articlesApi.list({ author: conduitUser.username }));
 
-      const updated = await articlesApi.update(created.slug, {
-        title: `Updated ${created.slug}`,
-      });
+        await test.step('verify article is in the author list', () => {
+          expect(articlesCount).toBeGreaterThan(0);
+          expect(articles.map((a) => a.slug)).toContain(created.slug);
+        });
+      },
+    );
 
-      expect(updated.slug).not.toBe(created.slug);
+    test(
+      qase(33, 'updating the title regenerates the slug'),
+      { tag: ['@regression'] },
+      async ({ articlesApi }) => {
+        const created = await test.step('create article', () =>
+          articlesApi.create(ConduitArticleFactory.create()));
 
-      const oldSlugResponse = await articlesApi.tryGetBySlug(created.slug);
-      expect(oldSlugResponse.status()).toBe(404);
+        const updated = await test.step('update article title', () =>
+          articlesApi.update(created.slug, {
+            title: `Updated ${created.slug}`,
+          }));
 
-      const refetched = await articlesApi.getBySlug(updated.slug);
-      expect(refetched.title).toBe(updated.title);
-    },
-  );
+        await test.step('verify slug changed and old slug is gone', async () => {
+          expect(updated.slug).not.toBe(created.slug);
 
-  test(
-    qase(34, 'deletes an article'),
-    { tag: ['@regression'] },
-    async ({ articlesApi }) => {
-      const created = await articlesApi.create(ConduitArticleFactory.create());
+          const oldSlugResponse = await articlesApi.tryGetBySlug(created.slug);
+          expect(oldSlugResponse.status()).toBe(404);
+        });
 
-      await articlesApi.remove(created.slug);
+        await test.step('verify article is readable by new slug', async () => {
+          const refetched = await articlesApi.getBySlug(updated.slug);
+          expect(refetched.title).toBe(updated.title);
+        });
+      },
+    );
 
-      const response = await articlesApi.tryGetBySlug(created.slug);
-      expect(response.status()).toBe(404);
-    },
-  );
+    test(
+      qase(34, 'deletes an article'),
+      { tag: ['@regression'] },
+      async ({ articlesApi }) => {
+        const created = await test.step('create article', () =>
+          articlesApi.create(ConduitArticleFactory.create()));
 
-  test(
-    qase(35, 'rejects article creation without auth (401)'),
-    { tag: ['@regression'] },
-    async ({ anonArticlesApi }) => {
-      const response = await anonArticlesApi.tryCreate(
-        ConduitArticleFactory.create(),
-      );
+        await test.step('delete article', () =>
+          articlesApi.remove(created.slug));
 
-      expect(response.status()).toBe(401);
-    },
-  );
+        await test.step('verify article returns 404', async () => {
+          const response = await articlesApi.tryGetBySlug(created.slug);
+          expect(response.status()).toBe(404);
+        });
+      },
+    );
 
-  test(
-    qase(36, 'rejects an invalid article with field errors (422)'),
-    { tag: ['@regression'] },
-    async ({ articlesApi }) => {
-      const response = await articlesApi.tryCreate({ title: '' });
+    test(
+      qase(35, 'rejects article creation without auth (401)'),
+      { tag: ['@regression'] },
+      async ({ anonArticlesApi }) => {
+        const response = await test.step('create article anonymously', () =>
+          anonArticlesApi.tryCreate(ConduitArticleFactory.create()));
 
-      expect(response.status()).toBe(422);
+        await test.step('verify 401 status', () => {
+          expect(response.status()).toBe(401);
+        });
+      },
+    );
 
-      const body = await response.json();
-      expect(body.errors).toMatchObject({
-        title: expect.any(Array),
-        description: expect.any(Array),
-        body: expect.any(Array),
-      });
-    },
-  );
-});
+    test(
+      qase(36, 'rejects an invalid article with field errors (422)'),
+      { tag: ['@regression'] },
+      async ({ articlesApi }) => {
+        const response =
+          await test.step('create article with empty title', () =>
+            articlesApi.tryCreate({ title: '' }));
+
+        await test.step('verify 422 status', () => {
+          expect(response.status()).toBe(422);
+        });
+
+        await test.step('verify errors for required fields', async () => {
+          const body = await response.json();
+          expect(body.errors).toMatchObject({
+            title: expect.any(Array),
+            description: expect.any(Array),
+            body: expect.any(Array),
+          });
+        });
+      },
+    );
+  },
+);

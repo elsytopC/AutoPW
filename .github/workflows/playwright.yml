@@ -30,8 +30,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    outputs:
-      allure-built: ${{ steps.upload-allure.outcome == 'success' }}
 
     steps:
       - name: Checkout repository
@@ -45,12 +43,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
 
       - name: Run lint
         run: npm run lint
@@ -80,31 +72,13 @@ jobs:
             npx playwright test --project="$PROJECT"
           fi
 
-      - name: Fetch previous Allure history
-        if: always()
-        uses: actions/checkout@v6
-        continue-on-error: true
-        with:
-          ref: gh-pages
-          path: gh-pages
-
-      - name: Build Allure report with history
-        if: ${{ !cancelled() }}
-        id: allure-report
-        run: |
-          mkdir -p allure-results/history
-          if [ -d gh-pages/history ]; then
-            cp -R gh-pages/history/* allure-results/history/ || true
-          fi
-          npx allure generate allure-results -o allure-history --clean
-
-      - name: Upload Allure report
-        id: upload-allure
+      - name: Upload Allure results
         uses: actions/upload-artifact@v6
-        if: ${{ !cancelled() && steps.allure-report.outcome == 'success' }}
+        if: ${{ !cancelled() }}
         with:
-          name: allure-report-ui
-          path: allure-history/
+          name: allure-results-ui
+          path: allure-results/
+          if-no-files-found: ignore
           retention-days: 7
 
       - name: Upload Playwright report
@@ -123,14 +97,124 @@ jobs:
           path: test-results/junit.xml
           retention-days: 7
 
+  # One report for the whole pipeline: every test job uploads raw
+  # allure-results, this job merges them and adds gh-pages history so
+  # trends survive between runs.
+  allure-report:
+    needs: [ui-ci, visual-ci, api-ci, conduit-ci]
+    if: ${{ !cancelled() }}
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      built: ${{ steps.upload.outcome == 'success' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Download Allure results
+        uses: actions/download-artifact@v6
+        continue-on-error: true
+        with:
+          pattern: allure-results-*
+          merge-multiple: true
+          path: allure-results
+
+      - name: Fetch previous Allure history
+        uses: actions/checkout@v6
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Add history and run metadata
+        id: metadata
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+          COMMIT: ${{ github.sha }}
+          EVENT: ${{ github.event_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RUN_NAME: '${{ github.workflow }} #${{ github.run_number }}'
+          RUN_NUMBER: ${{ github.run_number }}
+          REPORT_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+        run: |
+          if ! ls allure-results/*-result.json >/dev/null 2>&1; then
+            echo "No Allure results were uploaded by test jobs."
+            echo "has-results=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "has-results=true" >> "$GITHUB_OUTPUT"
+
+          mkdir -p allure-results/history
+          if [ -d gh-pages/history ]; then
+            cp -R gh-pages/history/* allure-results/history/ || true
+          fi
+
+          # Each job writes its own environment.properties; replace them with
+          # one deterministic file describing the whole pipeline run.
+          cat > allure-results/environment.properties <<EOF
+          Branch=${BRANCH}
+          Commit=${COMMIT}
+          Event=${EVENT}
+          Node=$(node --version)
+          Todo.UI=https://demo.playwright.dev
+          Conduit.UI.Docker=http://127.0.0.1:4201
+          Conduit.API.Docker=http://127.0.0.1:3000/api
+          EOF
+
+          jq -n \
+            --arg name "GitHub Actions" \
+            --arg buildName "$RUN_NAME" \
+            --arg buildOrder "$RUN_NUMBER" \
+            --arg buildUrl "$RUN_URL" \
+            --arg reportUrl "$REPORT_URL" \
+            '{name: $name, type: "github", buildName: $buildName,
+              buildOrder: ($buildOrder | tonumber), buildUrl: $buildUrl,
+              reportUrl: $reportUrl}' \
+            > allure-results/executor.json
+
+      - name: Generate Allure report
+        if: steps.metadata.outputs.has-results == 'true'
+        run: npx allure generate allure-results -o allure-history --clean
+
+      - name: Upload Allure report
+        id: upload
+        if: steps.metadata.outputs.has-results == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: allure-report
+          path: allure-history/
+          retention-days: 7
+
   # Separate job so only the gh-pages publish step gets contents:write —
-  # ui-ci itself only needs read access to run and report tests.
+  # test and report jobs only need read access.
   publish-allure-report:
-    needs: ui-ci
+    needs: allure-report
     if: >-
       ${{ !cancelled()
-      && needs.ui-ci.outputs.allure-built == 'true'
-      && github.event_name == 'push' }}
+      && needs.allure-report.outputs.built == 'true'
+      && github.ref == 'refs/heads/main'
+      && (github.event_name == 'push' || github.event_name == 'schedule') }}
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
     timeout-minutes: 10
     runs-on: ubuntu-latest
     permissions:
@@ -143,7 +227,7 @@ jobs:
       - name: Download Allure report artifact
         uses: actions/download-artifact@v6
         with:
-          name: allure-report-ui
+          name: allure-report
           path: allure-history
 
       - name: Publish Allure report to GitHub Pages
@@ -190,6 +274,15 @@ jobs:
       - name: Skip visual (no Linux baselines yet)
         if: steps.baselines.outputs.ready != 'true'
         run: echo "No Linux baselines found. Run the 'Update Visual Baselines' workflow to generate them."
+
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v6
+        if: ${{ !cancelled() && steps.baselines.outputs.ready == 'true' }}
+        with:
+          name: allure-results-visual
+          path: allure-results/
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Upload visual report
         uses: actions/upload-artifact@v6
@@ -250,6 +343,15 @@ jobs:
         run: |
           echo "Skipping API CI: set API_BASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD secrets to enable this job."
 
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v6
+        if: ${{ !cancelled() && steps.api_secrets.outputs.ready == 'true' }}
+        with:
+          name: allure-results-api
+          path: allure-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Upload Playwright report
         uses: actions/upload-artifact@v6
         if: always() && steps.api_secrets.outputs.ready == 'true'
@@ -299,6 +401,15 @@ jobs:
       - name: Stop Conduit stack
         if: always()
         run: docker compose -f docker-compose.conduit.yml down -v
+
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v6
+        if: ${{ !cancelled() }}
+        with:
+          name: allure-results-conduit
+          path: allure-results/
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v6

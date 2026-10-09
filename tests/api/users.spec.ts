@@ -1,59 +1,76 @@
 import { test, expect } from '@fixtures/api.fixture';
 import { UserFactory } from '@factories/user.factory';
+import { behavior } from '@utils/allure';
 import { qase } from 'playwright-qase-reporter';
 
-test.describe('Users API', { tag: ['@api'] }, () => {
-  test(
-    qase(14, 'admin creates user'),
-    { tag: ['@smoke'] },
-    async ({ usersApi }) => {
-      const userData = UserFactory.create();
+test.describe(
+  'Users API',
+  { tag: ['@api'], annotation: behavior('Users API', 'Users') },
+  () => {
+    test(
+      qase(14, 'admin creates user'),
+      { tag: ['@smoke'] },
+      async ({ usersApi }) => {
+        const userData = UserFactory.create();
 
-      const user = await usersApi.createUser(userData);
+        const user = await test.step('Create user', () =>
+          usersApi.createUser(userData));
 
-      try {
-        expect(user.id).toBeDefined();
-      } finally {
-        await usersApi.deleteUser(user.id);
-      }
-    },
-  );
+        try {
+          await test.step('Verify user id is assigned', () => {
+            expect(user.id).toBeDefined();
+          });
+        } finally {
+          await usersApi.deleteUser(user.id);
+        }
+      },
+    );
 
-  test(
-    qase(15, 'admin gets user'),
-    { tag: ['@smoke'] },
-    async ({ usersApi }) => {
-      const user = await usersApi.getUser(1);
+    test(
+      qase(15, 'admin gets user'),
+      { tag: ['@smoke'] },
+      async ({ usersApi }) => {
+        const user = await test.step('Get user by id', () =>
+          usersApi.getUser(1));
 
-      expect(user.id).toBe(1);
-    },
-  );
+        await test.step('Verify returned id', () => {
+          expect(user.id).toBe(1);
+        });
+      },
+    );
 
-  test(
-    qase(16, 'admin gets users list'),
-    { tag: ['@regression'] },
-    async ({ usersApi }) => {
-      const users = await usersApi.getUsers();
+    test(
+      qase(16, 'admin gets users list'),
+      { tag: ['@regression'] },
+      async ({ usersApi }) => {
+        const users = await test.step('Get users list', () =>
+          usersApi.getUsers());
 
-      expect(users.length).toBeGreaterThan(0);
-    },
-  );
+        await test.step('Verify list is not empty', () => {
+          expect(users.length).toBeGreaterThan(0);
+        });
+      },
+    );
 
-  test(
-    qase(17, 'existingUser fixture creates user'),
-    { tag: ['@regression'] },
-    async ({ existingUser }) => {
-      expect(existingUser.id).toBeDefined();
-    },
-  );
+    test(
+      qase(17, 'existingUser fixture creates user'),
+      { tag: ['@regression'] },
+      async ({ existingUser }) => {
+        await test.step('Verify fixture user has an id', () => {
+          expect(existingUser.id).toBeDefined();
+        });
+      },
+    );
 
-  test(
-    qase(18, 'returns ApiError on 404'),
-    { tag: ['@regression'] },
-    async ({ usersApi }) => {
-      await expect(usersApi.getUser(999999)).rejects.toMatchObject({
-        status: 404,
-      });
-    },
-  );
-});
+    test(
+      qase(18, 'returns ApiError on 404'),
+      { tag: ['@regression'] },
+      async ({ usersApi }) => {
+        await test.step('Verify unknown id rejects with 404', () =>
+          expect(usersApi.getUser(999999)).rejects.toMatchObject({
+            status: 404,
+          }));
+      },
+    );
+  },
+);

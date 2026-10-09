@@ -67,6 +67,7 @@ stub-servers/
 tests/
   api/users.spec.ts                 ← live API
   contract/users.contract.spec.ts   ← contract (stub-server)
+  fixtures/base.fixture.ts          ← root of every layer fixture (Allure severity)
   fixtures/api.fixture.ts
   fixtures/todo-ui.fixture.ts
   fixtures/contract.fixture.ts
@@ -532,21 +533,42 @@ npm run allure:report     # generate + open in one step
 > Allure's CLI is a Java app, so local report generation needs Java 8+ on your
 > PATH. Test execution itself does **not** need Java — only `generate`/`open`.
 
+### Report metadata
+
+| What | Where it comes from |
+|---|---|
+| Behaviors tree (epic → feature) | `annotation: behavior('<Epic>', '<Feature>')` on `test.describe` (`utils/allure.ts`) |
+| Severity | Tags, via the auto fixture in `tests/fixtures/base.fixture.ts`: `@security` → blocker, `@smoke` → critical, `@regression` → normal |
+| Steps | `test.step(...)` — mapped to Allure steps by `allure-playwright`, no `allure.step` needed |
+| Environment, categories | `allureReporter` in `playwright.config.ts` |
+
+Categories split failures into infrastructure problems (connection errors),
+timeouts, product defects (assertion failed) and test defects (test code
+broke). Every layer fixture extends `base.fixture`, so a new spec gets severity
+automatically; it only has to add `behavior(...)` and steps.
+
+`behavior()` emits `@allure.label.*` annotations on purpose: `allure-playwright`
+renders plain `epic` / `feature` annotations as fake steps, not labels.
+
 ### Trends in CI (GitHub Pages)
 
-In CI the `ui-ci` job builds the report from the combined results (contract + UI +
-a11y) with the npm-installed `allure-commandline` (Java 17 via
-`actions/setup-java`) and **merges the previous run's `history/`** from the
-`gh-pages` branch so trend charts accumulate over time. The report is uploaded
-as the `allure-report-ui` artifact and, **on push to `main`**, published to the
-`gh-pages` branch via `peaceiris/actions-gh-pages`.
+Every test job (`ui-ci`, `visual-ci`, `api-ci`, `conduit-ci`) uploads its raw
+results as an `allure-results-<job>` artifact. The `allure-report` job then
+merges them into **one report for the whole pipeline**, adds the previous run's
+`history/` from the `gh-pages` branch so trend charts accumulate, writes CI
+metadata (branch, commit, run link) and builds the report with the
+npm-installed `allure-commandline` (Java 17 via `actions/setup-java`). The
+report is uploaded as the `allure-report` artifact and, **on push to `main` and
+on the nightly schedule**, published to the `gh-pages` branch via
+`peaceiris/actions-gh-pages`.
 
 This gives a live dashboard at `https://<owner>.github.io/<repo>/` with
 trend graphs (pass rate, retries/flakiness, duration) across the last 30 runs.
 
 > One-time setup: enable GitHub Pages for the repo with source = `gh-pages`
-> branch (Settings → Pages). PR runs intentionally don't publish — only merges
-> to `main` update the trend history.
+> branch (Settings → Pages). PR and manual (`workflow_dispatch`) runs
+> intentionally don't publish: they run a tag-filtered subset and would skew
+> the trends. Only pushes to `main` and the nightly full regression do.
 
 ---
 
@@ -562,7 +584,7 @@ Workflow: `.github/workflows/playwright.yml`
 3. Install Playwright browsers
 4. Run `ui-chromium` project (cross-browser `ui-firefox` / `ui-webkit` available via manual dispatch)
 5. Run `ui-a11y` accessibility checks
-6. Generate the Allure report and upload `allure-report-ui`, `playwright-report-ui`, `junit-report-ui` artifacts
+6. Upload `allure-results-ui`, `playwright-report-ui`, `junit-report-ui` artifacts
 
 > On push/PR only `ui-chromium` runs to keep feedback fast. Trigger `workflow_dispatch` and pick the `project` input to run `ui-firefox` or `ui-webkit`.
 
@@ -584,6 +606,11 @@ The suite is scoped automatically by event so feedback stays fast where it matte
 **`conduit-ci`** — starts `docker-compose.conduit.yml`, then runs `conduit-api`,
 `conduit-ui`, and Conduit IDOR contract tests against `127.0.0.1`. Runs on
 push, pull request, nightly schedule, and manual dispatch.
+
+**`allure-report`** — runs after all test jobs (even when they fail), merges
+their `allure-results-*` artifacts into one Allure report with history.
+**`publish-allure-report`** publishes it to GitHub Pages on push to `main` and
+on the nightly schedule.
 
 ### Reporters
 

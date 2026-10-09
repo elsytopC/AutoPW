@@ -120,11 +120,12 @@ These patterns apply to **both domains**:
 | HTTP abstraction | `api/core/baseApi.ts` | Maps non-2xx → `ApiError`; Zod parse on responses |
 | Test data | `factories/` | Faker only in factories — never inline in `.spec.ts` |
 | Page Objects | `tests/pages/` | All locators live in POM classes |
-| Custom fixtures | `tests/fixtures/` | Specs import layer fixture, not raw `@playwright/test` |
+| Custom fixtures | `tests/fixtures/` | Specs import layer fixture, not raw `@playwright/test`; every layer fixture extends `base.fixture.ts` (Allure severity from tags) |
+| Allure metadata | `utils/allure.ts` | `annotation: behavior('<Epic>', '<Feature>')` on every `test.describe` |
 | Env config | `config/env.ts` | Single source of truth for all env vars |
 | Global hooks | `config/global-setup.ts`, `global-teardown.ts` | Run banner; clean auth artifacts (validation lives in `config/env.ts`) |
 | Playwright projects | `playwright.config.ts` | One project per layer/backend combination |
-| CI | `.github/workflows/playwright.yml` | Split jobs: `ui-ci`, `api-ci`, `conduit-ci`, `visual-ci` |
+| CI | `.github/workflows/playwright.yml` | Split jobs: `ui-ci`, `api-ci`, `conduit-ci`, `visual-ci`; `allure-report` merges their results into one report |
 | Tags | every spec | `@smoke`/`@regression` + layer tag; `@conduit`, `@security` for domain |
 
 ---

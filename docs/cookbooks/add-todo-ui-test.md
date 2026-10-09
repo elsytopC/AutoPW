@@ -97,5 +97,6 @@ npm run lint
 - [ ] Test data via `TodoFactory`, not inline Faker
 - [ ] Fixture import from `@fixtures/todo-ui.fixture`
 - [ ] `test.step` on each key action
+- [ ] `annotation: behavior('TodoMVC', '<Feature>')` on `test.describe`
 - [ ] Tags: `@ui` + `@smoke` or `@regression`
 - [ ] Targeted run passes

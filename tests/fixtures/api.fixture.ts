@@ -1,4 +1,5 @@
-import { test as base, APIRequestContext } from '@playwright/test';
+import { APIRequestContext } from '@playwright/test';
+import { test as base } from '@fixtures/base.fixture';
 
 import { UserFactory } from '@factories/user.factory';
 import { UserResponse } from '@api/models/user.model';

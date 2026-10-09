@@ -2,7 +2,13 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-import { defineConfig, devices } from '@playwright/test';
+import os from 'node:os';
+import {
+  defineConfig,
+  devices,
+  type ReporterDescription,
+} from '@playwright/test';
+import { Status } from 'allure-js-commons';
 import { env } from './config/env';
 
 /**
@@ -21,6 +27,47 @@ const uiProjectDefaults = {
 
 const uiStorageState = '.playwright/auth/admin.json';
 
+const todoBaseUrl = 'https://demo.playwright.dev';
+
+// Allure matches categories in order and applies the first hit; message
+// regexes must match the whole message, hence the `(?s).*` wrappers.
+const allureReporter: ReporterDescription = [
+  'allure-playwright',
+  {
+    resultsDir: 'allure-results',
+    environmentInfo: {
+      'Todo UI': todoBaseUrl,
+      'Conduit UI': env.conduitUiUrl,
+      'Conduit API': env.conduitApiUrl,
+      'Users API': env.apiBaseUrl || 'not set',
+      'Auth mode': env.prodAuth ? 'prod' : 'local',
+      Node: process.version,
+      OS: `${os.platform()} ${os.release()}`,
+    },
+    categories: [
+      {
+        name: 'Infrastructure problems',
+        messageRegex:
+          '(?s).*(ECONNREFUSED|ECONNRESET|ETIMEDOUT|ENOTFOUND|EAI_AGAIN|net::ERR_|socket hang up).*',
+        matchedStatuses: [Status.FAILED, Status.BROKEN],
+      },
+      {
+        name: 'Timeouts',
+        messageRegex: '(?s).*(Timeout \\d+ms exceeded|Test timeout of).*',
+        matchedStatuses: [Status.FAILED, Status.BROKEN],
+      },
+      {
+        name: 'Product defects',
+        matchedStatuses: [Status.FAILED],
+      },
+      {
+        name: 'Test defects',
+        matchedStatuses: [Status.BROKEN],
+      },
+    ],
+  },
+];
+
 export default defineConfig({
   testDir: './tests',
   globalSetup: './config/global-setup.ts',
@@ -34,15 +81,10 @@ export default defineConfig({
         ['list'],
         ['html'],
         ['junit', { outputFile: 'test-results/junit.xml' }],
-        ['allure-playwright', { resultsDir: 'allure-results' }],
+        allureReporter,
         ['playwright-qase-reporter'], // QASE_MODE=testops enables upload
       ]
-    : [
-        ['list'],
-        ['html'],
-        ['allure-playwright', { resultsDir: 'allure-results' }],
-        ['playwright-qase-reporter'],
-      ],
+    : [['list'], ['html'], allureReporter, ['playwright-qase-reporter']],
 
   expect: {
     toHaveScreenshot: {
@@ -54,7 +96,7 @@ export default defineConfig({
   use: {
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    baseURL: 'https://demo.playwright.dev',
+    baseURL: todoBaseUrl,
   },
 
   projects: [

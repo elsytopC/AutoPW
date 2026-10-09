@@ -3,85 +3,108 @@ import {
   ConduitArticleFactory,
   ConduitCommentFactory,
 } from '@factories/conduit.factory';
+import { behavior } from '@utils/allure';
 import { qase } from 'playwright-qase-reporter';
 
-test.describe('Conduit comments', { tag: ['@api'] }, () => {
-  test(
-    qase(39, 'adds a comment to an article'),
-    { tag: ['@smoke'] },
-    async ({ articlesApi, commentsApi, conduitUser }) => {
-      const article = await test.step('create article', () =>
-        articlesApi.create(ConduitArticleFactory.create()));
-      const input = ConduitCommentFactory.create();
+test.describe(
+  'Conduit comments',
+  { tag: ['@api'], annotation: behavior('Conduit', 'Comments') },
+  () => {
+    test(
+      qase(39, 'adds a comment to an article'),
+      { tag: ['@smoke'] },
+      async ({ articlesApi, commentsApi, conduitUser }) => {
+        const article = await test.step('create article', () =>
+          articlesApi.create(ConduitArticleFactory.create()));
+        const input = ConduitCommentFactory.create();
 
-      const comment = await test.step('add comment', () =>
-        commentsApi.add(article.slug, input.body));
+        const comment = await test.step('add comment', () =>
+          commentsApi.add(article.slug, input.body));
 
-      expect(comment.body).toBe(input.body);
-      expect(comment.author.username).toBe(conduitUser.username);
-    },
-  );
+        await test.step('verify comment body and author', () => {
+          expect(comment.body).toBe(input.body);
+          expect(comment.author.username).toBe(conduitUser.username);
+        });
+      },
+    );
 
-  test(
-    qase(40, 'lists comments for an article'),
-    { tag: ['@regression'] },
-    async ({ articlesApi, commentsApi }) => {
-      const article = await articlesApi.create(ConduitArticleFactory.create());
-      const first = ConduitCommentFactory.create();
-      const second = ConduitCommentFactory.create();
+    test(
+      qase(40, 'lists comments for an article'),
+      { tag: ['@regression'] },
+      async ({ articlesApi, commentsApi }) => {
+        const article = await test.step('create article', () =>
+          articlesApi.create(ConduitArticleFactory.create()));
+        const first = ConduitCommentFactory.create();
+        const second = ConduitCommentFactory.create();
 
-      await commentsApi.add(article.slug, first.body);
-      await commentsApi.add(article.slug, second.body);
+        await test.step('add two comments', async () => {
+          await commentsApi.add(article.slug, first.body);
+          await commentsApi.add(article.slug, second.body);
+        });
 
-      const comments = await commentsApi.list(article.slug);
+        const comments = await test.step('list comments', () =>
+          commentsApi.list(article.slug));
 
-      expect(comments.length).toBeGreaterThanOrEqual(2);
-      expect(comments.map((c) => c.body)).toEqual(
-        expect.arrayContaining([first.body, second.body]),
-      );
-    },
-  );
+        await test.step('verify both comments are listed', () => {
+          expect(comments.length).toBeGreaterThanOrEqual(2);
+          expect(comments.map((c) => c.body)).toEqual(
+            expect.arrayContaining([first.body, second.body]),
+          );
+        });
+      },
+    );
 
-  test(
-    qase(41, 'deletes a comment'),
-    { tag: ['@regression'] },
-    async ({ articlesApi, commentsApi }) => {
-      const article = await articlesApi.create(ConduitArticleFactory.create());
-      const comment = await commentsApi.add(
-        article.slug,
-        ConduitCommentFactory.create().body,
-      );
+    test(
+      qase(41, 'deletes a comment'),
+      { tag: ['@regression'] },
+      async ({ articlesApi, commentsApi }) => {
+        const article = await test.step('create article', () =>
+          articlesApi.create(ConduitArticleFactory.create()));
+        const comment = await test.step('add comment', () =>
+          commentsApi.add(article.slug, ConduitCommentFactory.create().body));
 
-      await commentsApi.remove(article.slug, comment.id);
+        await test.step('delete comment', () =>
+          commentsApi.remove(article.slug, comment.id));
 
-      const comments = await commentsApi.list(article.slug);
-      expect(comments.map((c) => c.id)).not.toContain(comment.id);
-    },
-  );
+        await test.step('verify comment is no longer listed', async () => {
+          const comments = await commentsApi.list(article.slug);
+          expect(comments.map((c) => c.id)).not.toContain(comment.id);
+        });
+      },
+    );
 
-  test(
-    qase(42, 'rejects commenting without auth (401)'),
-    { tag: ['@regression'] },
-    async ({ articlesApi, anonCommentsApi }) => {
-      const article = await articlesApi.create(ConduitArticleFactory.create());
+    test(
+      qase(42, 'rejects commenting without auth (401)'),
+      { tag: ['@regression'] },
+      async ({ articlesApi, anonCommentsApi }) => {
+        const article = await test.step('create article', () =>
+          articlesApi.create(ConduitArticleFactory.create()));
 
-      const response = await anonCommentsApi.tryAdd(article.slug, {
-        body: 'should not be allowed',
-      });
+        const response = await test.step('add comment anonymously', () =>
+          anonCommentsApi.tryAdd(article.slug, {
+            body: 'should not be allowed',
+          }));
 
-      expect(response.status()).toBe(401);
-    },
-  );
+        await test.step('verify 401 status', () => {
+          expect(response.status()).toBe(401);
+        });
+      },
+    );
 
-  test(
-    qase(43, 'returns an error when commenting on a missing article'),
-    { tag: ['@regression'] },
-    async ({ commentsApi }) => {
-      const response = await commentsApi.tryAdd('non-existent-slug-xyz-000', {
-        body: 'orphan comment',
-      });
+    test(
+      qase(43, 'returns an error when commenting on a missing article'),
+      { tag: ['@regression'] },
+      async ({ commentsApi }) => {
+        const response =
+          await test.step('add comment to a missing article', () =>
+            commentsApi.tryAdd('non-existent-slug-xyz-000', {
+              body: 'orphan comment',
+            }));
 
-      expect(response.status()).toBe(404);
-    },
-  );
-});
+        await test.step('verify 404 status', () => {
+          expect(response.status()).toBe(404);
+        });
+      },
+    );
+  },
+);

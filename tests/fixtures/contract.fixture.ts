@@ -1,4 +1,5 @@
-import { test as base, request } from '@playwright/test';
+import { request } from '@playwright/test';
+import { test as base } from '@fixtures/base.fixture';
 import { UsersApiStubServer } from '@stub-servers/users-api.stub-server';
 import { ConduitApiStubServer } from '@stub-servers/conduit-api.stub-server';
 import { UsersApi } from '@api/services/users.api';

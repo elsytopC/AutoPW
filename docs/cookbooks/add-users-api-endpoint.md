@@ -121,4 +121,5 @@ npm run lint
 - [ ] Live spec uses `@fixtures/api.fixture` with cleanup
 - [ ] Test data via `UserFactory`
 - [ ] Tags: `@api` + `@smoke` or `@regression`
+- [ ] `annotation: behavior('Users API', '<Feature>')` on `test.describe`; `test.step` on key actions and checks
 - [ ] `npm run test:contract` passes

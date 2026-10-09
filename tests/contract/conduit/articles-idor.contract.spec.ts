@@ -5,6 +5,7 @@ import {
   ConduitUserFactory,
   ConduitArticleFactory,
 } from '@factories/conduit.factory';
+import { behavior } from '@utils/allure';
 import { qase } from 'playwright-qase-reporter';
 
 async function registerUser(baseURL: string) {
@@ -27,14 +28,20 @@ function articlesApi(baseURL: string, token: string) {
 
 test.describe(
   'Conduit articles authorization (contract)',
-  { tag: ['@api', '@contract'] },
+  {
+    tag: ['@api', '@contract'],
+    annotation: behavior('Conduit', 'Authorization'),
+  },
   () => {
     test(
       qase(44, 'rejects update/delete of an article by a non-owner (IDOR)'),
       { tag: ['@regression', '@security'] },
       async ({ conduitApiStub }) => {
-        const owner = await registerUser(conduitApiStub.baseURL);
-        const other = await registerUser(conduitApiStub.baseURL);
+        const [owner, other] =
+          await test.step('register owner and another user', async () => [
+            await registerUser(conduitApiStub.baseURL),
+            await registerUser(conduitApiStub.baseURL),
+          ]);
 
         const ownerCtx = await articlesApi(conduitApiStub.baseURL, owner.token);
         const otherCtx = await articlesApi(conduitApiStub.baseURL, other.token);

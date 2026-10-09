@@ -1,22 +1,41 @@
 import { test, expect } from '@fixtures/todo-ui.fixture';
+import { behavior } from '@utils/allure';
 import { qase } from 'playwright-qase-reporter';
 
-test.describe('TodoMVC visual baseline', { tag: ['@visual', '@ui'] }, () => {
-  test(qase(10, 'empty app matches baseline'), async ({ todoPage, page }) => {
-    await expect(todoPage.items).toHaveCount(0);
-    await expect(page.locator('.todoapp')).toHaveScreenshot('todo-empty.png');
-  });
+test.describe(
+  'TodoMVC visual baseline',
+  {
+    tag: ['@visual', '@ui'],
+    annotation: behavior('TodoMVC', 'Visual regression'),
+  },
+  () => {
+    test(qase(10, 'empty app matches baseline'), async ({ todoPage, page }) => {
+      await test.step('Verify list is empty', async () => {
+        await expect(todoPage.items).toHaveCount(0);
+      });
 
-  test(
-    qase(11, 'populated list matches baseline'),
-    async ({ todoPage, page }) => {
-      await todoPage.addTodo('Write tests');
-      await todoPage.addTodo('Review the pull request');
-      await todoPage.completeTodo('Write tests');
+      await test.step('Compare app with empty baseline', async () => {
+        await expect(page.locator('.todoapp')).toHaveScreenshot(
+          'todo-empty.png',
+        );
+      });
+    });
 
-      await expect(page.locator('.todoapp')).toHaveScreenshot(
-        'todo-populated.png',
-      );
-    },
-  );
-});
+    test(
+      qase(11, 'populated list matches baseline'),
+      async ({ todoPage, page }) => {
+        await test.step('Add two todos and complete one', async () => {
+          await todoPage.addTodo('Write tests');
+          await todoPage.addTodo('Review the pull request');
+          await todoPage.completeTodo('Write tests');
+        });
+
+        await test.step('Compare app with populated baseline', async () => {
+          await expect(page.locator('.todoapp')).toHaveScreenshot(
+            'todo-populated.png',
+          );
+        });
+      },
+    );
+  },
+);
