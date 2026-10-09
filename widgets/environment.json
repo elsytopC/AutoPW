@@ -1,1 +1,1 @@
-[]
+[{"values":["main"],"name":"Branch"},{"values":["5c2b89b187af9b687ef82cdb3aa585fa171e9ff8"],"name":"Commit"},{"values":["push"],"name":"Event"},{"values":["v22.23.3"],"name":"Node"},{"values":["https://demo.playwright.dev"],"name":"Todo.UI"},{"values":["http://127.0.0.1:4201"],"name":"Conduit.UI.Docker"},{"values":["http://127.0.0.1:3000/api"],"name":"Conduit.API.Docker"}]

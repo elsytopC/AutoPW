@@ -1,1 +1,1 @@
-{"total":23,"items":[]}
+{"total":4,"items":[{"uid":"284f809422feb3be0d1fca591a94eda9","name":"Conduit","statistic":{"failed":0,"broken":0,"skipped":0,"passed":4,"unknown":0,"total":4}},{"uid":"81885ff8d0cc7c481fe53f29b486446d","name":"TodoMVC","statistic":{"failed":0,"broken":0,"skipped":0,"passed":3,"unknown":0,"total":3}},{"uid":"99f5603c601a3b05f0a50c6670a7376a","name":"Users API","statistic":{"failed":0,"broken":0,"skipped":0,"passed":1,"unknown":0,"total":1}}]}
