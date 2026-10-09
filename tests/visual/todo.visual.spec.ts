@@ -14,13 +14,14 @@ test.describe(
       { tag: ['@regression'] },
       async ({ todoPage, page }) => {
         await test.step('Verify list is empty', async () => {
-          await expect(todoPage.items).toHaveCount(0);
+          await expect(todoPage.items, 'todo list is empty').toHaveCount(0);
         });
 
         await test.step('Compare app with empty baseline', async () => {
-          await expect(page.locator('.todoapp')).toHaveScreenshot(
-            'todo-empty.png',
-          );
+          await expect(
+            page.locator('.todoapp'),
+            'app matches empty baseline',
+          ).toHaveScreenshot('todo-empty.png');
         });
       },
     );
@@ -36,9 +37,10 @@ test.describe(
         });
 
         await test.step('Compare app with populated baseline', async () => {
-          await expect(page.locator('.todoapp')).toHaveScreenshot(
-            'todo-populated.png',
-          );
+          await expect(
+            page.locator('.todoapp'),
+            'app matches populated baseline',
+          ).toHaveScreenshot('todo-populated.png');
         });
       },
     );

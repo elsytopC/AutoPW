@@ -57,17 +57,17 @@ test.describe(
             const response = await otherApi.tryUpdate(created.slug, {
               title: 'Hijacked title',
             });
-            expect(response.status()).toBe(403);
+            expect(response.status(), 'non-owner gets 403').toBe(403);
           });
 
           await test.step('delete as a different authenticated user', async () => {
             const response = await otherApi.tryRemove(created.slug);
-            expect(response.status()).toBe(403);
+            expect(response.status(), 'non-owner gets 403').toBe(403);
           });
 
           await test.step('article is unchanged after both rejected attempts', async () => {
             const stillThere = await ownerApi.getBySlug(created.slug);
-            expect(stillThere.title).toBe(created.title);
+            expect(stillThere.title, 'title is unchanged').toBe(created.title);
           });
         } finally {
           await ownerCtx.dispose();

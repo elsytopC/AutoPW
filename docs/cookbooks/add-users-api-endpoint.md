@@ -120,5 +120,5 @@ npm run lint
 - [ ] Live spec uses `@fixtures/api.fixture`; users it creates are passed to `usersCleanup.track`
 - [ ] Test data via `UserFactory`
 - [ ] Tags: `@api` + `@smoke` or `@regression`
-- [ ] `annotation: behavior('Users API', '<Feature>')` on `test.describe`; `test.step` on key actions and checks
+- [ ] `annotation: behavior('Users API', '<Feature>')` on `test.describe`; `test.step` on key actions and checks; every `expect` has a message
 - [ ] `npm run test:contract` passes

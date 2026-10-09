@@ -22,9 +22,11 @@ export abstract class ConduitBasePage extends BasePage {
   /** Pathname check pinned to CONDUIT_UI_URL origin (avoids bare URL regex). */
   async expectPathname(pathPattern: RegExp): Promise<void> {
     const origin = new URL(env.conduitUiUrl).origin;
-    await expect(this.page).toHaveURL((url) => {
-      const parsed = new URL(url);
-      return parsed.origin === origin && pathPattern.test(parsed.pathname);
-    });
+    await expect(this.page, `URL path matches ${pathPattern}`).toHaveURL(
+      (url) => {
+        const parsed = new URL(url);
+        return parsed.origin === origin && pathPattern.test(parsed.pathname);
+      },
+    );
   }
 }

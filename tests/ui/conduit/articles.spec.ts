@@ -30,8 +30,13 @@ test.describe(
           conduitArticle.goto(created.slug));
 
         await test.step('verify title and body are rendered', async () => {
-          await expect(conduitArticle.title).toHaveText(input.title);
-          await expect(conduitArticle.bodySnippet(input.body)).toBeVisible();
+          await expect(conduitArticle.title, 'article title').toHaveText(
+            input.title,
+          );
+          await expect(
+            conduitArticle.bodySnippet(input.body),
+            'article body is shown',
+          ).toBeVisible();
         });
       },
     );
@@ -62,7 +67,7 @@ test.describe(
         await test.step('register via UI', async () => {
           await conduitRegister.goto();
           await conduitRegister.register(userData);
-          await expect(page).toHaveURL('/');
+          await expect(page, 'redirected to home feed').toHaveURL('/');
         });
 
         await test.step('compose and publish', async () => {
@@ -72,14 +77,20 @@ test.describe(
 
         await test.step('verify published article page', async () => {
           await conduitArticle.expectPathname(/^\/article\/[^/]+$/);
-          await expect(conduitArticle.title).toHaveText(articleData.title);
+          await expect(conduitArticle.title, 'article title').toHaveText(
+            articleData.title,
+          );
           await expect(
             conduitArticle.bodySnippet(articleData.body),
+            'article body is shown',
           ).toBeVisible();
 
           if (articleData.tagList?.length) {
             for (const tag of articleData.tagList) {
-              await expect(conduitArticle.tag(tag)).toBeVisible();
+              await expect(
+                conduitArticle.tag(tag),
+                `tag "${tag}" is shown`,
+              ).toBeVisible();
             }
           }
         });

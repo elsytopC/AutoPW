@@ -180,5 +180,5 @@ Add handler logic in `stub-servers/conduit-api.stub-server.ts`.
 - [ ] UI auth via `authenticateConduitUser` when seeding via API
 - [ ] Users registered through the UI are passed to `conduitCleanup.trackUser` — the spec leaves no articles behind
 - [ ] Tags: `@conduit` + layer tag; `@security` for IDOR tests
-- [ ] `annotation: behavior('Conduit', '<Feature>')` on `test.describe`; `test.step` on key actions and checks
+- [ ] `annotation: behavior('Conduit', '<Feature>')` on `test.describe`; `test.step` on key actions and checks; every `expect` has a message
 - [ ] Targeted `--project=` run passes

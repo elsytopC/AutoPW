@@ -96,7 +96,7 @@ npm run lint
 - [ ] Locators only in `tests/pages/todo.page.ts`
 - [ ] Test data via `TodoFactory`, not inline Faker
 - [ ] Fixture import from `@fixtures/todo-ui.fixture`
-- [ ] `test.step` on each key action
+- [ ] `test.step` on each key action; every `expect` has a message
 - [ ] `annotation: behavior('TodoMVC', '<Feature>')` on `test.describe`
 - [ ] Tags: `@ui` + `@smoke` or `@regression`
 - [ ] Targeted run passes

@@ -16,7 +16,7 @@ test.describe(
         usersCleanup.track(user.id);
 
         await test.step('Verify user id is assigned', () => {
-          expect(user.id).toBeDefined();
+          expect(user.id, 'id is assigned').toBeDefined();
         });
       },
     );
@@ -29,7 +29,7 @@ test.describe(
           usersApi.getUser(1));
 
         await test.step('Verify returned id', () => {
-          expect(user.id).toBe(1);
+          expect(user.id, 'id of the requested user').toBe(1);
         });
       },
     );
@@ -42,7 +42,7 @@ test.describe(
           usersApi.getUsers());
 
         await test.step('Verify list is not empty', () => {
-          expect(users.length).toBeGreaterThan(0);
+          expect(users.length, 'users count').toBeGreaterThan(0);
         });
       },
     );
@@ -52,7 +52,7 @@ test.describe(
       { tag: ['@regression'] },
       async ({ existingUser }) => {
         await test.step('Verify fixture user has an id', () => {
-          expect(existingUser.id).toBeDefined();
+          expect(existingUser.id, 'fixture user id').toBeDefined();
         });
       },
     );
@@ -62,7 +62,10 @@ test.describe(
       { tag: ['@regression'] },
       async ({ usersApi }) => {
         await test.step('Verify unknown id rejects with 404', () =>
-          expect(usersApi.getUser(999999)).rejects.toMatchObject({
+          expect(
+            usersApi.getUser(999999),
+            'rejects with 404',
+          ).rejects.toMatchObject({
             status: 404,
           }));
       },

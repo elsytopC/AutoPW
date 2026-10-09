@@ -25,7 +25,7 @@ test.describe(
       { tag: ['@smoke'] },
       async ({ todoPage, makeAxeBuilder }, testInfo) => {
         await test.step('Verify list is empty', async () => {
-          await expect(todoPage.items).toHaveCount(0);
+          await expect(todoPage.items, 'todo list is empty').toHaveCount(0);
         });
 
         const results = await test.step('Run axe WCAG scan', () =>
@@ -33,7 +33,7 @@ test.describe(
         await attach(testInfo, results.violations);
 
         await test.step('Verify no violations', () => {
-          expect(results.violations).toEqual([]);
+          expect(results.violations, 'axe violations').toEqual([]);
         });
       },
     );
@@ -52,7 +52,7 @@ test.describe(
         await attach(testInfo, results.violations);
 
         await test.step('Verify no violations', () => {
-          expect(results.violations).toEqual([]);
+          expect(results.violations, 'axe violations').toEqual([]);
         });
       },
     );

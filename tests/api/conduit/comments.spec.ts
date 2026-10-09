@@ -22,8 +22,10 @@ test.describe(
           commentsApi.add(article.slug, input.body));
 
         await test.step('verify comment body and author', () => {
-          expect(comment.body).toBe(input.body);
-          expect(comment.author.username).toBe(conduitUser.username);
+          expect(comment.body, 'comment body matches input').toBe(input.body);
+          expect(comment.author.username, 'author is the current user').toBe(
+            conduitUser.username,
+          );
         });
       },
     );
@@ -46,10 +48,11 @@ test.describe(
           commentsApi.list(article.slug));
 
         await test.step('verify both comments are listed', () => {
-          expect(comments.length).toBeGreaterThanOrEqual(2);
-          expect(comments.map((c) => c.body)).toEqual(
-            expect.arrayContaining([first.body, second.body]),
-          );
+          expect(comments.length, 'comments count').toBeGreaterThanOrEqual(2);
+          expect(
+            comments.map((c) => c.body),
+            'list contains both comments',
+          ).toEqual(expect.arrayContaining([first.body, second.body]));
         });
       },
     );
@@ -68,7 +71,10 @@ test.describe(
 
         await test.step('verify comment is no longer listed', async () => {
           const comments = await commentsApi.list(article.slug);
-          expect(comments.map((c) => c.id)).not.toContain(comment.id);
+          expect(
+            comments.map((c) => c.id),
+            'deleted comment is absent',
+          ).not.toContain(comment.id);
         });
       },
     );
@@ -86,7 +92,7 @@ test.describe(
           }));
 
         await test.step('verify 401 status', () => {
-          expect(response.status()).toBe(401);
+          expect(response.status(), 'status code').toBe(401);
         });
       },
     );
@@ -102,7 +108,7 @@ test.describe(
             }));
 
         await test.step('verify 404 status', () => {
-          expect(response.status()).toBe(404);
+          expect(response.status(), 'status code').toBe(404);
         });
       },
     );

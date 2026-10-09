@@ -19,7 +19,7 @@ test.describe(
 
         await test.step('Verify todo appears in the list', async () => {
           const items = await todoPage.getItemTexts();
-          expect(items).toContain(title);
+          expect(items, 'list contains the new todo').toContain(title);
         });
       },
     );
@@ -38,7 +38,7 @@ test.describe(
 
         await test.step('Verify both todos are listed', async () => {
           const items = await todoPage.getItemTexts();
-          expect(items).toHaveLength(2);
+          expect(items, 'todos count').toHaveLength(2);
         });
       },
     );
@@ -58,7 +58,7 @@ test.describe(
         });
 
         await test.step('Verify active count is zero', async () => {
-          expect(await todoPage.getActiveCount()).toBe(0);
+          expect(await todoPage.getActiveCount(), 'active todos count').toBe(0);
         });
       },
     );
@@ -76,7 +76,7 @@ test.describe(
         });
 
         await test.step('Verify initial active count is 2', async () => {
-          expect(await todoPage.getActiveCount()).toBe(2);
+          expect(await todoPage.getActiveCount(), 'active todos count').toBe(2);
         });
 
         await test.step('Complete first todo', async () => {
@@ -84,7 +84,7 @@ test.describe(
         });
 
         await test.step('Verify active count decreased to 1', async () => {
-          expect(await todoPage.getActiveCount()).toBe(1);
+          expect(await todoPage.getActiveCount(), 'active todos count').toBe(1);
         });
       },
     );
@@ -175,9 +175,13 @@ test.describe(
         });
 
         await test.step('Verify todo visual state with soft assertions', async () => {
-          await expect.soft(todoPage.items).toHaveCount(1);
-          await expect.soft(todoPage.itemByText(title)).toBeVisible();
-          await expect.soft(todoPage.counter).toHaveText('1 item left');
+          await expect.soft(todoPage.items, 'todos count').toHaveCount(1);
+          await expect
+            .soft(todoPage.itemByText(title), 'todo is shown')
+            .toBeVisible();
+          await expect
+            .soft(todoPage.counter, 'items left counter')
+            .toHaveText('1 item left');
         });
       },
     );
@@ -201,7 +205,10 @@ test.describe(
         });
 
         await test.step('Verify the todo was added regardless', async () => {
-          await expect(todoPage.itemByText(title)).toBeVisible();
+          await expect(
+            todoPage.itemByText(title),
+            'todo is shown',
+          ).toBeVisible();
         });
       },
     );

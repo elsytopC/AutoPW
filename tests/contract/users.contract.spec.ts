@@ -21,8 +21,8 @@ test.describe(
           usersApi.createUser(data));
 
         await test.step('Verify generated id and echoed email', () => {
-          expect(user.id).toBeGreaterThan(0);
-          expect(user.email).toBe(data.email);
+          expect(user.id, 'id is a positive number').toBeGreaterThan(0);
+          expect(user.email, 'email matches request').toBe(data.email);
         });
       },
     );
@@ -35,13 +35,17 @@ test.describe(
           usersApi.createUser(UserFactory.create()));
 
         await test.step('Verify payload matches the schema', () => {
-          expect(userResponseSchema.safeParse(user).success).toBe(true);
+          expect(
+            userResponseSchema.safeParse(user).success,
+            'response passes schema validation',
+          ).toBe(true);
         });
 
         await test.step('Verify schema rejects a non-numeric id', () => {
           expect(
             userResponseSchema.safeParse({ ...user, id: 'not-a-number' })
               .success,
+            'string id fails schema validation',
           ).toBe(false);
         });
       },
@@ -55,7 +59,7 @@ test.describe(
           usersApi.getUser(1));
 
         await test.step('Verify returned id', () => {
-          expect(user.id).toBe(1);
+          expect(user.id, 'id of the seeded user').toBe(1);
         });
       },
     );
@@ -68,7 +72,7 @@ test.describe(
           usersApi.getUsers());
 
         await test.step('Verify list is not empty', () => {
-          expect(users.length).toBeGreaterThan(0);
+          expect(users.length, 'users count').toBeGreaterThan(0);
         });
       },
     );
@@ -84,8 +88,10 @@ test.describe(
           usersApi.getUser(created.id));
 
         await test.step('Verify fetched user matches created user', () => {
-          expect(fetched.id).toBe(created.id);
-          expect(fetched.email).toBe(created.email);
+          expect(fetched.id, 'id matches created user').toBe(created.id);
+          expect(fetched.email, 'email matches created user').toBe(
+            created.email,
+          );
         });
       },
     );
@@ -95,7 +101,10 @@ test.describe(
       { tag: ['@regression'] },
       async ({ usersApi }) => {
         await test.step('Verify unknown id rejects with ApiError 404', () =>
-          expect(usersApi.getUser(999999)).rejects.toMatchObject({
+          expect(
+            usersApi.getUser(999999),
+            'rejects with ApiError 404',
+          ).rejects.toMatchObject({
             name: 'ApiError',
             status: 404,
           }));
@@ -110,18 +119,21 @@ test.describe(
           usersApi.tryCreateUser({ email: 'only@test.com' }));
 
         await test.step('Verify 400 status', () => {
-          expect(response.status()).toBe(400);
+          expect(response.status(), 'status code').toBe(400);
         });
 
         await test.step('Verify errors for every missing field', async () => {
           const body = await response.json();
-          expect(body.message).toBe('Invalid user payload');
-          expect(body.errors).toMatchObject({
+          expect(body.message, 'error message').toBe('Invalid user payload');
+          expect(body.errors, 'errors for missing fields').toMatchObject({
             firstName: 'firstName is required',
             lastName: 'lastName is required',
             password: 'password is required',
           });
-          expect(body.errors.email).toBeUndefined();
+          expect(
+            body.errors.email,
+            'no error for provided email',
+          ).toBeUndefined();
         });
       },
     );
@@ -134,12 +146,12 @@ test.describe(
           usersApi.tryCreateUser({}));
 
         await test.step('Verify 400 status', () => {
-          expect(response.status()).toBe(400);
+          expect(response.status(), 'status code').toBe(400);
         });
 
         await test.step('Verify errors for all required fields', async () => {
           const body = await response.json();
-          expect(body.errors).toMatchObject({
+          expect(body.errors, 'errors for all required fields').toMatchObject({
             firstName: 'firstName is required',
             lastName: 'lastName is required',
             email: 'email is required',
@@ -161,12 +173,14 @@ test.describe(
             }));
 
         await test.step('Verify 400 status', () => {
-          expect(response.status()).toBe(400);
+          expect(response.status(), 'status code').toBe(400);
         });
 
         await test.step('Verify email format error', async () => {
           const body = await response.json();
-          expect(body.errors.email).toBe('email is invalid');
+          expect(body.errors.email, 'email format error').toBe(
+            'email is invalid',
+          );
         });
       },
     );
@@ -179,8 +193,8 @@ test.describe(
           usersApi.tryGetUser(999999));
 
         await test.step('Verify 404 response', () => {
-          expect(response.status()).toBe(404);
-          expect(response.ok()).toBe(false);
+          expect(response.status(), 'status code').toBe(404);
+          expect(response.ok(), 'response is not ok').toBe(false);
         });
       },
     );

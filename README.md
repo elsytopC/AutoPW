@@ -540,6 +540,7 @@ npm run allure:report     # generate + open in one step
 | Behaviors tree (epic → feature) | `annotation: behavior('<Epic>', '<Feature>')` on `test.describe` (`utils/allure.ts`) |
 | Severity | Tags, via the auto fixture in `tests/fixtures/base.fixture.ts`: `@security` → blocker, `@smoke` → critical, `@regression` → normal |
 | Steps | `test.step(...)` — mapped to Allure steps by `allure-playwright`, no `allure.step` needed |
+| Check names | `expect(value, 'what is checked')` — the message becomes the sub-step title instead of a bare `Expect "toBe"`, and prefixes the failure message |
 | Environment, categories | `allureReporter` in `playwright.config.ts` |
 
 Categories split failures into infrastructure problems (connection errors),

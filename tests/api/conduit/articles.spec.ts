@@ -17,17 +17,19 @@ test.describe(
           articlesApi.create(input));
 
         await test.step('verify created article', () => {
-          expect(created.title).toBe(input.title);
-          expect(created.author.username).toBe(conduitUser.username);
-          expect(created.slug).toBeTruthy();
+          expect(created.title, 'title matches input').toBe(input.title);
+          expect(created.author.username, 'author is the current user').toBe(
+            conduitUser.username,
+          );
+          expect(created.slug, 'slug is generated').toBeTruthy();
         });
 
         const fetched = await test.step('read article by slug', () =>
           articlesApi.getBySlug(created.slug));
 
         await test.step('verify body and tags are persisted', () => {
-          expect(fetched.body).toBe(input.body);
-          expect(fetched.tagList).toEqual(
+          expect(fetched.body, 'body matches input').toBe(input.body);
+          expect(fetched.tagList, 'tags include input tags').toEqual(
             expect.arrayContaining(input.tagList!),
           );
         });
@@ -46,8 +48,11 @@ test.describe(
             articlesApi.list({ author: conduitUser.username }));
 
         await test.step('verify article is in the author list', () => {
-          expect(articlesCount).toBeGreaterThan(0);
-          expect(articles.map((a) => a.slug)).toContain(created.slug);
+          expect(articlesCount, 'author has articles').toBeGreaterThan(0);
+          expect(
+            articles.map((a) => a.slug),
+            'list contains created article',
+          ).toContain(created.slug);
         });
       },
     );
@@ -65,15 +70,15 @@ test.describe(
           }));
 
         await test.step('verify slug changed and old slug is gone', async () => {
-          expect(updated.slug).not.toBe(created.slug);
+          expect(updated.slug, 'slug changed').not.toBe(created.slug);
 
           const oldSlugResponse = await articlesApi.tryGetBySlug(created.slug);
-          expect(oldSlugResponse.status()).toBe(404);
+          expect(oldSlugResponse.status(), 'old slug status code').toBe(404);
         });
 
         await test.step('verify article is readable by new slug', async () => {
           const refetched = await articlesApi.getBySlug(updated.slug);
-          expect(refetched.title).toBe(updated.title);
+          expect(refetched.title, 'title is updated').toBe(updated.title);
         });
       },
     );
@@ -90,7 +95,7 @@ test.describe(
 
         await test.step('verify article returns 404', async () => {
           const response = await articlesApi.tryGetBySlug(created.slug);
-          expect(response.status()).toBe(404);
+          expect(response.status(), 'status code').toBe(404);
         });
       },
     );
@@ -103,7 +108,7 @@ test.describe(
           anonArticlesApi.tryCreate(ConduitArticleFactory.create()));
 
         await test.step('verify 401 status', () => {
-          expect(response.status()).toBe(401);
+          expect(response.status(), 'status code').toBe(401);
         });
       },
     );
@@ -117,12 +122,12 @@ test.describe(
             articlesApi.tryCreate({ title: '' }));
 
         await test.step('verify 422 status', () => {
-          expect(response.status()).toBe(422);
+          expect(response.status(), 'status code').toBe(422);
         });
 
         await test.step('verify errors for required fields', async () => {
           const body = await response.json();
-          expect(body.errors).toMatchObject({
+          expect(body.errors, 'errors for required fields').toMatchObject({
             title: expect.any(Array),
             description: expect.any(Array),
             body: expect.any(Array),

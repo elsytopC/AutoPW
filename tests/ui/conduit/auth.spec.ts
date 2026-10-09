@@ -22,10 +22,14 @@ test.describe(
           conduitRegister.register(userData));
 
         await test.step('verify signed-in home feed', async () => {
-          await expect(page).toHaveURL('/');
-          await expect(conduitHome.newArticleLink).toBeVisible();
+          await expect(page, 'redirected to home feed').toHaveURL('/');
+          await expect(
+            conduitHome.newArticleLink,
+            'New Article link is shown',
+          ).toBeVisible();
           await expect(
             conduitHome.navUserLink(userData.username),
+            'username is shown in the navbar',
           ).toBeVisible();
         });
       },
@@ -45,8 +49,14 @@ test.describe(
           await page.goto('/');
           await clearConduitSession(page);
           await page.reload();
-          await expect(conduitHome.signInLink).toBeVisible();
-          await expect(conduitHome.newArticleLink).not.toBeVisible();
+          await expect(
+            conduitHome.signInLink,
+            'Sign in link is shown',
+          ).toBeVisible();
+          await expect(
+            conduitHome.newArticleLink,
+            'New Article link is hidden',
+          ).not.toBeVisible();
         });
 
         await test.step('open login page', () => conduitLogin.goto());
@@ -54,10 +64,14 @@ test.describe(
           conduitLogin.login(userData.email, userData.password));
 
         await test.step('verify signed-in home feed', async () => {
-          await expect(page).toHaveURL('/');
-          await expect(conduitHome.newArticleLink).toBeVisible();
+          await expect(page, 'redirected to home feed').toHaveURL('/');
+          await expect(
+            conduitHome.newArticleLink,
+            'New Article link is shown',
+          ).toBeVisible();
           await expect(
             conduitHome.navUserLink(userData.username),
+            'username is shown in the navbar',
           ).toBeVisible();
         });
       },

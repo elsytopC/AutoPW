@@ -99,7 +99,7 @@ npm run test:visual                 # local OS baseline only
 - [ ] Tests pass for the layers you touched
 - [ ] `npm run lint` and `npx tsc --noEmit` clean
 - [ ] New tests have tags + `qase(id, 'title')` when Qase cases exist
-- [ ] New `test.describe` has `annotation: behavior('<Epic>', '<Feature>')`; key actions and checks are wrapped in `test.step`
+- [ ] New `test.describe` has `annotation: behavior('<Epic>', '<Feature>')`; key actions and checks are wrapped in `test.step`; every `expect` has a message (`expect(value, 'what is checked')`)
 - [ ] No secrets in commits (`.env`, tokens, credentials)
 - [ ] Docs updated if you add a layer, tag, or npm script
 
