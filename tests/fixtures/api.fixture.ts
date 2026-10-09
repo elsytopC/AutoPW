@@ -39,7 +39,11 @@ export const test = base.extend<ApiFixtures>({
 
     await use(createdUser);
 
-    await usersApi.deleteUser(createdUser.id);
+    try {
+      await usersApi.deleteUser(createdUser.id);
+    } catch (error) {
+      console.warn(`Failed to clean up user ${createdUser.id}: ${error}`);
+    }
   },
 
   usersCleanup: async ({ usersApi }, use) => {

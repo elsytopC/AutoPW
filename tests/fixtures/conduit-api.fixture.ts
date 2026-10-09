@@ -1,3 +1,4 @@
+import type { APIRequestContext } from '@playwright/test';
 import { test as base } from '@fixtures/base.fixture';
 
 import {
@@ -5,9 +6,8 @@ import {
   ConduitAuthApi,
   ArticlesApi,
   CommentsApi,
-  ConduitUser,
-  LoginRequest,
 } from '@api/conduit';
+import type { ArticlesResponse, ConduitUser, LoginRequest } from '@api/conduit';
 import { ConduitUserFactory } from '@factories/conduit.factory';
 
 type ConduitCleanup = {
@@ -24,11 +24,29 @@ type ConduitFixtures = {
   conduitCleanup: ConduitCleanup;
 };
 
+async function withConduitContext<T>(
+  body: (context: APIRequestContext) => Promise<T>,
+  token?: string,
+): Promise<T> {
+  const context = await createConduitContext(token);
+  try {
+    return await body(context);
+  } finally {
+    await context.dispose();
+  }
+}
+
 async function deleteArticlesByAuthor(
   api: ArticlesApi,
   username: string,
 ): Promise<void> {
-  const { articles } = await api.list({ author: username, limit: '100' });
+  let articles: ArticlesResponse['articles'];
+  try {
+    ({ articles } = await api.list({ author: username, limit: '100' }));
+  } catch (error) {
+    console.warn(`Failed to list articles of "${username}": ${error}`);
+    return;
+  }
   // Sequential deletes — shared demo backend cannot handle parallel teardown
   for (const article of articles) {
     try {
@@ -40,63 +58,33 @@ async function deleteArticlesByAuthor(
 }
 
 export const test = base.extend<ConduitFixtures>({
-  conduitUser: async ({}, use) => {
-    const context = await createConduitContext();
-    try {
+  conduitUser: ({}, use) =>
+    withConduitContext(async (context) => {
       const auth = new ConduitAuthApi(context);
-      const user = await auth.register(ConduitUserFactory.create());
-      await use(user);
-    } finally {
-      await context.dispose();
-    }
-  },
+      await use(await auth.register(ConduitUserFactory.create()));
+    }),
 
-  anonAuthApi: async ({}, use) => {
-    const context = await createConduitContext();
-    try {
-      await use(new ConduitAuthApi(context));
-    } finally {
-      await context.dispose();
-    }
-  },
+  anonAuthApi: ({}, use) =>
+    withConduitContext((context) => use(new ConduitAuthApi(context))),
 
-  articlesApi: async ({ conduitUser }, use) => {
-    const context = await createConduitContext(conduitUser.token);
-    try {
+  articlesApi: ({ conduitUser }, use) =>
+    withConduitContext(async (context) => {
       const api = new ArticlesApi(context);
       await use(api);
       await deleteArticlesByAuthor(api, conduitUser.username);
-    } finally {
-      await context.dispose();
-    }
-  },
+    }, conduitUser.token),
 
-  anonArticlesApi: async ({}, use) => {
-    const context = await createConduitContext();
-    try {
-      await use(new ArticlesApi(context));
-    } finally {
-      await context.dispose();
-    }
-  },
+  anonArticlesApi: ({}, use) =>
+    withConduitContext((context) => use(new ArticlesApi(context))),
 
-  commentsApi: async ({ conduitUser }, use) => {
-    const context = await createConduitContext(conduitUser.token);
-    try {
-      await use(new CommentsApi(context));
-    } finally {
-      await context.dispose();
-    }
-  },
+  commentsApi: ({ conduitUser }, use) =>
+    withConduitContext(
+      (context) => use(new CommentsApi(context)),
+      conduitUser.token,
+    ),
 
-  anonCommentsApi: async ({}, use) => {
-    const context = await createConduitContext();
-    try {
-      await use(new CommentsApi(context));
-    } finally {
-      await context.dispose();
-    }
-  },
+  anonCommentsApi: ({}, use) =>
+    withConduitContext((context) => use(new CommentsApi(context))),
 
   // Users created outside the API fixtures (e.g. via the register form) have no
   // token in the test — log in during teardown to delete what they authored.
@@ -105,24 +93,19 @@ export const test = base.extend<ConduitFixtures>({
     await use({ trackUser: (credentials) => tracked.push(credentials) });
 
     for (const credentials of tracked) {
-      const anonContext = await createConduitContext();
       try {
-        const user = await new ConduitAuthApi(anonContext).login(credentials);
-        const userContext = await createConduitContext(user.token);
-        try {
-          await deleteArticlesByAuthor(
-            new ArticlesApi(userContext),
-            user.username,
-          );
-        } finally {
-          await userContext.dispose();
-        }
+        const user = await withConduitContext((context) =>
+          new ConduitAuthApi(context).login(credentials),
+        );
+        await withConduitContext(
+          (context) =>
+            deleteArticlesByAuthor(new ArticlesApi(context), user.username),
+          user.token,
+        );
       } catch (error) {
         console.warn(
           `Failed to clean up data of "${credentials.email}": ${error}`,
         );
-      } finally {
-        await anonContext.dispose();
       }
     }
   },

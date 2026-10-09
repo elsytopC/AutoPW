@@ -24,12 +24,15 @@ test.describe(
     test(
       qase(15, 'admin gets user'),
       { tag: ['@smoke'] },
-      async ({ usersApi }) => {
+      async ({ usersApi, existingUser }) => {
         const user = await test.step('Get user by id', () =>
-          usersApi.getUser(1));
+          usersApi.getUser(existingUser.id));
 
-        await test.step('Verify returned id', () => {
-          expect(user.id, 'id of the requested user').toBe(1);
+        await test.step('Verify returned user', () => {
+          expect(user.id, 'id of the requested user').toBe(existingUser.id);
+          expect(user.email, 'email of the requested user').toBe(
+            existingUser.email,
+          );
         });
       },
     );
@@ -37,12 +40,15 @@ test.describe(
     test(
       qase(16, 'admin gets users list'),
       { tag: ['@regression'] },
-      async ({ usersApi }) => {
+      async ({ usersApi, existingUser }) => {
         const users = await test.step('Get users list', () =>
           usersApi.getUsers());
 
-        await test.step('Verify list is not empty', () => {
-          expect(users.length, 'users count').toBeGreaterThan(0);
+        await test.step('Verify list contains the created user', () => {
+          expect(
+            users.map((u) => u.id),
+            'list contains the created user',
+          ).toContain(existingUser.id);
         });
       },
     );
