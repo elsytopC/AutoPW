@@ -107,9 +107,9 @@ test.describe(
         });
 
         await test.step('Verify only active todo is visible', async () => {
-          const items = await todoPage.getItemTexts();
-          expect(items).toContain(activeTitle);
-          expect(items).not.toContain(doneTitle);
+          await expect(todoPage.items, 'only active todo is shown').toHaveText([
+            activeTitle,
+          ]);
         });
       },
     );
@@ -132,9 +132,10 @@ test.describe(
         });
 
         await test.step('Verify only completed todo is visible', async () => {
-          const items = await todoPage.getItemTexts();
-          expect(items).toContain(doneTitle);
-          expect(items).not.toContain(activeTitle);
+          await expect(
+            todoPage.items,
+            'only completed todo is shown',
+          ).toHaveText([doneTitle]);
         });
       },
     );
@@ -157,9 +158,9 @@ test.describe(
         });
 
         await test.step('Verify only active todo remains', async () => {
-          const items = await todoPage.getItemTexts();
-          expect(items).toContain(keepTitle);
-          expect(items).not.toContain(removeTitle);
+          await expect(todoPage.items, 'only active todo remains').toHaveText([
+            keepTitle,
+          ]);
         });
       },
     );
