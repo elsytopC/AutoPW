@@ -389,9 +389,6 @@ jobs:
           CONDUIT_UI_URL: http://127.0.0.1:4201
         run: npx playwright test --project=conduit-api --workers=2
 
-      - name: Run Conduit authorization mock tests
-        run: npx playwright test tests/contract/conduit/ --project=contract
-
       - name: Run Conduit UI tests
         env:
           CONDUIT_API_URL: http://127.0.0.1:3000/api

@@ -83,21 +83,20 @@ Contract specs **must not** import `@fixtures/api.fixture`.
 test(
   qase(99, 'admin updates user'),
   { tag: ['@regression'] },
-  async ({ usersApi }) => {
-    const userData = UserFactory.create();
-    const created = await usersApi.createUser(userData);
+  async ({ usersApi, usersCleanup }) => {
+    const created = await usersApi.createUser(UserFactory.create());
+    usersCleanup.track(created.id);
 
-    try {
-      const updated = await usersApi.updateUser(created.id, { firstName: 'Live' });
-      expect(updated.firstName).toBe('Live');
-    } finally {
-      await usersApi.deleteUser(created.id);
-    }
+    const updated = await usersApi.updateUser(created.id, { firstName: 'Live' });
+    expect(updated.firstName).toBe('Live');
   },
 );
 ```
 
 Prefer `existingUser` fixture when you need a pre-created user with automatic teardown.
+When the test itself creates the user, register it with `usersCleanup.track(id)`
+right after creation — the fixture deletes it in teardown, even if the test
+fails. Don't clean up with `try/finally` in the spec body.
 
 ### 6. Run and verify
 
@@ -118,7 +117,7 @@ npm run lint
 - [ ] Service method in `api/services/users.api.ts` (+ `try*` for negative paths)
 - [ ] Stub handler in `stub-servers/users-api.stub-server.ts`
 - [ ] Contract spec uses `@fixtures/contract.fixture`
-- [ ] Live spec uses `@fixtures/api.fixture` with cleanup
+- [ ] Live spec uses `@fixtures/api.fixture`; users it creates are passed to `usersCleanup.track`
 - [ ] Test data via `UserFactory`
 - [ ] Tags: `@api` + `@smoke` or `@regression`
 - [ ] `annotation: behavior('Users API', '<Feature>')` on `test.describe`; `test.step` on key actions and checks

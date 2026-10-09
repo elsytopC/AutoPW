@@ -10,19 +10,14 @@ test.describe(
     test(
       qase(14, 'admin creates user'),
       { tag: ['@smoke'] },
-      async ({ usersApi }) => {
-        const userData = UserFactory.create();
-
+      async ({ usersApi, usersCleanup }) => {
         const user = await test.step('Create user', () =>
-          usersApi.createUser(userData));
+          usersApi.createUser(UserFactory.create()));
+        usersCleanup.track(user.id);
 
-        try {
-          await test.step('Verify user id is assigned', () => {
-            expect(user.id).toBeDefined();
-          });
-        } finally {
-          await usersApi.deleteUser(user.id);
-        }
+        await test.step('Verify user id is assigned', () => {
+          expect(user.id).toBeDefined();
+        });
       },
     );
 

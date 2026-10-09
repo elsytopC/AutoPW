@@ -6,10 +6,15 @@ import { UserResponse } from '@api/models/user.model';
 import { UsersApi } from '@api/services/users.api';
 import { AuthenticatedApiClient } from '@api/client/authenticatedApiClient';
 
+type UsersCleanup = {
+  track: (id: number) => void;
+};
+
 type ApiFixtures = {
   usersApi: UsersApi;
   adminApiContext: APIRequestContext;
   existingUser: UserResponse;
+  usersCleanup: UsersCleanup;
 };
 
 export const test = base.extend<ApiFixtures>({
@@ -35,6 +40,20 @@ export const test = base.extend<ApiFixtures>({
     await use(createdUser);
 
     await usersApi.deleteUser(createdUser.id);
+  },
+
+  usersCleanup: async ({ usersApi }, use) => {
+    const ids: number[] = [];
+
+    await use({ track: (id) => ids.push(id) });
+
+    for (const id of ids) {
+      try {
+        await usersApi.deleteUser(id);
+      } catch (error) {
+        console.warn(`Failed to clean up user ${id}: ${error}`);
+      }
+    }
   },
 });
 

@@ -40,6 +40,7 @@ test.describe(
 
     test(
       qase(13, 'populated list has no detectable a11y violations'),
+      { tag: ['@regression'] },
       async ({ todoPage, makeAxeBuilder }, testInfo) => {
         await test.step('Add and complete a todo', async () => {
           await todoPage.addTodo('Write tests');

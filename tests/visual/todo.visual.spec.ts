@@ -9,20 +9,25 @@ test.describe(
     annotation: behavior('TodoMVC', 'Visual regression'),
   },
   () => {
-    test(qase(10, 'empty app matches baseline'), async ({ todoPage, page }) => {
-      await test.step('Verify list is empty', async () => {
-        await expect(todoPage.items).toHaveCount(0);
-      });
+    test(
+      qase(10, 'empty app matches baseline'),
+      { tag: ['@regression'] },
+      async ({ todoPage, page }) => {
+        await test.step('Verify list is empty', async () => {
+          await expect(todoPage.items).toHaveCount(0);
+        });
 
-      await test.step('Compare app with empty baseline', async () => {
-        await expect(page.locator('.todoapp')).toHaveScreenshot(
-          'todo-empty.png',
-        );
-      });
-    });
+        await test.step('Compare app with empty baseline', async () => {
+          await expect(page.locator('.todoapp')).toHaveScreenshot(
+            'todo-empty.png',
+          );
+        });
+      },
+    );
 
     test(
       qase(11, 'populated list matches baseline'),
+      { tag: ['@regression'] },
       async ({ todoPage, page }) => {
         await test.step('Add two todos and complete one', async () => {
           await todoPage.addTodo('Write tests');

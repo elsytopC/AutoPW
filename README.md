@@ -603,9 +603,10 @@ The suite is scoped automatically by event so feedback stays fast where it matte
 - If `API_BASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` secrets are set → runs API tests
 - If secrets are missing → skips gracefully with an informative message
 
-**`conduit-ci`** — starts `docker-compose.conduit.yml`, then runs `conduit-api`,
-`conduit-ui`, and Conduit IDOR contract tests against `127.0.0.1`. Runs on
-push, pull request, nightly schedule, and manual dispatch.
+**`conduit-ci`** — starts `docker-compose.conduit.yml`, then runs `conduit-api`
+and `conduit-ui` against `127.0.0.1`. Runs on push, pull request, nightly
+schedule, and manual dispatch. Conduit IDOR contract tests need no Docker and
+run in `ui-ci` as part of the `contract` project.
 
 **`allure-report`** — runs after all test jobs (even when they fail), merges
 their `allure-results-*` artifacts into one Allure report with history.
