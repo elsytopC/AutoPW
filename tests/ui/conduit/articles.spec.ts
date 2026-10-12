@@ -26,8 +26,7 @@ test.describe(
         await test.step('authenticate browser session', () =>
           authenticateConduitUser(page, conduitUser));
 
-        await test.step('open article in browser', () =>
-          conduitArticle.goto(created.slug));
+        await conduitArticle.goto(created.slug);
 
         await test.step('verify title and body are rendered', async () => {
           await expect(conduitArticle.title, 'article title').toHaveText(

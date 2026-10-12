@@ -143,6 +143,10 @@ BasePage
 
 Page objects encapsulate all locators and actions. Tests never reference `locator` / `getByRole` directly. `todo-ui.fixture.ts` injects a pre-navigated `TodoPage` instance.
 
+Action methods are marked with `@step('Add todo "{0}"')` (`utils/step.ts`), so
+every call shows up in the report as a named step with the clicks and fills
+inside it. `{0}` / `{0.title}` insert call arguments into the title.
+
 ### Auth Architecture
 
 Todo and Conduit use independent session mechanisms:
@@ -161,6 +165,17 @@ projects via `playwright.config.ts`. Projects that do not need this
 Auth mode is controlled by `PROD_AUTH`:
 - `PROD_AUTH=true` — performs real login via `API_BASE_URL/login`
 - `PROD_AUTH=false` (default) — generates a fake JWT for local/CI use
+
+**Real credentials never go through the UI.** `ADMIN_*` / `USER_*` are used
+only for the API login above; the browser receives the resulting token. UI
+forms get factory data. This is enforced, because anything typed into a page
+lands in traces and the published Allure report:
+
+| Guard | What it blocks |
+|---|---|
+| ESLint (`eslint.config.mjs`) | `env.credentials`, `process.env.ADMIN_*` / `USER_*` and `@utils/auth/auth.config` in `tests/**`; raw `locator.fill()` / `type()` / `pressSequentially()` in page objects |
+| `BasePage.fill()` | throws if the value equals a configured real credential (`utils/auth/ui-credentials-guard.ts`) |
+| `@step` titles | a real credential in `{0}` placeholders is rendered as `***` |
 
 ### Environment Config
 
@@ -539,7 +554,7 @@ npm run allure:report     # generate + open in one step
 |---|---|
 | Behaviors tree (epic → feature) | `annotation: behavior('<Epic>', '<Feature>')` on `test.describe` (`utils/allure.ts`) |
 | Severity | Tags, via the auto fixture in `tests/fixtures/base.fixture.ts`: `@security` → blocker, `@smoke` → critical, `@regression` → normal |
-| Steps | `test.step(...)` — mapped to Allure steps by `allure-playwright`, no `allure.step` needed |
+| Steps | `@step('…')` on page-object actions + `test.step(...)` in specs for grouping and checks — both mapped to Allure steps by `allure-playwright`, no `allure.step` needed |
 | Check names | `expect(value, 'what is checked')` — the message becomes the sub-step title instead of a bare `Expect "toBe"`, and prefixes the failure message |
 | Environment, categories | `allureReporter` in `playwright.config.ts` |
 

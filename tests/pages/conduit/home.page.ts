@@ -1,4 +1,5 @@
 import { Page } from '@playwright/test';
+import { step } from '@utils/step';
 import { ConduitBasePage } from './base-conduit.page';
 
 export class ConduitHomePage extends ConduitBasePage {
@@ -6,6 +7,7 @@ export class ConduitHomePage extends ConduitBasePage {
     super(page);
   }
 
+  @step('Open home feed')
   async goto(): Promise<void> {
     await this.navigate('/');
   }

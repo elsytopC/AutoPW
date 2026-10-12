@@ -17,9 +17,8 @@ test.describe(
       async ({ conduitRegister, conduitHome, page }) => {
         const userData = ConduitUserFactory.create();
 
-        await test.step('open register page', () => conduitRegister.goto());
-        await test.step('submit registration form', () =>
-          conduitRegister.register(userData));
+        await conduitRegister.goto();
+        await conduitRegister.register(userData);
 
         await test.step('verify signed-in home feed', async () => {
           await expect(page, 'redirected to home feed').toHaveURL('/');
@@ -59,9 +58,8 @@ test.describe(
           ).not.toBeVisible();
         });
 
-        await test.step('open login page', () => conduitLogin.goto());
-        await test.step('submit login form', () =>
-          conduitLogin.login(userData.email, userData.password));
+        await conduitLogin.goto();
+        await conduitLogin.login(userData.email, userData.password);
 
         await test.step('verify signed-in home feed', async () => {
           await expect(page, 'redirected to home feed').toHaveURL('/');

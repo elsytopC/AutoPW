@@ -23,6 +23,7 @@ Keep all locators inside the Page Object — never in the spec.
 
 ```typescript
 // tests/pages/todo.page.ts
+@step('Remove todo "{0}"')
 async removeTodo(text: string): Promise<void> {
   await this.todoItems
     .filter({ hasText: text })
@@ -30,6 +31,10 @@ async removeTodo(text: string): Promise<void> {
     .click();
 }
 ```
+
+Mark every action method with `@step` (`import { step } from '@utils/step'`) —
+the call becomes a named report step. Type text with `this.fill(locator, value)`,
+never `locator.fill()` directly: lint enforces it.
 
 Skip this step if existing methods (`addTodo`, `completeTodo`, `filterBy`, …) are enough.
 
@@ -59,16 +64,11 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
     async ({ todoPage }) => {
       const title = TodoFactory.createTitle();
 
-      await test.step('Add a todo', async () => {
-        await todoPage.addTodo(title);
-      });
-
-      await test.step('Remove the todo', async () => {
-        await todoPage.removeTodo(title);
-      });
+      await todoPage.addTodo(title);
+      await todoPage.removeTodo(title);
 
       await test.step('Verify list is empty', async () => {
-        expect(await todoPage.getItemTexts()).toHaveLength(0);
+        await expect(todoPage.items, 'todo list is empty').toHaveCount(0);
       });
     },
   );
@@ -78,7 +78,8 @@ test.describe('TodoMVC', { tag: ['@ui'] }, () => {
 **Rules:**
 
 - Import `test`/`expect` from `@fixtures/todo-ui.fixture` (not `@playwright/test`)
-- Wrap key actions in `test.step('English description', …)` for HTML reports
+- Page-object calls are already steps (`@step`) — don't wrap a single call in `test.step`
+- Use `test.step('English description', …)` to group several calls and for checks
 - Tag every test: `@smoke` or `@regression` + `@ui`
 - Wrap title in `qase(id, 'title')` when Qase is enabled
 
@@ -96,7 +97,7 @@ npm run lint
 - [ ] Locators only in `tests/pages/todo.page.ts`
 - [ ] Test data via `TodoFactory`, not inline Faker
 - [ ] Fixture import from `@fixtures/todo-ui.fixture`
-- [ ] `test.step` on each key action; every `expect` has a message
+- [ ] New page-object actions have `@step`; specs use `test.step` for groups and checks; every `expect` has a message
 - [ ] `annotation: behavior('TodoMVC', '<Feature>')` on `test.describe`
 - [ ] Tags: `@ui` + `@smoke` or `@regression`
 - [ ] Targeted run passes

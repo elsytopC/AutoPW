@@ -13,13 +13,12 @@ test.describe(
       async ({ todoPage }) => {
         const title = TodoFactory.createTitle(3);
 
-        await test.step('Add a new todo', async () => {
-          await todoPage.addTodo(title);
-        });
+        await todoPage.addTodo(title);
 
         await test.step('Verify todo appears in the list', async () => {
-          const items = await todoPage.getItemTexts();
-          expect(items, 'list contains the new todo').toContain(title);
+          await expect(todoPage.items, 'list contains the new todo').toHaveText(
+            [title],
+          );
         });
       },
     );
@@ -37,8 +36,10 @@ test.describe(
         });
 
         await test.step('Verify both todos are listed', async () => {
-          const items = await todoPage.getItemTexts();
-          expect(items, 'todos count').toHaveLength(2);
+          await expect(todoPage.items, 'both todos are listed').toHaveText([
+            first,
+            second,
+          ]);
         });
       },
     );
@@ -49,16 +50,13 @@ test.describe(
       async ({ todoPage }) => {
         const title = TodoFactory.createTitle();
 
-        await test.step('Add a todo', async () => {
-          await todoPage.addTodo(title);
-        });
-
-        await test.step('Mark todo as completed', async () => {
-          await todoPage.completeTodo(title);
-        });
+        await todoPage.addTodo(title);
+        await todoPage.completeTodo(title);
 
         await test.step('Verify active count is zero', async () => {
-          expect(await todoPage.getActiveCount(), 'active todos count').toBe(0);
+          await expect(todoPage.counter, 'items left counter').toHaveText(
+            '0 items left',
+          );
         });
       },
     );
@@ -76,15 +74,17 @@ test.describe(
         });
 
         await test.step('Verify initial active count is 2', async () => {
-          expect(await todoPage.getActiveCount(), 'active todos count').toBe(2);
+          await expect(todoPage.counter, 'items left counter').toHaveText(
+            '2 items left',
+          );
         });
 
-        await test.step('Complete first todo', async () => {
-          await todoPage.completeTodo(taskA);
-        });
+        await todoPage.completeTodo(taskA);
 
         await test.step('Verify active count decreased to 1', async () => {
-          expect(await todoPage.getActiveCount(), 'active todos count').toBe(1);
+          await expect(todoPage.counter, 'items left counter').toHaveText(
+            '1 item left',
+          );
         });
       },
     );
@@ -102,9 +102,7 @@ test.describe(
           await todoPage.completeTodo(doneTitle);
         });
 
-        await test.step('Apply Active filter', async () => {
-          await todoPage.filterBy('Active');
-        });
+        await todoPage.filterBy('Active');
 
         await test.step('Verify only active todo is visible', async () => {
           await expect(todoPage.items, 'only active todo is shown').toHaveText([
@@ -127,9 +125,7 @@ test.describe(
           await todoPage.completeTodo(doneTitle);
         });
 
-        await test.step('Apply Completed filter', async () => {
-          await todoPage.filterBy('Completed');
-        });
+        await todoPage.filterBy('Completed');
 
         await test.step('Verify only completed todo is visible', async () => {
           await expect(
@@ -153,9 +149,7 @@ test.describe(
           await todoPage.completeTodo(removeTitle);
         });
 
-        await test.step('Clear completed todos', async () => {
-          await todoPage.clearCompleted();
-        });
+        await todoPage.clearCompleted();
 
         await test.step('Verify only active todo remains', async () => {
           await expect(todoPage.items, 'only active todo remains').toHaveText([
@@ -171,9 +165,7 @@ test.describe(
       async ({ todoPage }) => {
         const title = TodoFactory.createTitle();
 
-        await test.step('Add a todo', async () => {
-          await todoPage.addTodo(title);
-        });
+        await todoPage.addTodo(title);
 
         await test.step('Verify todo visual state with soft assertions', async () => {
           await expect.soft(todoPage.items, 'todos count').toHaveCount(1);
@@ -201,9 +193,7 @@ test.describe(
 
         const title = TodoFactory.createTitle();
 
-        await test.step('Add a todo with third-party requests blocked', async () => {
-          await todoPage.addTodo(title);
-        });
+        await todoPage.addTodo(title);
 
         await test.step('Verify the todo was added regardless', async () => {
           await expect(

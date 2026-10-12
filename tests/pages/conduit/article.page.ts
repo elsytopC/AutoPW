@@ -1,4 +1,5 @@
 import { Locator, Page } from '@playwright/test';
+import { step } from '@utils/step';
 import { ConduitBasePage } from './base-conduit.page';
 
 const BODY_SNIPPET_LENGTH = 40;
@@ -8,6 +9,7 @@ export class ConduitArticlePage extends ConduitBasePage {
     super(page);
   }
 
+  @step('Open article "{0}"')
   async goto(slug: string): Promise<void> {
     await this.navigate(`/article/${slug}`);
   }

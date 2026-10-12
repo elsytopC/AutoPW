@@ -81,7 +81,10 @@ npm run test:conduit:smoke
 
 ### 1. Add page method (if needed)
 
-`tests/pages/conduit/` — keep locators in the Page Object.
+`tests/pages/conduit/` — keep locators in the Page Object. Mark action methods
+with `@step('…')` from `@utils/step` and type text via `this.fill(locator, value)`
+(lint forbids raw `locator.fill()`). UI forms take factory data only — real
+accounts authenticate through the API.
 
 ### 2. Write the spec
 
@@ -102,7 +105,7 @@ test.describe('Conduit articles (UI)', { tag: ['@ui', '@conduit'] }, () => {
       await test.step('Register via UI', async () => {
         await conduitRegister.goto();
         await conduitRegister.register(userData);
-        await expect(page).toHaveURL('/');
+        await expect(page, 'redirected to home feed').toHaveURL('/');
       });
 
       await test.step('Publish via editor', async () => {
@@ -110,7 +113,9 @@ test.describe('Conduit articles (UI)', { tag: ['@ui', '@conduit'] }, () => {
         await conduitEditor.publishArticle(articleData);
       });
 
-      await expect(conduitArticle.title).toHaveText(articleData.title);
+      await expect(conduitArticle.title, 'article title').toHaveText(
+        articleData.title,
+      );
     },
   );
 });

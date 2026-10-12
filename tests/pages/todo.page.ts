@@ -1,4 +1,5 @@
 import { Page, Locator } from '@playwright/test';
+import { step } from '@utils/step';
 import { BasePage } from './base.page';
 
 export type TodoFilter = 'All' | 'Active' | 'Completed';
@@ -13,21 +14,24 @@ export class TodoPage extends BasePage {
     super(page);
     this.input = page.getByPlaceholder('What needs to be done?');
     this.todoItems = page.getByTestId('todo-item');
-    this.todoCount = page.locator('.todo-count');
+    this.todoCount = page.getByTestId('todo-count');
     this.clearCompletedButton = page.getByRole('button', {
       name: 'Clear completed',
     });
   }
 
+  @step('Open TodoMVC')
   async goto(): Promise<void> {
     await this.navigate('/todomvc');
   }
 
+  @step('Add todo "{0}"')
   async addTodo(text: string): Promise<void> {
-    await this.input.fill(text);
+    await this.fill(this.input, text);
     await this.input.press('Enter');
   }
 
+  @step('Complete todo "{0}"')
   async completeTodo(text: string): Promise<void> {
     await this.todoItems
       .filter({ hasText: text })
@@ -35,10 +39,12 @@ export class TodoPage extends BasePage {
       .check();
   }
 
+  @step('Apply "{0}" filter')
   async filterBy(filter: TodoFilter): Promise<void> {
     await this.page.getByRole('link', { name: filter }).click();
   }
 
+  @step('Clear completed todos')
   async clearCompleted(): Promise<void> {
     await this.clearCompletedButton.click();
   }
@@ -51,17 +57,12 @@ export class TodoPage extends BasePage {
     return this.todoCount;
   }
 
+  // The demo's root <section> has no test id or accessible name, so no role to target.
+  get app(): Locator {
+    return this.page.locator('.todoapp');
+  }
+
   itemByText(text: string): Locator {
     return this.todoItems.filter({ hasText: text });
-  }
-
-  async getItemTexts(): Promise<string[]> {
-    return this.todoItems.allInnerTexts();
-  }
-
-  async getActiveCount(): Promise<number> {
-    const text = await this.todoCount.innerText();
-    const match = text.match(/(\d+)/);
-    return match ? parseInt(match[1], 10) : 0;
   }
 }

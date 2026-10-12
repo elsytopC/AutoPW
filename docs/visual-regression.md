@@ -83,14 +83,16 @@ Reference: `tests/visual/todo.visual.spec.ts`
 ```typescript
 import { test, expect } from '@fixtures/todo-ui.fixture';
 
-test('my state matches baseline', async ({ todoPage, page }) => {
+test('my state matches baseline', async ({ todoPage }) => {
   // arrange UI state via todoPage …
-  await expect(page.locator('.todoapp')).toHaveScreenshot('my-state.png');
+  await expect(todoPage.app, 'app matches baseline').toHaveScreenshot(
+    'my-state.png',
+  );
 });
 ```
 
 Rules:
 
-- Target a **stable container** (`.todoapp`), not full page
+- Target a **stable container** (`todoPage.app`, the `.todoapp` section), not full page
 - Tag: `@visual` + `@ui` on the describe block
 - Run `--update-snapshots` on Linux (via workflow) before expecting green CI

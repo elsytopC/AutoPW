@@ -8,13 +8,40 @@ alwaysApply: false
 
 # Playwright + TypeScript — Page Object Model
 
-- Мы используем паттерн Page Object Model. Все локаторы хранятся строго в классах папки `pages/`.
-- Для поиска элементов ВСЕГДА используй встроенные локаторы Playwright (например, `page.getByRole`, `page.getByTestId`). Избегай XPath и сырых CSS-селекторов.
-- Все тесты должны использовать кастомные фикстуры из `tests/fixtures/` вместо стандартного `import { test } from '@playwright/test'`:
-  - API-тесты: `import { test, expect } from '../fixtures/api.fixture';`
-  - Todo UI-тесты: `import { test, expect } from '../fixtures/todo-ui.fixture';`
-  - Conduit API-тесты: `import { test, expect } from '../fixtures/conduit-api.fixture';`
-  - Conduit UI-тесты: `import { test, expect } from '../fixtures/conduit-ui.fixture';`
-  - Contract-тесты (stub-server): `import { test, expect } from '../fixtures/contract.fixture';`
+## Локаторы
+
+- Мы используем паттерн Page Object Model. Все локаторы хранятся строго в классах папки `tests/pages/` — в спеках локаторов нет.
+- Используй встроенные локаторы Playwright в порядке приоритета:
+  1. `getByRole(role, { name })` — то, как элемент видит пользователь и скринридер;
+  2. `getByLabel` / `getByPlaceholder` — для полей форм;
+  3. `getByText` — для неинтерактивного контента;
+  4. `getByTestId` — когда у элемента нет роли и подписи.
+- XPath и CSS-селекторы запрещены. Исключение — элемент без роли, подписи и test id: тогда CSS допустим только внутри page object с комментарием, почему нет альтернативы.
+- Не опирайся на `nth()` / `first()` / `last()` для выбора элемента — уточняй локатор через `filter({ hasText })` или вложенный `getByRole`.
+
+## Проверки и ожидания
+
+- Проверяй состояние страницы web-first assertions: `await expect(locator).toHaveText(...)`, `toHaveCount`, `toBeVisible`, `toHaveURL`. Они сами ждут нужного состояния.
+- Не читай состояние, чтобы потом сравнить его в `expect` (`allInnerTexts()`, `innerText()`, `textContent()`, `isVisible()` → `expect(value)`): чтение не ждёт перерисовки, и тест становится нестабильным.
+- Запрещены жёсткие ожидания: `page.waitForTimeout()`, `setTimeout`, ручные `sleep`. Жди конкретное условие — assertion, `waitForResponse`, `waitForURL`.
+- У каждого `expect` есть пояснение: `expect(value, 'what is checked')`.
+
+## Фикстуры
+
+- Все тесты используют кастомные фикстуры из `tests/fixtures/` вместо стандартного `import { test } from '@playwright/test'`:
+  - API-тесты: `import { test, expect } from '@fixtures/api.fixture';`
+  - Todo UI-тесты: `import { test, expect } from '@fixtures/todo-ui.fixture';`
+  - Conduit API-тесты: `import { test, expect } from '@fixtures/conduit-api.fixture';`
+  - Conduit UI-тесты: `import { test, expect } from '@fixtures/conduit-ui.fixture';`
+  - Contract-тесты (stub-server): `import { test, expect } from '@fixtures/contract.fixture';`
 - Новые фикстуры добавляй в `tests/fixtures/`, не создавай дублирующие файлы в корне проекта.
-- Обязательно добавляй `test.step('Название шага', async () => { ... })` для логирования шагов в отчетах.
+
+## Шаги отчёта
+
+- Методы-действия page object помечай декоратором `@step('Add todo "{0}"')` из `@utils/step` — вызов становится именованным шагом отчёта. Одиночный вызов метода в спеке не оборачивай в `test.step`.
+- `test.step('Название шага', async () => { ... })` в спеках — для группировки нескольких вызовов и для проверок.
+
+## Ввод данных
+
+- Текст в page object вводи только через `this.fill(locator, value)` из `BasePage` — прямой `locator.fill()` / `type()` / `pressSequentially()` запрещён lint-ом.
+- Реальные учётные данные (`ADMIN_*`, `USER_*`, `env.credentials`) никогда не попадают в UI: настоящий аккаунт входит через API / storageState, формы получают данные из фабрик.

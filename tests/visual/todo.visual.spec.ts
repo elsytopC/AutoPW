@@ -12,14 +12,14 @@ test.describe(
     test(
       qase(10, 'empty app matches baseline'),
       { tag: ['@regression'] },
-      async ({ todoPage, page }) => {
+      async ({ todoPage }) => {
         await test.step('Verify list is empty', async () => {
           await expect(todoPage.items, 'todo list is empty').toHaveCount(0);
         });
 
         await test.step('Compare app with empty baseline', async () => {
           await expect(
-            page.locator('.todoapp'),
+            todoPage.app,
             'app matches empty baseline',
           ).toHaveScreenshot('todo-empty.png');
         });
@@ -29,7 +29,7 @@ test.describe(
     test(
       qase(11, 'populated list matches baseline'),
       { tag: ['@regression'] },
-      async ({ todoPage, page }) => {
+      async ({ todoPage }) => {
         await test.step('Add two todos and complete one', async () => {
           await todoPage.addTodo('Write tests');
           await todoPage.addTodo('Review the pull request');
@@ -38,7 +38,7 @@ test.describe(
 
         await test.step('Compare app with populated baseline', async () => {
           await expect(
-            page.locator('.todoapp'),
+            todoPage.app,
             'app matches populated baseline',
           ).toHaveScreenshot('todo-populated.png');
         });
