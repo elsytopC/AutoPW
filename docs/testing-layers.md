@@ -32,7 +32,6 @@ Playwright project runs them.
 |---|---|
 | `stub-servers/` | **Implementation** — in-process HTTP (`UsersApiStubServer`, `ConduitApiStubServer`) |
 | `tests/contract/` | **Specs** — contract tests against stub-servers |
-| `mocks/` | **Deprecated redirect** — use `stub-servers/` instead (see [ADR 001](./adr/001-stub-servers-vs-contract-tests.md)) |
 
 See also: [ADR 001 — stub-servers vs contract tests](./adr/001-stub-servers-vs-contract-tests.md).
 
@@ -50,7 +49,7 @@ See also: [ADR 001 — stub-servers vs contract tests](./adr/001-stub-servers-vs
 Contract specs **must not** import `@fixtures/api.fixture` or depend on
 `API_BASE_URL`.
 
-Import stub-servers via `@stub-servers/*` (not `@mocks/*`).
+Import stub-servers via `@stub-servers/*`.
 
 ---
 

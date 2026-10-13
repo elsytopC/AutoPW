@@ -19,9 +19,9 @@ filename suffix `.mock.spec.ts`), which made onboarding and legacy support harde
 2. Playwright project **`mock`** renames to **`contract`**.
 3. Fixture **`mock.fixture.ts`** renames to **`contract.fixture.ts`**.
 4. **Stub-server implementations** live in **`stub-servers/`** (Phase 2, 2026-07-19).
-   Legacy `mocks/` folder is a redirect only.
 5. Phase 4 (2026-07-22): removed `test:mock` npm aliases and deprecated class re-exports.
 6. Agent skill **`mock-contract-testing`** → **`contract-testing`**; slash command **`/contract-test`**.
+7. Phase 5 (2026-10-14): removed leftover redirect folders `mocks/` and `tests/mocks/`.
 
 Fixture keys renamed in Phase 3: `usersApiStub`, `usersApi`, `conduitApiStub`.
 

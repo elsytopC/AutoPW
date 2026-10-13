@@ -99,6 +99,3 @@ npm run test:contract    # fastest sanity check, no network
 | `utils/auth/` | Login token, storageState, Conduit session |
 | `config/` | Env vars, global setup/teardown |
 | `docs/cookbooks/` | Step-by-step recipes for adding tests |
-
-> **Deprecated redirects:** `mocks/` and `tests/mocks/` are legacy pointers only.
-> Use `stub-servers/` and `tests/contract/` instead. See [ADR 001](./adr/001-stub-servers-vs-contract-tests.md).
