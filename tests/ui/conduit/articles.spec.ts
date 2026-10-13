@@ -20,15 +20,15 @@ test.describe(
       async ({ conduitArticle, conduitUser, articlesApi, page }) => {
         const input = ConduitArticleFactory.create();
 
-        const created = await test.step('create article via API', () =>
+        const created = await test.step('Create article via API', () =>
           articlesApi.create(input));
 
-        await test.step('authenticate browser session', () =>
+        await test.step('Authenticate browser session', () =>
           authenticateConduitUser(page, conduitUser));
 
         await conduitArticle.goto(created.slug);
 
-        await test.step('verify title and body are rendered', async () => {
+        await test.step('Verify title and body are rendered', async () => {
           await expect(conduitArticle.title, 'article title').toHaveText(
             input.title,
           );
@@ -63,18 +63,18 @@ test.describe(
           password: userData.password,
         });
 
-        await test.step('register via UI', async () => {
+        await test.step('Register via UI', async () => {
           await conduitRegister.goto();
           await conduitRegister.register(userData);
           await expect(page, 'redirected to home feed').toHaveURL('/');
         });
 
-        await test.step('compose and publish', async () => {
+        await test.step('Compose and publish', async () => {
           await conduitEditor.goto();
           await conduitEditor.publishArticle(articleData);
         });
 
-        await test.step('verify published article page', async () => {
+        await test.step('Verify published article page', async () => {
           await conduitArticle.expectPathname(/^\/article\/[^/]+$/);
           await expect(conduitArticle.title, 'article title').toHaveText(
             articleData.title,

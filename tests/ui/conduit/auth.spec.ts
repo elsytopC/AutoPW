@@ -20,7 +20,7 @@ test.describe(
         await conduitRegister.goto();
         await conduitRegister.register(userData);
 
-        await test.step('verify signed-in home feed', async () => {
+        await test.step('Verify signed-in home feed', async () => {
           await expect(page, 'redirected to home feed').toHaveURL('/');
           await expect(
             conduitHome.newArticleLink,
@@ -40,11 +40,11 @@ test.describe(
       async ({ conduitLogin, conduitHome, anonAuthApi, page }) => {
         const userData = ConduitUserFactory.create();
 
-        await test.step('seed user via API', () =>
+        await test.step('Seed user via API', () =>
           anonAuthApi.register(userData));
 
         // Demo has no logout — clear localStorage to test the login form in isolation
-        await test.step('start from a signed-out session', async () => {
+        await test.step('Start from a signed-out session', async () => {
           await page.goto('/');
           await clearConduitSession(page);
           await page.reload();
@@ -61,7 +61,7 @@ test.describe(
         await conduitLogin.goto();
         await conduitLogin.login(userData.email, userData.password);
 
-        await test.step('verify signed-in home feed', async () => {
+        await test.step('Verify signed-in home feed', async () => {
           await expect(page, 'redirected to home feed').toHaveURL('/');
           await expect(
             conduitHome.newArticleLink,

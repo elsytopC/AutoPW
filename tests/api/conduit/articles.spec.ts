@@ -13,10 +13,10 @@ test.describe(
       async ({ articlesApi, conduitUser }) => {
         const input = ConduitArticleFactory.create();
 
-        const created = await test.step('create article', () =>
+        const created = await test.step('Create article', () =>
           articlesApi.create(input));
 
-        await test.step('verify created article', () => {
+        await test.step('Verify created article', () => {
           expect(created.title, 'title matches input').toBe(input.title);
           expect(created.author.username, 'author is the current user').toBe(
             conduitUser.username,
@@ -24,10 +24,10 @@ test.describe(
           expect(created.slug, 'slug is generated').toBeTruthy();
         });
 
-        const fetched = await test.step('read article by slug', () =>
+        const fetched = await test.step('Read article by slug', () =>
           articlesApi.getBySlug(created.slug));
 
-        await test.step('verify body and tags are persisted', () => {
+        await test.step('Verify body and tags are persisted', () => {
           expect(fetched.body, 'body matches input').toBe(input.body);
           expect(fetched.tagList, 'tags include input tags').toEqual(
             expect.arrayContaining(input.tagList!),
@@ -40,14 +40,14 @@ test.describe(
       qase(32, 'lists the article under its author'),
       { tag: ['@regression'] },
       async ({ articlesApi, conduitUser }) => {
-        const created = await test.step('create article', () =>
+        const created = await test.step('Create article', () =>
           articlesApi.create(ConduitArticleFactory.create()));
 
         const { articles, articlesCount } =
-          await test.step('list articles by author', () =>
+          await test.step('List articles by author', () =>
             articlesApi.list({ author: conduitUser.username }));
 
-        await test.step('verify article is in the author list', () => {
+        await test.step('Verify article is in the author list', () => {
           expect(articlesCount, 'author has articles').toBeGreaterThan(0);
           expect(
             articles.map((a) => a.slug),
@@ -61,22 +61,22 @@ test.describe(
       qase(33, 'updating the title regenerates the slug'),
       { tag: ['@regression'] },
       async ({ articlesApi }) => {
-        const created = await test.step('create article', () =>
+        const created = await test.step('Create article', () =>
           articlesApi.create(ConduitArticleFactory.create()));
 
-        const updated = await test.step('update article title', () =>
+        const updated = await test.step('Update article title', () =>
           articlesApi.update(created.slug, {
             title: `Updated ${created.slug}`,
           }));
 
-        await test.step('verify slug changed and old slug is gone', async () => {
+        await test.step('Verify slug changed and old slug is gone', async () => {
           expect(updated.slug, 'slug changed').not.toBe(created.slug);
 
           const oldSlugResponse = await articlesApi.tryGetBySlug(created.slug);
           expect(oldSlugResponse.status(), 'old slug status code').toBe(404);
         });
 
-        await test.step('verify article is readable by new slug', async () => {
+        await test.step('Verify article is readable by new slug', async () => {
           const refetched = await articlesApi.getBySlug(updated.slug);
           expect(refetched.title, 'title is updated').toBe(updated.title);
         });
@@ -87,13 +87,13 @@ test.describe(
       qase(34, 'deletes an article'),
       { tag: ['@regression'] },
       async ({ articlesApi }) => {
-        const created = await test.step('create article', () =>
+        const created = await test.step('Create article', () =>
           articlesApi.create(ConduitArticleFactory.create()));
 
-        await test.step('delete article', () =>
+        await test.step('Delete article', () =>
           articlesApi.remove(created.slug));
 
-        await test.step('verify article returns 404', async () => {
+        await test.step('Verify article returns 404', async () => {
           const response = await articlesApi.tryGetBySlug(created.slug);
           expect(response.status(), 'status code').toBe(404);
         });
@@ -104,10 +104,10 @@ test.describe(
       qase(35, 'rejects article creation without auth (401)'),
       { tag: ['@regression'] },
       async ({ anonArticlesApi }) => {
-        const response = await test.step('create article anonymously', () =>
+        const response = await test.step('Create article anonymously', () =>
           anonArticlesApi.tryCreate(ConduitArticleFactory.create()));
 
-        await test.step('verify 401 status', () => {
+        await test.step('Verify 401 status', () => {
           expect(response.status(), 'status code').toBe(401);
         });
       },
@@ -118,14 +118,14 @@ test.describe(
       { tag: ['@regression'] },
       async ({ articlesApi }) => {
         const response =
-          await test.step('create article with empty title', () =>
+          await test.step('Create article with empty title', () =>
             articlesApi.tryCreate({ title: '' }));
 
-        await test.step('verify 422 status', () => {
+        await test.step('Verify 422 status', () => {
           expect(response.status(), 'status code').toBe(422);
         });
 
-        await test.step('verify errors for required fields', async () => {
+        await test.step('Verify errors for required fields', async () => {
           const body = await response.json();
           expect(body.errors, 'errors for required fields').toMatchObject({
             title: expect.any(Array),

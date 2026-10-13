@@ -38,7 +38,7 @@ test.describe(
       { tag: ['@regression', '@security'] },
       async ({ conduitApiStub }) => {
         const [owner, other] =
-          await test.step('register owner and another user', async () => [
+          await test.step('Register owner and another user', async () => [
             await registerUser(conduitApiStub.baseURL),
             await registerUser(conduitApiStub.baseURL),
           ]);
@@ -50,22 +50,22 @@ test.describe(
           const ownerApi = new ArticlesApi(ownerCtx);
           const otherApi = new ArticlesApi(otherCtx);
 
-          const created = await test.step('create article as its owner', () =>
+          const created = await test.step('Create article as its owner', () =>
             ownerApi.create(ConduitArticleFactory.create()));
 
-          await test.step('update as a different authenticated user', async () => {
+          await test.step('Update as a different authenticated user', async () => {
             const response = await otherApi.tryUpdate(created.slug, {
               title: 'Hijacked title',
             });
             expect(response.status(), 'non-owner gets 403').toBe(403);
           });
 
-          await test.step('delete as a different authenticated user', async () => {
+          await test.step('Delete as a different authenticated user', async () => {
             const response = await otherApi.tryRemove(created.slug);
             expect(response.status(), 'non-owner gets 403').toBe(403);
           });
 
-          await test.step('article is unchanged after both rejected attempts', async () => {
+          await test.step('Article is unchanged after both rejected attempts', async () => {
             const stillThere = await ownerApi.getBySlug(created.slug);
             expect(stillThere.title, 'title is unchanged').toBe(created.title);
           });

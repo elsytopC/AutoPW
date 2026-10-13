@@ -28,7 +28,7 @@ alwaysApply: false
 
 - JSDoc на очевидных методах (`async goto()`, `get title()`)
 - Route-описания на Page Object (`/** /login — … */`)
-- Пересказ `test.step('create article via API', …)` inline-комментарием
+- Пересказ `test.step('Create article via API', …)` inline-комментарием
 - Playwright scaffold (`/* Run tests in parallel */`, ссылки на docs.playwright.dev)
 - Дублирование имён fixture/property (`/** articlesApi — Articles API */`)
 - «204 No Content», «delete user in teardown» и прочее, видное из кода
