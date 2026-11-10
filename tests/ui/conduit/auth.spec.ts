@@ -74,5 +74,40 @@ test.describe(
         });
       },
     );
+
+    test(
+      qase(51, 'shows an error for a wrong password'),
+      { tag: ['@smoke'] },
+      async ({ conduitLogin, anonAuthApi, page }) => {
+        const registeredUser = ConduitUserFactory.create();
+        const wrongPassword = ConduitUserFactory.create().password;
+
+        await test.step('Seed user via API', () =>
+          anonAuthApi.register(registeredUser));
+
+        await conduitLogin.goto();
+        await conduitLogin.login(registeredUser.email, wrongPassword);
+
+        await test.step('Verify login is rejected', async () => {
+          await expect(page, 'stays on the login page').toHaveURL(/\/login$/);
+          await expect(
+            conduitLogin.invalidCredentialsMessage,
+            'invalid credentials message is shown',
+          ).toBeVisible();
+        });
+      },
+    );
+
+    test(
+      qase(52, 'sends a signed-out user away from the editor'),
+      { tag: ['@smoke'] },
+      async ({ conduitEditor, page }) => {
+        await conduitEditor.goto();
+
+        await test.step('Verify the editor redirects to login', async () => {
+          await expect(page, 'redirected to login').toHaveURL(/\/login$/);
+        });
+      },
+    );
   },
 );

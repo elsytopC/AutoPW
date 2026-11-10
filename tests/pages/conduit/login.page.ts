@@ -1,10 +1,14 @@
-import { Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import { step } from '@utils/step';
 import { ConduitBasePage } from './base-conduit.page';
 
 export class ConduitLoginPage extends ConduitBasePage {
   constructor(page: Page) {
     super(page);
+  }
+
+  get invalidCredentialsMessage(): Locator {
+    return this.page.getByText('credentials invalid', { exact: true });
   }
 
   @step('Open login page')
