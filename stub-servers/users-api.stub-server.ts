@@ -96,6 +96,36 @@ export class UsersApiStubServer extends BaseStubServer {
       return;
     }
 
+    if (method === 'PATCH' && userIdMatch) {
+      const id = Number(userIdMatch[1]);
+      this.readBody(req, res, (body) => {
+        const existing = this.users.get(id);
+        if (!existing) {
+          this.send(res, 404, { message: 'User not found' });
+          return;
+        }
+
+        const changes = body as Partial<CreateUserRequest>;
+        if (changes.email && !this.isValidEmail(changes.email)) {
+          this.send(res, 400, {
+            message: 'Invalid user payload',
+            errors: { email: 'email is invalid' },
+          });
+          return;
+        }
+
+        const updatedUser: UserResponse = {
+          id: existing.id,
+          firstName: changes.firstName ?? existing.firstName,
+          lastName: changes.lastName ?? existing.lastName,
+          email: changes.email ?? existing.email,
+        };
+        this.users.set(id, updatedUser);
+        this.send(res, 200, updatedUser);
+      });
+      return;
+    }
+
     if (method === 'DELETE' && userIdMatch) {
       const id = Number(userIdMatch[1]);
       if (!this.users.has(id)) {

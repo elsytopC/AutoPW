@@ -198,5 +198,51 @@ test.describe(
         });
       },
     );
+
+    test(
+      qase(45, 'updates a user and keeps the other fields'),
+      { tag: ['@smoke'] },
+      async ({ usersApi }) => {
+        const createdUser = await test.step('Create user', () =>
+          usersApi.createUser(UserFactory.create()));
+        const updatedFirstName = UserFactory.create().firstName;
+
+        const userAfterUpdate = await test.step('Update user first name', () =>
+          usersApi.updateUser(createdUser.id, {
+            firstName: updatedFirstName,
+          }));
+
+        await test.step('Verify the new name is stored', async () => {
+          expect(userAfterUpdate.firstName, 'response first name').toBe(
+            updatedFirstName,
+          );
+          expect(userAfterUpdate.email, 'email is unchanged').toBe(
+            createdUser.email,
+          );
+
+          const storedUser = await usersApi.getUser(createdUser.id);
+          expect(storedUser.firstName, 'stored first name').toBe(
+            updatedFirstName,
+          );
+        });
+      },
+    );
+
+    test(
+      qase(46, 'deletes a user'),
+      { tag: ['@smoke'] },
+      async ({ usersApi }) => {
+        const createdUser = await test.step('Create user', () =>
+          usersApi.createUser(UserFactory.create()));
+
+        await test.step('Delete user', () =>
+          usersApi.deleteUser(createdUser.id));
+
+        await test.step('Verify deleted user returns 404', async () => {
+          const lookupAfterDelete = await usersApi.tryGetUser(createdUser.id);
+          expect(lookupAfterDelete.status(), 'status code').toBe(404);
+        });
+      },
+    );
   },
 );

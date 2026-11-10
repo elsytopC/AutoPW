@@ -76,5 +76,50 @@ test.describe(
           }));
       },
     );
+
+    test(
+      qase(47, 'admin updates a user'),
+      { tag: ['@smoke'] },
+      async ({ usersApi, existingUser }) => {
+        const updatedFirstName = UserFactory.create().firstName;
+
+        const userAfterUpdate = await test.step('Update user first name', () =>
+          usersApi.updateUser(existingUser.id, {
+            firstName: updatedFirstName,
+          }));
+
+        await test.step('Verify the new name is stored', async () => {
+          expect(userAfterUpdate.firstName, 'response first name').toBe(
+            updatedFirstName,
+          );
+          expect(userAfterUpdate.email, 'email is unchanged').toBe(
+            existingUser.email,
+          );
+
+          const storedUser = await usersApi.getUser(existingUser.id);
+          expect(storedUser.firstName, 'stored first name').toBe(
+            updatedFirstName,
+          );
+        });
+      },
+    );
+
+    test(
+      qase(48, 'admin deletes a user'),
+      { tag: ['@smoke'] },
+      async ({ usersApi, usersCleanup }) => {
+        const createdUser = await test.step('Create user', () =>
+          usersApi.createUser(UserFactory.create()));
+        usersCleanup.track(createdUser.id);
+
+        await test.step('Delete user', () =>
+          usersApi.deleteUser(createdUser.id));
+
+        await test.step('Verify deleted user returns 404', async () => {
+          const lookupAfterDelete = await usersApi.tryGetUser(createdUser.id);
+          expect(lookupAfterDelete.status(), 'status code').toBe(404);
+        });
+      },
+    );
   },
 );
