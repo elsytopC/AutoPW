@@ -135,5 +135,62 @@ test.describe(
         });
       },
     );
+
+    test(
+      qase(49, 'lists the article under its tag'),
+      { tag: ['@smoke'] },
+      async ({ articlesApi }) => {
+        const uniqueTag = ConduitArticleFactory.uniqueTag();
+        const createdArticle =
+          await test.step('Create article with a unique tag', () =>
+            articlesApi.create(
+              ConduitArticleFactory.create({ tagList: [uniqueTag] }),
+            ));
+
+        const articlesWithTag =
+          await test.step('List articles by that tag', () =>
+            articlesApi.list({ tag: uniqueTag }));
+
+        await test.step('Verify the article is in the tag list', () => {
+          expect(
+            articlesWithTag.articles.map((article) => article.slug),
+            'list contains the created article',
+          ).toContain(createdArticle.slug);
+        });
+      },
+    );
+
+    test(
+      qase(50, 'rejects article update and delete without auth (401)'),
+      { tag: ['@smoke'] },
+      async ({ articlesApi, anonArticlesApi }) => {
+        const createdArticle = await test.step('Create article', () =>
+          articlesApi.create(ConduitArticleFactory.create()));
+
+        await test.step('Update without a token', async () => {
+          const anonymousUpdate = await anonArticlesApi.tryUpdate(
+            createdArticle.slug,
+            { title: `Hijacked ${createdArticle.slug}` },
+          );
+          expect(anonymousUpdate.status(), 'update status code').toBe(401);
+        });
+
+        await test.step('Delete without a token', async () => {
+          const anonymousDelete = await anonArticlesApi.tryRemove(
+            createdArticle.slug,
+          );
+          expect(anonymousDelete.status(), 'delete status code').toBe(401);
+        });
+
+        await test.step('Verify the article is unchanged', async () => {
+          const storedArticle = await articlesApi.getBySlug(
+            createdArticle.slug,
+          );
+          expect(storedArticle.title, 'title is unchanged').toBe(
+            createdArticle.title,
+          );
+        });
+      },
+    );
   },
 );

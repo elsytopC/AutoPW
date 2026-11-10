@@ -19,6 +19,10 @@ export class ConduitUserFactory {
 }
 
 export class ConduitArticleFactory {
+  static uniqueTag(): string {
+    return `qa_${faker.string.alphanumeric({ length: 10, casing: 'lower' })}`;
+  }
+
   static create(
     overrides?: Partial<CreateArticleRequest>,
   ): CreateArticleRequest {
