@@ -203,5 +203,45 @@ test.describe(
         });
       },
     );
+
+    test(
+      qase(53, 'delete a single todo'),
+      { tag: ['@smoke'] },
+      async ({ todoPage }) => {
+        const keptTitle = TodoFactory.createTitle();
+        const deletedTitle = TodoFactory.createTitle();
+
+        await test.step('Add two todos', async () => {
+          await todoPage.addTodo(keptTitle);
+          await todoPage.addTodo(deletedTitle);
+        });
+
+        await todoPage.deleteTodo(deletedTitle);
+
+        await test.step('Verify only the other todo remains', async () => {
+          await expect(todoPage.items, 'remaining todos').toHaveText([
+            keptTitle,
+          ]);
+        });
+      },
+    );
+
+    test(
+      qase(54, 'rename a todo'),
+      { tag: ['@smoke'] },
+      async ({ todoPage }) => {
+        const originalTitle = TodoFactory.createTitle();
+        const updatedTitle = TodoFactory.createTitle();
+
+        await todoPage.addTodo(originalTitle);
+        await todoPage.renameTodo(originalTitle, updatedTitle);
+
+        await test.step('Verify the todo shows the new title', async () => {
+          await expect(todoPage.items, 'renamed todo').toHaveText([
+            updatedTitle,
+          ]);
+        });
+      },
+    );
   },
 );

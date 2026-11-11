@@ -39,6 +39,23 @@ export class TodoPage extends BasePage {
       .check();
   }
 
+  // The Delete button stays hidden until the row is hovered.
+  @step('Delete todo "{0}"')
+  async deleteTodo(title: string): Promise<void> {
+    const todoItem = this.itemByText(title);
+    await todoItem.hover();
+    await todoItem.getByRole('button', { name: 'Delete' }).click();
+  }
+
+  @step('Rename todo "{0}" to "{1}"')
+  async renameTodo(currentTitle: string, updatedTitle: string): Promise<void> {
+    const todoItem = this.itemByText(currentTitle);
+    await todoItem.getByTestId('todo-title').dblclick();
+    const editField = todoItem.getByRole('textbox', { name: 'Edit' });
+    await this.fill(editField, updatedTitle);
+    await editField.press('Enter');
+  }
+
   @step('Apply "{0}" filter')
   async filterBy(filter: TodoFilter): Promise<void> {
     await this.page.getByRole('link', { name: filter }).click();
