@@ -24,6 +24,10 @@ export class CommentsApi extends BaseApi {
     return this.delete(`articles/${slug}/comments/${id}`);
   }
 
+  async tryRemove(slug: string, id: number): Promise<APIResponse> {
+    return this.client.delete(`articles/${slug}/comments/${id}`);
+  }
+
   async tryAdd(
     slug: string,
     data: Partial<CreateCommentRequest>,

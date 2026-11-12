@@ -25,20 +25,34 @@ type StoredArticle = {
   authorUsername: string;
 };
 
+type StoredComment = {
+  id: number;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
+  articleSlug: string;
+  authorUsername: string;
+};
+
 /**
  * In-process RealWorld (Conduit) API subset for contract/security tests.
- * Enforces author-only article update and delete — non-owners receive 403.
+ * Enforces author-only article update and delete, and author-only comment
+ * delete — non-owners receive 403.
  */
 export class ConduitApiStubServer extends BaseStubServer {
   protected readonly label = 'Conduit API';
   private usersByUsername = new Map<string, StoredUser>();
   private usersByToken = new Map<string, StoredUser>();
   private articlesBySlug = new Map<string, StoredArticle>();
+  private commentsById = new Map<number, StoredComment>();
+  private nextCommentId = 1;
 
   protected reset(): void {
     this.usersByUsername.clear();
     this.usersByToken.clear();
     this.articlesBySlug.clear();
+    this.commentsById.clear();
+    this.nextCommentId = 1;
   }
 
   protected errorBody(message: string): unknown {
@@ -177,6 +191,75 @@ export class ConduitApiStubServer extends BaseStubServer {
         return;
       }
       this.articlesBySlug.delete(slug);
+      this.deleteCommentsOnArticle(slug);
+      this.sendNoContent(res);
+      return;
+    }
+
+    const commentsMatch = pathname.match(/^\/articles\/([^/]+)\/comments$/);
+    const commentMatch = pathname.match(
+      /^\/articles\/([^/]+)\/comments\/(\d+)$/,
+    );
+
+    if (method === 'GET' && commentsMatch) {
+      const articleSlug = commentsMatch[1];
+      if (!this.articlesBySlug.has(articleSlug)) {
+        this.send(res, 404, { errors: { body: ['Not Found'] } });
+        return;
+      }
+      const comments = Array.from(this.commentsById.values()).filter(
+        (comment) => comment.articleSlug === articleSlug,
+      );
+      this.send(res, 200, {
+        comments: comments.map((comment) => this.toComment(comment)),
+      });
+      return;
+    }
+
+    if (method === 'POST' && commentsMatch) {
+      if (!authUser) {
+        this.send(res, 401, { errors: { body: ['Unauthorized'] } });
+        return;
+      }
+      const articleSlug = commentsMatch[1];
+      this.readBody(req, res, (body) => {
+        if (!this.articlesBySlug.has(articleSlug)) {
+          this.send(res, 404, { errors: { body: ['Not Found'] } });
+          return;
+        }
+        const commentBody = (body as { comment?: { body?: string } }).comment
+          ?.body;
+        if (!commentBody) {
+          this.send(res, 422, { errors: { body: ["can't be blank"] } });
+          return;
+        }
+        const comment = this.createComment(
+          articleSlug,
+          commentBody,
+          authUser.username,
+        );
+        this.send(res, 200, { comment: this.toComment(comment) });
+      });
+      return;
+    }
+
+    if (method === 'DELETE' && commentMatch) {
+      if (!authUser) {
+        this.send(res, 401, { errors: { body: ['Unauthorized'] } });
+        return;
+      }
+      const articleSlug = commentMatch[1];
+      const commentId = Number(commentMatch[2]);
+      const comment = this.commentsById.get(commentId);
+      if (!comment || comment.articleSlug !== articleSlug) {
+        this.send(res, 404, { errors: { body: ['Not Found'] } });
+        return;
+      }
+      if (comment.authorUsername !== authUser.username) {
+        this.sendForbidden(res);
+        return;
+      }
+      this.commentsById.delete(commentId);
       this.sendNoContent(res);
       return;
     }
@@ -325,6 +408,42 @@ export class ConduitApiStubServer extends BaseStubServer {
       favorited: false,
       favoritesCount: 0,
       author: this.toAuthor(article.authorUsername),
+    };
+  }
+
+  private createComment(
+    articleSlug: string,
+    body: string,
+    authorUsername: string,
+  ): StoredComment {
+    const now = new Date().toISOString();
+    const comment: StoredComment = {
+      id: this.nextCommentId++,
+      body,
+      createdAt: now,
+      updatedAt: now,
+      articleSlug,
+      authorUsername,
+    };
+    this.commentsById.set(comment.id, comment);
+    return comment;
+  }
+
+  private deleteCommentsOnArticle(articleSlug: string): void {
+    for (const [commentId, comment] of this.commentsById) {
+      if (comment.articleSlug === articleSlug) {
+        this.commentsById.delete(commentId);
+      }
+    }
+  }
+
+  private toComment(comment: StoredComment) {
+    return {
+      id: comment.id,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+      body: comment.body,
+      author: this.toAuthor(comment.authorUsername),
     };
   }
 
